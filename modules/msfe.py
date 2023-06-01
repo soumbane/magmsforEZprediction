@@ -9,43 +9,10 @@ class EZScale(Enum):
     FINE = "fine"
 
 
-'''class fs_block(nn.Module):
-    expansion = 1
-
-    def __init__(self, inplanes3, planes, stride=1, downsample=None):
-        super(fs_block, self).__init__()
-        self.conv1 = nn.Conv1d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm1d(planes)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv1d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm1d(planes)
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        residual = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-
-        if self.downsample is not None:
-            residual = self.downsample(x)
-
-        out += residual
-        out = self.relu(out)
-
-        return out'''
-
-
-class cs_block(nn.Module):
-    expansion: int = 1
+class conv_block(nn.Module):
 
     def __init__(self, in_ch: int, out_ch: int, kernel_size: int = 7, stride: int = 1, padding: int = 1, bias: bool = False, downsample=None) -> None:
-        super(cs_block, self).__init__()
+        super(conv_block, self).__init__()
         self.conv1 = nn.Conv1d(in_ch, out_ch, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias)
         self.bn1 = nn.BatchNorm1d(out_ch)
         self.lrelu = nn.LeakyReLU(inplace=True)
@@ -82,6 +49,9 @@ class msfe(nn.Module):
     scale: EZScale
 
     def __init__(self, in_ch: int = 1, out_ch: int = 64, main_downsample: bool = True, scale: EZScale = EZScale.COURSE) -> None:
+
+        self.inplanes = 64
+
         super().__init__()
         self.in_ch = in_ch
         self.out_ch = out_ch
@@ -95,23 +65,20 @@ class msfe(nn.Module):
             self.maxpool = nn.MaxPool1d(kernel_size=3)
 
         if self.scale == EZScale.COURSE:
-            self.cs_layer_1 = self._cs_make_layer(cs_block, 64, 1, stride=2)
-            self.cs_layer_2 = self._cs_make_layer(cs_block, 128, 1, stride=2)
-            self.cs_layer_3 = self._cs_make_layer(cs_block, 256, 1, stride=2)
+            self.cs_layer_1 = self._cs_make_layer(conv_block, out_ch=64, kernel_size=7, padding=1, bias=False, stride=2)
+            self.cs_layer_2 = self._cs_make_layer(conv_block, out_ch=128, kernel_size=7, padding=1, bias=False, stride=2)
+            self.cs_layer_3 = self._cs_make_layer(conv_block, out_ch=256, kernel_size=7, padding=1, bias=False, stride=2)
 
-    def _cs_make_layer(self, block, out_ch, blocks, stride=2):
+    def _cs_make_layer(self, conv_block, out_ch: int = 64, kernel_size: int = 7, padding: int = 1, bias: bool = False, stride: int = 2):
         downsample = None
-        if stride != 1 or self.inplanes7 != out_ch * block.expansion:
+        if stride != 1 or self.inplanes != out_ch:
             downsample = nn.Sequential(
-                nn.Conv1d(self.inplanes7, out_ch * block.expansion, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm1d(out_ch * block.expansion),
+                nn.Conv1d(self.inplanes, out_ch, kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm1d(out_ch),
             )
 
         layers = []
-        layers.append(block(self.inplanes7, out_ch, stride, downsample))
-        self.inplanes7 = out_ch * block.expansion
-        for _ in range(1, blocks):
-            layers.append(block(self.inplanes7, out_ch))
+        layers.append(conv_block(self.inplanes, out_ch, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias, downsample=downsample))
 
         return nn.Sequential(*layers)
 
@@ -125,8 +92,14 @@ class msfe(nn.Module):
             x_main = x_in
 
         if self.scale == EZScale.COURSE:
+            x_cs = self.cs_layer_1(x_main)
+            x_cs = self.cs_layer_2(x_cs)
+            x_cs = self.cs_layer_3(x_cs)
+            x_out = x_cs
+        else:
+            x_out = x_in
 
-
+        return x_out
 
 
 if __name__ == "__main__":
