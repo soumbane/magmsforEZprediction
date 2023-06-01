@@ -52,6 +52,7 @@ class cs_block(nn.Module):
         self.conv2 = nn.Conv1d(out_ch, out_ch, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias)
         self.bn2 = nn.BatchNorm1d(out_ch)
         self.downsample = downsample
+        self.stride = stride
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         residual = x
