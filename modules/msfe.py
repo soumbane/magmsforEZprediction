@@ -44,22 +44,21 @@ class EZScale(Enum):
 class cs_block(nn.Module):
     expansion: int = 1
 
-    def __init__(self, inplanes7, planes, stride=1, downsample=None):
+    def __init__(self, in_ch: int, out_ch: int, kernel_size: int = 7, stride: int = 1, padding: int = 1, bias: bool = False, downsample=None) -> None:
         super(cs_block, self).__init__()
-        self.conv1 = nn.Conv1d(in_planes, out_planes, kernel_size=7, stride=stride, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm1d(planes)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv1d(in_planes, out_planes, kernel_size=7, stride=stride, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm1d(planes)
+        self.conv1 = nn.Conv1d(in_ch, out_ch, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias)
+        self.bn1 = nn.BatchNorm1d(out_ch)
+        self.lrelu = nn.LeakyReLU(inplace=True)
+        self.conv2 = nn.Conv1d(out_ch, out_ch, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias)
+        self.bn2 = nn.BatchNorm1d(out_ch)
         self.downsample = downsample
-        self.stride = stride
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         residual = x
 
         out = self.conv1(x)
         out = self.bn1(out)
-        out = self.relu(out)
+        out = self.lrelu(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
@@ -69,7 +68,7 @@ class cs_block(nn.Module):
 
         d = residual.shape[2] - out.shape[2]
         out1 = residual[:, :, 0:-d] + out
-        out1 = self.relu(out1)
+        out1 = self.lrelu(out1)
 
         return out1
 
@@ -116,7 +115,7 @@ class msfe(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x_in):
+    def forward(self, x_in: torch.Tensor) -> torch.Tensor:
         if self.main_downsample:
             x_main = self.conv1(x_in)
             x_main = self.bn1(x_main)
