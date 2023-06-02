@@ -1,7 +1,7 @@
 # Modality-Specific Feature Extractor (MSFE)
 import torch
 import torch.nn as nn
-from torchmanager_core.typing import Any, Enum, Tuple, Sequence
+from torchmanager_core.typing import Any, Enum, Sequence, Optional
 
 
 class EZScale(Enum):
@@ -11,7 +11,7 @@ class EZScale(Enum):
 
 class conv_block(nn.Module):
 
-    def __init__(self, in_ch: int, out_ch: int, kernel_size: int = 7, stride: int = 1, padding: int = 1, bias: bool = False, downsample=None) -> None:
+    def __init__(self, in_ch: int, out_ch: int, kernel_size: int = 7, stride: int = 1, padding: int = 1, bias: bool = False, downsample=None, scale: EZScale = EZScale.COURSE) -> None:
         super(conv_block, self).__init__()
         self.conv1 = nn.Conv1d(in_ch, out_ch, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias)
         self.bn1 = nn.BatchNorm1d(out_ch)
@@ -19,6 +19,7 @@ class conv_block(nn.Module):
         self.conv2 = nn.Conv1d(out_ch, out_ch, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias)
         self.bn2 = nn.BatchNorm1d(out_ch)
         self.downsample = downsample
+        self.scale = scale
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         residual = x
@@ -32,12 +33,18 @@ class conv_block(nn.Module):
 
         if self.downsample is not None:
             residual = self.downsample(x)
+        
+        if self.scale == EZScale.COURSE:
+            d = residual.shape[2] - out.shape[2]
+            out = residual[:, :, 0:-d] + out
+        elif self.scale == EZScale.FINE:
+            out += residual
+        else:
+            raise NotImplementedError
+        
+        out = self.lrelu(out)
 
-        d = residual.shape[2] - out.shape[2]
-        out1 = residual[:, :, 0:-d] + out
-        out1 = self.lrelu(out1)
-
-        return out1
+        return out
 
 
 class msfe(nn.Module):
@@ -48,28 +55,39 @@ class msfe(nn.Module):
     """
     scale: EZScale
 
-    def __init__(self, in_ch: int = 1, out_ch: int = 64, main_downsample: bool = True, scale: EZScale = EZScale.COURSE) -> None:
+    def __init__(self, in_ch: int = 1, out_main_ch: int = 32, filters: list[int] = [32,64,128], main_downsample: bool = True, scale: EZScale = EZScale.COURSE) -> None:
 
-        self.inplanes = 64
+        self.inplanes = 32
 
         super().__init__()
         self.in_ch = in_ch
-        self.out_ch = out_ch
+        self.out_main_ch = out_main_ch
         self.main_downsample = main_downsample
         self.scale = scale
 
         if self.main_downsample:
-            self.conv1 = nn.Conv1d(in_ch, out_ch, kernel_size=3, bias=False)
-            self.bn1 = nn.BatchNorm1d(out_ch)
+            self.conv1 = nn.Conv1d(in_ch, out_main_ch, kernel_size=3, bias=False)
+            self.bn1 = nn.BatchNorm1d(out_main_ch)
             self.lrelu = nn.LeakyReLU(inplace=True)
             self.maxpool = nn.MaxPool1d(kernel_size=3)
 
         if self.scale == EZScale.COURSE:
-            self.cs_layer_1 = self._cs_make_layer(conv_block, out_ch=64, kernel_size=7, padding=1, bias=False, stride=2)
-            self.cs_layer_2 = self._cs_make_layer(conv_block, out_ch=128, kernel_size=7, padding=1, bias=False, stride=2)
-            self.cs_layer_3 = self._cs_make_layer(conv_block, out_ch=256, kernel_size=7, padding=1, bias=False, stride=2)
+            self.cs_layers = []
+            for i in range(len(filters)):
+                self.cs_layers.append(self._make_conv_layer(conv_block, out_ch=filters[i], kernel_size=7, padding=1, bias=False, stride=1, scale=self.scale))
+            self.cs_layers_f = nn.Sequential(*self.cs_layers)
+    
+        elif self.scale == EZScale.FINE:
+            self.fs_layers = []
+            for i in range(len(filters)):
+                self.fs_layers.append(self._make_conv_layer(conv_block, out_ch=filters[i], kernel_size=3, padding=1, bias=False, stride=1, scale=self.scale))
+            self.fs_layers_f = nn.Sequential(*self.fs_layers)
 
-    def _cs_make_layer(self, conv_block, out_ch: int = 64, kernel_size: int = 7, padding: int = 1, bias: bool = False, stride: int = 2):
+        else:
+            raise NotImplementedError
+
+
+    def _make_conv_layer(self, conv_block, out_ch: int = 32, kernel_size: int = 7, padding: int = 1, bias: bool = False, stride: int = 2, scale: EZScale = EZScale.COURSE):
         downsample = None
         if stride != 1 or self.inplanes != out_ch:
             downsample = nn.Sequential(
@@ -78,7 +96,8 @@ class msfe(nn.Module):
             )
 
         layers = []
-        layers.append(conv_block(self.inplanes, out_ch, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias, downsample=downsample))
+        layers.append(conv_block(self.inplanes, out_ch, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias, downsample=downsample, scale=scale))
+        self.inplanes = out_ch
 
         return nn.Sequential(*layers)
 
@@ -92,12 +111,13 @@ class msfe(nn.Module):
             x_main = x_in
 
         if self.scale == EZScale.COURSE:
-            x_cs = self.cs_layer_1(x_main)
-            x_cs = self.cs_layer_2(x_cs)
-            x_cs = self.cs_layer_3(x_cs)
-            x_out = x_cs
+            x_out = self.cs_layers_f(x_main)
+
+        elif self.scale == EZScale.FINE:
+            x_out = self.fs_layers_f(x_main)
+
         else:
-            x_out = x_in
+            raise NotImplementedError
 
         return x_out
 
@@ -105,9 +125,8 @@ class msfe(nn.Module):
 if __name__ == "__main__":
 
     print("MSFE Module ...")
-    msfe_out = msfe(in_ch=1, out_ch=64, main_downsample=True,
-                    scale=EZScale.COURSE)
+    msfe_out = msfe(in_ch=1, out_main_ch=32, filters=[32,64,128], main_downsample=True, scale=EZScale.COURSE)
 
-    input_test = torch.randn(1, 1, 300)  # (b, 1, 300)
+    input_test = torch.randn(1, 1, 200)  # (b, 1, 200)
     out_test = msfe_out(input_test)
     print(out_test.shape)
