@@ -10,8 +10,20 @@ class EZScale(Enum):
 
 
 class conv_block(nn.Module):
+    r"""
+    Convolution block consisting of `1Dconv->BN->LReLU->1Dconv->BN->LReLU` with input residual connection added after the second batchnorm 
+    Args:
+        in_ch (int): The number of input channels 
+        out_ch (int): The number of output channels 
+        kernel_size (int): The kernel size of each 1D `conv` layer in either `course (kernel_size=7)` scale or `fine (kernel_size=3)` scale 
+        stride (int): The stride of the 1D conv kernel
+        padding (int): The padding of the 1D conv kernel
+        bias (bool): whether to add bias term
+        downsample (nn.Sequential): The downsample layers to add to the input residual connection to the output of conv blocks
+        scale (EZScale): The scale of the feature extractor, either `course` or `fine`. `course` indicates 1D convolution with higher receptive field and `fine` indicates 1D convolution with lower receptive field.
+    """
 
-    def __init__(self, in_ch: int, out_ch: int, kernel_size: int = 7, stride: int = 1, padding: int = 1, bias: bool = False, downsample=None, scale: EZScale = EZScale.COURSE) -> None:
+    def __init__(self, in_ch: int, out_ch: int, kernel_size: int = 7, stride: int = 1, padding: int = 1, bias: bool = False, downsample = None, scale: EZScale = EZScale.COURSE) -> None:
         super(conv_block, self).__init__()
         self.conv1 = nn.Conv1d(in_ch, out_ch, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias)
         self.bn1 = nn.BatchNorm1d(out_ch)
@@ -22,6 +34,10 @@ class conv_block(nn.Module):
         self.scale = scale
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        r"""
+        Args:
+            x: input of each module consisting of `1Dconv->BN->LReLU->1Dconv->BN->LReLU`
+        """
         residual = x
 
         out = self.conv1(x)
@@ -53,7 +69,7 @@ class msfe(nn.Module):
     Args:
         in_ch (int): The number of input channels to each `msfe` block
         out_main_ch (int): The number of output channels of the first main downsample layer of each `msfe` block. The first main downsample layer is applied before branching into `course` and `fine` scales
-        filters (list[int]): The output channels of each 1D `conv` layer in either `course` scale or `fine` scale of each `msfe` block 
+        filters (list[int]): The output channels of each 1D `conv` layer blocks in either `course` scale or `fine` scale of each `msfe` block. `len(filters)` indicate the number of `1D conv` blocks for each scale. 
         main_downsample (bool): whether to use the first main downsample layer before branching into `course` or `fine` scales
         scale (EZScale): The scale of the feature extractor, either `course` or `fine`. `course` indicates 1D convolution with higher receptive field and `fine` indicates 1D convolution with lower receptive field.
     """

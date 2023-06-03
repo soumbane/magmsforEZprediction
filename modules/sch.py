@@ -1,7 +1,6 @@
 # Shared Classification Head (SCH)
 import torch
 import torch.nn as nn
-from torchmanager_core.typing import Enum
 
 
 class sch(nn.Module):
