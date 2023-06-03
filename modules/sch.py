@@ -8,7 +8,8 @@ class sch(nn.Module):
     r"""
     Shared Classification Head
     Args:
-
+        mlp_features: input features for the fully connected layer - this is the concatenation of all the feature maps obtained from the `shfe` course and fine scale modules
+        num_classes: the final output number of classes of the MAG-MS model
     """
 
     def __init__(self, mlp_features: int = 256, num_classes: int = 2) -> None:
@@ -22,6 +23,11 @@ class sch(nn.Module):
 
 
     def forward(self, x_cs: torch.Tensor, x_fs:torch.Tensor) -> torch.Tensor:
+        r"""
+        Args:
+            x_cs: course scale input
+            x_fs: fine scale input
+        """
 
         x_cs_avg = self.adaptive_average_pool(x_cs)
 

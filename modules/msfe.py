@@ -49,10 +49,13 @@ class conv_block(nn.Module):
 
 class msfe(nn.Module):
     r"""
-    Modality-Specific Feature Extractor 
+    Modality-Specific Feature Extractor with both `course` and `fine` scales. `course` scale indicates 1D conv with kernel_size of 7 and `fine` scale indicates 1D conv with kernel_size of 3 
     Args:
-        scale (EZScale): The scale of the feature extractor, either `course` or `fine`. `course` indicates 1D convolution with 
-        higher receptive field and `fine` indicates 1D convolution with lower receptive field.
+        in_ch (int): The number of input channels to each `msfe` block
+        out_main_ch (int): The number of output channels of the first main downsample layer of each `msfe` block. The first main downsample layer is applied before branching into `course` and `fine` scales
+        filters (list[int]): The output channels of each 1D `conv` layer in either `course` scale or `fine` scale of each `msfe` block 
+        main_downsample (bool): whether to use the first main downsample layer before branching into `course` or `fine` scales
+        scale (EZScale): The scale of the feature extractor, either `course` or `fine`. `course` indicates 1D convolution with higher receptive field and `fine` indicates 1D convolution with lower receptive field.
     """
     scale: EZScale
 
@@ -104,6 +107,10 @@ class msfe(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x_in: torch.Tensor) -> torch.Tensor:
+        r"""
+        Args:
+            x_in: input of each `msfe` module
+        """
         if self.main_downsample:
             x_main = self.conv1(x_in)
             x_main = self.bn1(x_main)
