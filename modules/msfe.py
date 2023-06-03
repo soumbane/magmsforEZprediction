@@ -1,7 +1,7 @@
 # Modality-Specific Feature Extractor (MSFE)
 import torch
 import torch.nn as nn
-from torchmanager_core.typing import Any, Enum, Sequence, Optional
+from torchmanager_core.typing import Enum
 
 
 class EZScale(Enum):
@@ -49,27 +49,29 @@ class conv_block(nn.Module):
 
 class msfe(nn.Module):
     r"""
+    Modality-Specific Feature Extractor 
     Args:
         scale (EZScale): The scale of the feature extractor, either `course` or `fine`. `course` indicates 1D convolution with 
         higher receptive field and `fine` indicates 1D convolution with lower receptive field.
     """
     scale: EZScale
 
-    def __init__(self, in_ch: int = 1, out_main_ch: int = 32, filters: list[int] = [32,64,128], main_downsample: bool = True, scale: EZScale = EZScale.COURSE) -> None:
-
-        self.inplanes = 32
-
+    def __init__(self, in_ch: int = 1, out_main_ch: int = 32, filters: list[int] = [32,64,128], main_downsample: bool = False, scale: EZScale = EZScale.COURSE) -> None:
         super().__init__()
         self.in_ch = in_ch
         self.out_main_ch = out_main_ch
         self.main_downsample = main_downsample
         self.scale = scale
+        self.inplanes = self.out_main_ch
 
         if self.main_downsample:
-            self.conv1 = nn.Conv1d(in_ch, out_main_ch, kernel_size=3, bias=False)
+            self.conv1 = nn.Conv1d(in_ch, out_main_ch, kernel_size=3, stride=2, padding=2, bias=False)
             self.bn1 = nn.BatchNorm1d(out_main_ch)
             self.lrelu = nn.LeakyReLU(inplace=True)
-            self.maxpool = nn.MaxPool1d(kernel_size=3)
+            self.maxpool = nn.MaxPool1d(kernel_size=3, stride=1, padding=1)
+        else:
+            self.conv1 = nn.Conv1d(in_ch, out_main_ch, kernel_size=1, bias=False)
+            self.bn1 = nn.BatchNorm1d(out_main_ch)
 
         if self.scale == EZScale.COURSE:
             self.cs_layers = []
@@ -87,7 +89,7 @@ class msfe(nn.Module):
             raise NotImplementedError
 
 
-    def _make_conv_layer(self, conv_block, out_ch: int = 32, kernel_size: int = 7, padding: int = 1, bias: bool = False, stride: int = 2, scale: EZScale = EZScale.COURSE):
+    def _make_conv_layer(self, conv_block, out_ch: int = 32, kernel_size: int = 7, padding: int = 1, bias: bool = False, stride: int = 2, scale: EZScale = EZScale.COURSE) -> nn.Sequential:
         downsample = None
         if stride != 1 or self.inplanes != out_ch:
             downsample = nn.Sequential(
@@ -108,7 +110,8 @@ class msfe(nn.Module):
             x_main = self.lrelu(x_main)
             x_main = self.maxpool(x_main)
         else:
-            x_main = x_in
+            x_main = self.conv1(x_in)
+            x_main = self.bn1(x_main)
 
         if self.scale == EZScale.COURSE:
             x_out = self.cs_layers_f(x_main)
@@ -125,7 +128,7 @@ class msfe(nn.Module):
 if __name__ == "__main__":
 
     print("MSFE Module ...")
-    msfe_out = msfe(in_ch=1, out_main_ch=32, filters=[32,64,128], main_downsample=True, scale=EZScale.COURSE)
+    msfe_out = msfe(in_ch=1, out_main_ch=32, filters=[32,64,128], main_downsample=False, scale=EZScale.FINE)
 
     input_test = torch.randn(1, 1, 200)  # (b, 1, 200)
     out_test = msfe_out(input_test)

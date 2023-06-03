@@ -240,3 +240,14 @@ class MSResNet(nn.Module):
         out1 = self.fc(out)
 
         return out1, out
+
+
+if __name__ == "__main__":
+
+    print("MSFE Module ...")
+    msfe_out = MSResNet(input_channel=1, num_classes=2)
+
+    input_test = torch.randn(1, 1, 512)  # (b, 1, 200)
+    out_test = msfe_out(input_test)
+    print(out_test[0].shape)
+    print(out_test[1].shape)

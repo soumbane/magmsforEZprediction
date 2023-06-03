@@ -1,0 +1,45 @@
+# Shared Classification Head (SCH)
+import torch
+import torch.nn as nn
+from torchmanager_core.typing import Enum
+
+
+class sch(nn.Module):
+    r"""
+    Shared Classification Head
+    Args:
+
+    """
+
+    def __init__(self, mlp_features: int = 256, num_classes: int = 2) -> None:
+        super().__init__()
+
+        self.adaptive_average_pool = nn.AdaptiveAvgPool1d(1)
+
+        self.mlp = nn.Linear(mlp_features, num_classes)
+
+        self.softmax = nn.Softmax(dim=1)
+
+
+    def forward(self, x_cs: torch.Tensor, x_fs:torch.Tensor) -> torch.Tensor:
+
+        x_cs_avg = self.adaptive_average_pool(x_cs)
+
+        x_fs_avg = self.adaptive_average_pool(x_fs)
+
+        x_combined = torch.cat((x_cs_avg,x_fs_avg), dim=1).squeeze(dim=2)
+
+        x_final = self.mlp(x_combined)
+
+        return self.softmax(x_final)
+
+
+if __name__ == "__main__":
+
+    print("SCH Module ...")
+    sch_out = sch(mlp_features=256, num_classes=2)
+
+    input_test_fs = torch.randn(1, 128, 200)  # (b, 128, 200)
+    input_test_cs = torch.randn(1, 128, 176)  # (b, 128, 176)
+    out_test = sch_out(input_test_cs, input_test_fs)
+    print(out_test.shape)
