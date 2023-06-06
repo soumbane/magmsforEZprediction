@@ -125,7 +125,7 @@ class msfe(nn.Module):
     def forward(self, x_in: torch.Tensor) -> torch.Tensor:
         r"""
         Args:
-            x_in: input of each `msfe` module
+            x_in (1xN): input of each `msfe` module
         """
         if self.main_downsample:
             x_main = self.conv1(x_in)
