@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 
 
-class sch(nn.Module):
+class SCH(nn.Module):
     r"""
     Shared Classification Head
     Args:
@@ -21,12 +21,13 @@ class sch(nn.Module):
         self.softmax = nn.Softmax(dim=1)
 
 
-    def forward(self, x_cs: torch.Tensor, x_fs:torch.Tensor) -> torch.Tensor:
+    def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
         r"""
         Args:
             x_cs: course scale input
             x_fs: fine scale input
         """
+        x_cs, x_fs = x
 
         x_cs_avg = self.adaptive_average_pool(x_cs)
 
@@ -42,7 +43,7 @@ class sch(nn.Module):
 if __name__ == "__main__":
 
     print("SCH Module ...")
-    sch_out = sch(mlp_features=256, num_classes=2)
+    sch_out = SCH(mlp_features=256, num_classes=2)
 
     input_test_fs = torch.randn(1, 128, 200)  # (b, 128, 200)
     input_test_cs = torch.randn(1, 128, 176)  # (b, 128, 176)
