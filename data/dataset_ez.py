@@ -80,15 +80,6 @@ class DatasetEZ(Dataset):
         if (np.isnan(X_mat_RI).any()):  
             X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
 
-        """Split the RI matrix into T1w, T2w, FLAIR and DWI matrices"""
-        '''X_mat_T1 = X_mat_RI[:, :300]  # T1w matrix: 1x300        
-
-        X_mat_T2 = X_mat_RI[:, 300:500]  # T2w matrix: 1x200        
-
-        X_mat_FLAIR = X_mat_RI[:, 500:700]  # FLAIR matrix: 1x200        
-
-        X_mat_DWI = X_mat_RI[:, 700:1400] # DWI matrix: 1x700'''      
-
         """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
         X_mat_lconn = loadmat(raw_path_Conn)
         X_mat_DWIC = X_mat_lconn[self.Conn_mat_name]  # DWIC matrix: 1x499
@@ -111,13 +102,6 @@ class DatasetEZ(Dataset):
         Y_mat_aug = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
         Y_label: torch.Tensor = torch.from_numpy(Y_mat_aug).long() # for CrossEntropyLoss
 
-        # Randomly shuffle X_train and Y_train with the same seed
-        # np.random.seed(0)
-        # np.random.shuffle(X_mat_aug)
-
-        # np.random.seed(0)
-        # np.random.shuffle(Y_mat_aug) 
-
         return X_multi_modal, Y_label
 
     @property
@@ -136,14 +120,6 @@ class DatasetEZ(Dataset):
         """
         # Load the 1D vectors (images) and binary labels
         X_multi_modal, Y_label = self.load_data
-
-        '''X_mat_T1 = X_multi_modal[0][index]
-        X_mat_T2 = X_multi_modal[1][index]
-        X_mat_FLAIR = X_multi_modal[2][index]
-        X_mat_DWI = X_multi_modal[3][index]
-        X_mat_DWIC = X_multi_modal[4][index]
-
-        X_combined = [X_mat_T1, X_mat_T2, X_mat_FLAIR, X_mat_DWI, X_mat_DWIC]''' 
 
         return X_multi_modal[index], Y_label[index]
 
