@@ -147,6 +147,19 @@ class DatasetEZ(Dataset):
 
         return X_multi_modal[index], Y_label[index]
 
+    @staticmethod
+    def unpack_data(data: Any) -> tuple[list[torch.Tensor], torch.Tensor]:
+        # fetch input and label
+        x, y = super().unpack_data(data)
+
+        # unpack data (b, 1, 1899) -> [(b, 1, f), ...]
+        x_t1 = x[:, :, :300]
+        x_t2 = x[:, :, 300:500]
+        x_flair = x[:, :, 500:700]
+        x_dwi = x[:, :, 700:1400] 
+        x_dwic = x[:, :, 1400:]
+        return [x_t1, x_t2, x_flair, x_dwi, x_dwic], y
+
 
 if __name__ == "__main__":
 

@@ -1,7 +1,8 @@
 # Modality-Specific Feature Extractor (MSFE)
 import torch
 import torch.nn as nn
-from torchmanager_core.typing import Enum
+from enum import Enum
+from typing import Union
 
 
 class EZScale(Enum):
@@ -9,7 +10,7 @@ class EZScale(Enum):
     FINE = "fine"
 
 
-class conv_block(nn.Module):
+class ConvBlock(nn.Module):
     r"""
     Convolution block consisting of `1Dconv->BN->LReLU->1Dconv->BN->LReLU` with input residual connection added after the second batchnorm 
     Args:
@@ -24,7 +25,7 @@ class conv_block(nn.Module):
     """
 
     def __init__(self, in_ch: int, out_ch: int, kernel_size: int = 7, stride: int = 1, padding: int = 1, bias: bool = False, downsample = None, scale: EZScale = EZScale.COURSE) -> None:
-        super(conv_block, self).__init__()
+        super(ConvBlock, self).__init__()
         self.conv1 = nn.Conv1d(in_ch, out_ch, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias)
         self.bn1 = nn.BatchNorm1d(out_ch)
         self.lrelu = nn.LeakyReLU(inplace=True)
@@ -63,9 +64,9 @@ class conv_block(nn.Module):
         return out
 
 
-class msfe(nn.Module):
+class MSFEScale(nn.Module):
     r"""
-    Modality-Specific Feature Extractor with both `course` and `fine` scales. `course` scale indicates 1D conv with kernel_size of 7 and `fine` scale indicates 1D conv with kernel_size of 3 
+    Modality-Specific Feature Extractor with either `course` or `fine` scales. `course` scale indicates 1D conv with kernel_size of 7 and `fine` scale indicates 1D conv with kernel_size of 3 
     Args:
         in_ch (int): The number of input channels to each `msfe` block
         out_main_ch (int): The number of output channels of the first main downsample layer of each `msfe` block. The first main downsample layer is applied before branching into `course` and `fine` scales
@@ -95,13 +96,13 @@ class msfe(nn.Module):
         if self.scale == EZScale.COURSE:
             self.cs_layers = []
             for i in range(len(filters)):
-                self.cs_layers.append(self._make_conv_layer(conv_block, out_ch=filters[i], kernel_size=7, padding=1, bias=False, stride=1, scale=self.scale))
+                self.cs_layers.append(self._make_conv_layer(ConvBlock, out_ch=filters[i], kernel_size=7, padding=1, bias=False, stride=1, scale=self.scale))
             self.cs_layers_f = nn.Sequential(*self.cs_layers)
     
         elif self.scale == EZScale.FINE:
             self.fs_layers = []
             for i in range(len(filters)):
-                self.fs_layers.append(self._make_conv_layer(conv_block, out_ch=filters[i], kernel_size=3, padding=1, bias=False, stride=1, scale=self.scale))
+                self.fs_layers.append(self._make_conv_layer(ConvBlock, out_ch=filters[i], kernel_size=3, padding=1, bias=False, stride=1, scale=self.scale))
             self.fs_layers_f = nn.Sequential(*self.fs_layers)
 
         else:
@@ -148,10 +149,45 @@ class msfe(nn.Module):
         return x_out
 
 
+class MSFE(torch.nn.Module):
+    r"""
+    The main Modality-Specific Feature Extractor block with both `course` and `fine` scales. `course` scale indicates 1D conv with kernel_size of 7 and `fine` scale indicates 1D conv with kernel_size of 3
+    Args:
+        cs: The course scale of MSFE in `MSFEScale`
+        cs_conv: The modality attention `torch.nn.Conv1d` layer for course scale
+        fs: The fine scale of MSFE in `MSFEScale`
+        fs_conv: The modality attention `torch.nn.Conv1d` layer for fine scale
+    """
+    cs: MSFEScale
+    cs_conv: torch.nn.Conv1d
+    fs: MSFEScale
+    fs_conv: torch.nn.Conv1d
+
+    def __init__(self, in_ch: int = 1, out_main_ch: int = 32, filters: list[int] = [32,64,128], main_downsample: bool = False) -> None:
+        super().__init__()
+        self.cs = MSFEScale(in_ch, out_main_ch, filters=filters, main_downsample=main_downsample, scale=EZScale.COURSE)
+        self.cs_conv = torch.nn.Conv1d(filters[-1], filters[-1], kernel_size=1)
+        self.fs = MSFEScale(in_ch, out_main_ch, filters=filters, main_downsample=main_downsample, scale=EZScale.FINE)
+        self.fs_conv = torch.nn.Conv1d(filters[-1], filters[-1], kernel_size=1)
+
+    def forward(self, x: Union[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]) -> tuple[torch.Tensor, torch.Tensor]:
+        # unpack data
+        x_cs, x_fs = (x, x) if isinstance(x, torch.Tensor) else x
+
+        # course block
+        x_cs = self.cs(x_cs)
+        y_cs = self.cs_conv(x_cs)
+
+        # fine block
+        x_fs = self.fs(x_fs)
+        y_fs = self.fs_conv(x_fs)
+        return y_cs, y_fs
+
+
 if __name__ == "__main__":
 
     print("MSFE Module ...")
-    msfe_out = msfe(in_ch=1, out_main_ch=32, filters=[32,64,128], main_downsample=False, scale=EZScale.FINE)
+    msfe_out = MSFEScale(in_ch=1, out_main_ch=32, filters=[32,64,128], main_downsample=False, scale=EZScale.FINE)
 
     input_test = torch.randn(1, 1, 200)  # (b, 1, 200)
     out_test = msfe_out(input_test)
