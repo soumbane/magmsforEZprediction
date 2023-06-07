@@ -65,7 +65,7 @@ class DatasetEZ(Dataset):
             raise NotImplementedError("Select either train, validate or test mode.")
 
     @property
-    def load_data(self) -> Tuple[torch.Tensor, torch.Tensor]:                   
+    def data(self) -> Tuple[torch.Tensor, torch.Tensor]:                   
 
         raw_path_RI = os.path.join(self.root,self.path,self.RI_file)
         raw_path_Conn = os.path.join(self.root,self.path,self.Conn_file)
@@ -135,7 +135,7 @@ class DatasetEZ(Dataset):
         r"""Gets the data object at index.
         """
         # Load the 1D vectors (images) and binary labels
-        X_multi_modal, Y_label = self.load_data
+        X_multi_modal, Y_label = self.data
 
         '''X_mat_T1 = X_multi_modal[0][index]
         X_mat_T2 = X_multi_modal[1][index]
