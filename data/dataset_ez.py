@@ -24,9 +24,9 @@ class DatasetEZ(Dataset):
     """    
     root: str
     mode: EZMode
-    node_num: str
+    node_num: int
 
-    def __init__(self, batch_size: int, root: str, drop_last: bool = False, mode: EZMode = EZMode.TRAIN, shuffle: bool = False, node_num: str = "1") -> None:
+    def __init__(self, batch_size: int, root: str, drop_last: bool = False, mode: EZMode = EZMode.TRAIN, shuffle: bool = False, node_num: int = 1) -> None:
         super().__init__(batch_size, drop_last=drop_last, shuffle=shuffle)
         self.mode = mode
         self.root = root
@@ -36,27 +36,27 @@ class DatasetEZ(Dataset):
         # initialize path
         if self.mode == EZMode.TRAIN:
             self.path = os.path.join(self.root,'Train_NonEZvsEZ_ALL')
-            self.RI_file = "Train_NonEZvsEZ_RI_node" + self.node_num + "_ALL.mat"
-            self.Conn_file = "Train_NonEZvsEZ_Conn_node" + self.node_num + "_ALL.mat"
-            self.label_file = "Train_NonEZvsEZ_label_node" + self.node_num + "_ALL.mat"
+            self.RI_file = f"Train_NonEZvsEZ_RI_node{self.node_num}_ALL.mat"
+            self.Conn_file = f"Train_NonEZvsEZ_Conn_node{self.node_num}_ALL.mat"
+            self.label_file = f"Train_NonEZvsEZ_label_node{self.node_num}_ALL.mat"
             self.RI_mat_name = "Augmented_RI"
             self.Conn_mat_name = "Augmented_Conn"
             self.label_mat_name = "Augmented_label"
 
         elif self.mode == EZMode.VALIDATE:
             self.path = os.path.join(self.root,'Valid_NonEZvsEZ_ALL')
-            self.RI_file = "Valid_NonEZvsEZ_RI_node" + self.node_num + "_ALL.mat"
-            self.Conn_file = "Valid_NonEZvsEZ_Conn_node" + self.node_num + "_ALL.mat"
-            self.label_file = "Valid_NonEZvsEZ_label_node" + self.node_num + "_ALL.mat"
+            self.RI_file = f"Valid_NonEZvsEZ_RI_node{self.node_num}_ALL.mat"
+            self.Conn_file = f"Valid_NonEZvsEZ_Conn_node{self.node_num}_ALL.mat"
+            self.label_file = f"Valid_NonEZvsEZ_label_node{self.node_num}_ALL.mat"
             self.RI_mat_name = "ModelCohort_NonEZvsEZ_RI"
             self.Conn_mat_name = "ModelCohort_NonEZvsEZ_Conn"
             self.label_mat_name = "ModelCohort_NonEZvsEZ_label"
 
         elif self.mode == EZMode.TEST:
             self.path = os.path.join(self.root,'ValidCohort_NonEZvsEZ_ALL')
-            self.RI_file = "ValidCohort_NonEZvsEZ_RI_node" + self.node_num + "_ALL.mat"
-            self.Conn_file = "ValidCohort_NonEZvsEZ_Conn_node" + self.node_num + "_ALL.mat"
-            self.label_file = "ValidCohort_NonEZvsEZ_label_node" + self.node_num + "_ALL.mat"
+            self.RI_file = f"ValidCohort_NonEZvsEZ_RI_node{self.node_num}_ALL.mat"
+            self.Conn_file = f"ValidCohort_NonEZvsEZ_Conn_node{self.node_num}_ALL.mat"
+            self.label_file = f"ValidCohort_NonEZvsEZ_label_node{self.node_num}_ALL.mat"
             self.RI_mat_name = "ValidCohort_NonEZvsEZ_RI"
             self.Conn_mat_name = "ValidCohort_NonEZvsEZ_Conn"
             self.label_mat_name = "ValidCohort_NonEZvsEZ_label"
@@ -65,11 +65,11 @@ class DatasetEZ(Dataset):
             raise NotImplementedError("Select either train, validate or test mode.")
 
     @property
-    def data(self) -> Tuple[torch.Tensor, torch.Tensor]:                   
+    def data(self) -> Tuple[torch.Tensor, torch.Tensor]:
 
         raw_path_RI = os.path.join(self.root,self.path,self.RI_file)
         raw_path_Conn = os.path.join(self.root,self.path,self.Conn_file)
-        raw_path_label = os.path.join(self.root,self.path,self.label_file)        
+        raw_path_label = os.path.join(self.root,self.path,self.label_file)
 
         """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
         X_mat_l = loadmat(raw_path_RI)
@@ -81,28 +81,28 @@ class DatasetEZ(Dataset):
             X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
 
         """Split the RI matrix into T1w, T2w, FLAIR and DWI matrices"""
-        '''X_mat_T1 = X_mat_RI[:, :300]  # T1w matrix: 1x300        
+        '''X_mat_T1 = X_mat_RI[:, :300]  # T1w matrix: 1x300
 
-        X_mat_T2 = X_mat_RI[:, 300:500]  # T2w matrix: 1x200        
+        X_mat_T2 = X_mat_RI[:, 300:500]  # T2w matrix: 1x200
 
-        X_mat_FLAIR = X_mat_RI[:, 500:700]  # FLAIR matrix: 1x200        
+        X_mat_FLAIR = X_mat_RI[:, 500:700]  # FLAIR matrix: 1x200
 
-        X_mat_DWI = X_mat_RI[:, 700:1400] # DWI matrix: 1x700'''      
+        X_mat_DWI = X_mat_RI[:, 700:1400] # DWI matrix: 1x700'''
 
-        """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
+        """Load the Connectome Profile (DWIC) Matrix from .mat files."""
         X_mat_lconn = loadmat(raw_path_Conn)
         X_mat_DWIC = X_mat_lconn[self.Conn_mat_name]  # DWIC matrix: 1x499
         # print(f'DWIC Connectome profile matrix shape: {X_mat_DWIC.shape}')
                   
         # check for NaN values and replace NaN values with 0
-        if (np.isnan(X_mat_DWIC).any()): 
-            X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)  
+        if (np.isnan(X_mat_DWIC).any()):
+            X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)
 
         # X_combined = [X_mat_T1, X_mat_T2, X_mat_FLAIR, X_mat_DWI, X_mat_DWIC]
         X_combined = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
         # print(f'X_combined matrix shape: {X_combined.shape}')
 
-        X_multi_modal: torch.Tensor = torch.from_numpy(X_combined) 
+        X_multi_modal: torch.Tensor = torch.from_numpy(X_combined)
 
         """Load the Label Matrix from .mat files.""" 
         Y_mat_l = loadmat(raw_path_label)
@@ -143,7 +143,7 @@ class DatasetEZ(Dataset):
         X_mat_DWI = X_multi_modal[3][index]
         X_mat_DWIC = X_multi_modal[4][index]
 
-        X_combined = [X_mat_T1, X_mat_T2, X_mat_FLAIR, X_mat_DWI, X_mat_DWIC]''' 
+        X_combined = [X_mat_T1, X_mat_T2, X_mat_FLAIR, X_mat_DWI, X_mat_DWIC]'''
 
         return X_multi_modal[index], Y_label[index]
 
