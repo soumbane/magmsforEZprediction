@@ -1,0 +1,1 @@
+python train.py ~/Public/share/Data/EZ_Pred_Dataset/All_Hemispheres/ ~/Documents/Model/ezpred/test.model -node 948 --seed 100 -exp test.exp --replace_experiment --show_verbose --device cuda:1

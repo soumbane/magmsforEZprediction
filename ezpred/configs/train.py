@@ -1,6 +1,6 @@
-from typing import Union
-import argparse, os, torch, torchmanager
+import argparse, magnet, os, torch, torchmanager
 from torchmanager_core import view
+from typing import Optional, Union
 
 from ezpred import DESCRIPTION
 from .basic import Configs as _Configs
@@ -23,6 +23,7 @@ class Configs(_Configs):
     epochs: int
     node_num: int
     output_model: str
+    seed: Optional[int]
     show_verbose: bool
     use_multi_gpus: bool
 
@@ -38,7 +39,10 @@ class Configs(_Configs):
         # check format
         assert self.batch_size > 0, f"Batch size must be a positive number, got {self.batch_size}."
         assert self.epochs > 0, f"Number of epochs must be a positive number, got {self.epochs}."
-        assert self.node_num in range(1, 988), f"Node number must be in range of [1, 988), got {self.node_num}."
+        assert self.node_num in range(1, 999), f"Node number must be in range of [1, 998], got {self.node_num}."
+        if self.seed is not None:
+            assert torchmanager.version >= "v1.2", f"Torchmanager version 1.2 required to freeze seed, {torchmanager.version} installed."
+            assert self.seed >= 0, f"Seed must be a non-negative number, got {self.seed}."
 
     @staticmethod
     def get_arguments(parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup] = argparse.ArgumentParser()) -> Union[argparse.ArgumentParser, argparse._ArgumentGroup]:
@@ -51,6 +55,7 @@ class Configs(_Configs):
         training_args = parser.add_argument_group("Training arguments")
         training_args.add_argument("-e", "--epochs", type=int, default=100, help="The number of training epochs, default is 100.")
         training_args.add_argument("-b", "--batch_size", type=int, default=1, help="The number of batch size, default is 1.")
+        training_args.add_argument("--seed", type=int, default=None, help="The random seed for training (torchmanager 1.2 required if given), default is `None`.")
         training_args.add_argument("--show_verbose", action="store_true", default=False, help="The flag to show probress bar during training.")
         _Configs.get_arguments(training_args)
 
@@ -62,10 +67,10 @@ class Configs(_Configs):
 
     def show_environments(self, description: str = DESCRIPTION) -> None:
         super().show_environments(description)
-        view.logger.info(f"torchmanager={torchmanager.version}")
+        view.logger.info(f"torchmanager={torchmanager.version}, magnet={magnet.VERSION}")
 
     def show_settings(self) -> None:
-        view.logger.info(f"Dataset: data_dir={self.data_dir}")
+        view.logger.info(f"Dataset: data_dir={self.data_dir}, node={self.node_num}")
         view.logger.info(f"Output: output_model={self.output_model}")
-        view.logger.info(f"Training: epochs={self.epochs}, batch_size={self.batch_size}, show_verbose={self.show_verbose}")
+        view.logger.info(f"Training: epochs={self.epochs}, batch_size={self.batch_size}, seed={self.seed}, show_verbose={self.show_verbose}")
         view.logger.info(f"Device: device={self.device}, use_multi_gpus={self.use_multi_gpus}")
