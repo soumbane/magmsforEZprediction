@@ -55,8 +55,15 @@ class Configs(argparse.Namespace, abc.ABC):
         os.makedirs(log_dir, exist_ok=True)
         log_file = os.path.basename(configs.experiment.replace(".exp", ".log"))
         log_path = os.path.join(log_dir, log_file)
-        _set_log_path(log_path)
+        formatter = _set_log_path(log_path)
         configs.format_arguments()
+
+        # initialize console
+        if configs.show_verbose:
+            console = view.logging.StreamHandler()
+            console.setLevel(view.logging.INFO)
+            console.setFormatter(formatter)
+            view.logger.addHandler(console)
 
         # show configs summarize
         view.logger.info("-----------Settings------------")

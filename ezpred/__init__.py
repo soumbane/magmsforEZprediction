@@ -1,5 +1,6 @@
-from . import nn
+from . import metrics, nn
 from .builder import build
+from .managers import Manager
 
 
 API = "v0.1"

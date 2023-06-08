@@ -4,7 +4,8 @@ import numpy as np
 from scipy.io import loadmat
 
 import torch
-from torchmanager_core.typing import Any, Enum, Tuple, Sequence
+from torch.nn import functional as F
+from torchmanager_core.typing import Any, Enum, Tuple
 from torchmanager.data import Dataset
 
 
@@ -100,7 +101,7 @@ class DatasetEZ(Dataset):
         Y_mat_aug = Y_mat_l[self.label_mat_name]
         # print(f'GT-Labels shape:{Y_mat_aug.shape}')
         Y_mat_aug = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
-        Y_label: torch.Tensor = torch.from_numpy(Y_mat_aug).long() # for CrossEntropyLoss
+        Y_label: torch.Tensor = torch.from_numpy(Y_mat_aug) # for CrossEntropyLoss
 
         return X_multi_modal, Y_label
 
@@ -112,7 +113,7 @@ class DatasetEZ(Dataset):
         Y_mat_l = loadmat(raw_path_label)
         Y_mat_aug = Y_mat_l[self.label_mat_name]
         Y_mat_aug = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
-        Y_label: torch.Tensor = torch.from_numpy(Y_mat_aug).long() # for CrossEntropyLoss
+        Y_label: torch.Tensor = torch.from_numpy(Y_mat_aug) # for CrossEntropyLoss
         return len(Y_label)
 
     def __getitem__(self, index: Any) -> Any:
@@ -120,21 +121,25 @@ class DatasetEZ(Dataset):
         """
         # Load the 1D vectors (images) and binary labels
         X_multi_modal, Y_label = self.data
-
+        X_multi_modal = X_multi_modal.float()
         return X_multi_modal[index], Y_label[index]
 
     @staticmethod
-    def unpack_data(data: Any) -> tuple[list[torch.Tensor], torch.Tensor]:
+    def unpack_data(data: Any) -> dict[str, Any]:
         # fetch input and label
-        x, y = super().unpack_data(data)
+        x, y = Dataset.unpack_data(data)
+        assert isinstance(x, torch.Tensor) and isinstance(y, torch.Tensor), "Data should be valid `torch.Tensor`."
 
-        # unpack data (b, 1, 1899) -> [(b, 1, f), ...]
-        x_t1 = x[:, :, :300]
-        x_t2 = x[:, :, 300:500]
-        x_flair = x[:, :, 500:700]
-        x_dwi = x[:, :, 700:1400] 
-        x_dwic = x[:, :, 1400:]
-        return [x_t1, x_t2, x_flair, x_dwi, x_dwic], y
+        # unpack data (b, 1899) -> [(b, m, f), ...]
+        x_t1 = F.pad(x[:, :300], (0, 400)).unsqueeze(1)
+        x_t2 = F.pad(x[:, 300:500], (0, 500)).unsqueeze(1)
+        x_flair = F.pad(x[:, 500:700], (0, 500)).unsqueeze(1)
+        x_dwi = x[:, 700:1400].unsqueeze(1)
+        x_dwic = F.pad(x[:, 1400:], (0, 201)).unsqueeze(1)
+        return {
+            "image": torch.cat([x_t1, x_t2, x_flair, x_dwi, x_dwic], dim=1),
+            "label": y,
+        }
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # Shared Feature Extractor (SHFE)
 import torch
-from msfe import MSFEScale, EZScale
+from .msfe import MSFEScale, EZScale
 
 SHFEScale = MSFEScale # shfe is alias of msfe
 

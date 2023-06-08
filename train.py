@@ -22,24 +22,24 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
 
     # load optimizer, loss, and metrics
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-5, weight_decay=5e-4)
-    main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(5)]
-    kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv() for _ in range(5)]
+    main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(6)]
+    kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3) for _ in range(5)]
     mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE() for _ in range(5)]
-    magms_loss = magnet.losses.MAGMSLoss(main_losses, kldiv_losses, mse_losses)
+    magms_loss = magnet.losses.MAGMSLoss(main_losses, distillation_loss=kldiv_losses, feature_losses=mse_losses)
     metric_fns: dict[str, tm.metrics.Metric] = {
-        "accuracy": tm.metrics.SparseCategoricalAccuracy(),
-        "bal_accuracy": tm.metrics.Metric(lambda input, target: torch.tensor(balanced_accuracy_score(target, input)))
+        "val_accuracy": tm.metrics.SparseCategoricalAccuracy(),
+        "val_bal_accuracy": ezpred.metrics.BalancedAccuracyScore()
     }
 
     # compile manager
-    manager = magnet.Manager(model, optimizer=optimizer, loss_fn=magms_loss, metrics=metric_fns)
+    manager = ezpred.Manager(model, optimizer=optimizer, loss_fn=magms_loss, metrics=metric_fns)
 
     # initialize callbacks
     experiment_callback = tm.callbacks.Experiment(cfg.experiment, manager, monitors=["accuracy", "bal_accuracy"])
     early_stop = tm.callbacks.EarlyStop("bal_accuracy", steps=20)
 
     # train
-    model = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=validation_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=[experiment_callback, early_stop])
+    model = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=validation_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=[experiment_callback, early_stop], show_verbose=configs.show_verbose)
 
     # test
     summary = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)

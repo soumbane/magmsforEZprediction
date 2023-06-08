@@ -41,7 +41,7 @@ class Configs(_Configs):
         assert self.epochs > 0, f"Number of epochs must be a positive number, got {self.epochs}."
         assert self.node_num in range(1, 999), f"Node number must be in range of [1, 998], got {self.node_num}."
         if self.seed is not None:
-            assert torchmanager.version >= "v1.2", f"Torchmanager version 1.2 required to freeze seed, {torchmanager.version} installed."
+            assert torchmanager.version > "v1.1", f"Torchmanager version 1.2 required to freeze seed, {torchmanager.version} installed."
             assert self.seed >= 0, f"Seed must be a non-negative number, got {self.seed}."
 
     @staticmethod

@@ -4,7 +4,7 @@ from magnet import nn, MAGNET2
 from .nn import MSFE, SHFE, SCH
 
 
-def build(in_ch: int, num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool = False, *, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128,256], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,256,512], mlp_features: int = 256) -> MAGNET2[MSFE]:
+def build(in_ch: int, num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool = False, *, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,256,512]) -> MAGNET2[MSFE]:
     r"""
     Build `magnet.MAGNET2` for EzPred
     Args:
@@ -34,7 +34,7 @@ def build(in_ch: int, num_classes: int = 2, /, out_main_ch: int = 32, main_downs
     shfe = SHFE(in_ch=128, out_main_ch=128, filters=filters_shfe, main_downsample=False)
 
     # SCH for all modalities
-    sch = SCH(mlp_features=mlp_features, num_classes=num_classes)
+    sch = SCH(mlp_features=filters_shfe[-1] * 2, num_classes=num_classes)
 
     # build magnet
     target_dict = {
@@ -44,7 +44,7 @@ def build(in_ch: int, num_classes: int = 2, /, out_main_ch: int = 32, main_downs
         3: "DWI",
         4: "DWIC",
     }
-    magnet = MAGNET2(msfe_T1, msfe_T2, msfe_FLAIR, msfe_DWI, msfe_DWIC, fusion=fuse, decoder=torch.nn.Sequential(shfe, sch), target_dict=target_dict)
+    magnet = MAGNET2(msfe_T1, msfe_T2, msfe_FLAIR, msfe_DWI, msfe_DWIC, fusion=fuse, decoder=torch.nn.Sequential(shfe, sch), target_dict=target_dict, return_features=True)
 
     # build losses
     return magnet
