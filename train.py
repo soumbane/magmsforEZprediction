@@ -1,6 +1,5 @@
 import magnet, torch, torchmanager as tm
 from torchmanager_core import view
-from sklearn.metrics import balanced_accuracy_score
 
 import data, ezpred
 from ezpred.configs import TrainingConfigs
