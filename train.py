@@ -7,11 +7,10 @@ from ezpred.configs import TrainingConfigs
 
 
 def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
-    # initialize seed
+    # initialize seed for reproducibility
     if cfg.seed is not None:
         from torchmanager_core import random
         random.freeze_seed(cfg.seed)
-        # torch.use_deterministic_algorithms(True)
         cudnn.benchmark = False 
         cudnn.deterministic = True  
 
