@@ -11,7 +11,7 @@ class ConfusionMetrics(_ConfMet):
     @property
     def results(self) -> Optional[torch.Tensor]:
         r = super().results
-        return r[-1] if r is not None else r
+        return r.sum(0) if r is not None else r
     
     def __call__(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         input = input.softmax(1) # (b, c) -> (b)

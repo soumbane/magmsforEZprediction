@@ -23,7 +23,8 @@ def test(cfg: TestingConfigs, /) -> dict[str, float]:
 
     # test checkpoint
     summary: dict[str, Any] = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
-    summary.update({"conf_met": conf_met_fn.results})
+    if conf_met_fn.results is not None:
+        summary.update({"conf_met": conf_met_fn.results})
     view.logger.info(summary)
     return summary
 
