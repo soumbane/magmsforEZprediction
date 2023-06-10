@@ -11,6 +11,7 @@ class Configs(_Configs):
     The training configurations
     Args:
         batch_size (int): The number of batch size.
+        learning_rate (float): The learning rate for training
         data_dir (str): The root directory of the dataset.
         device (torch.device): The target device to run training.
         epochs (int): The number of training epochs.
@@ -21,6 +22,7 @@ class Configs(_Configs):
     data_dir: str
     device: torch.device
     epochs: int
+    learning_rate: float
     node_num: int
     output_model: str
     seed: Optional[int]
@@ -38,6 +40,7 @@ class Configs(_Configs):
 
         # check format
         assert self.batch_size > 0, f"Batch size must be a positive number, got {self.batch_size}."
+        assert self.learning_rate > 0, f"Learning rate must be positive, got {self.learning_rate}."
         assert self.epochs > 0, f"Number of epochs must be a positive number, got {self.epochs}."
         assert self.node_num in range(1, 999), f"Node number must be in range of [1, 998], got {self.node_num}."
         if self.seed is not None:
@@ -55,6 +58,7 @@ class Configs(_Configs):
         training_args = parser.add_argument_group("Training arguments")
         training_args.add_argument("-e", "--epochs", type=int, default=100, help="The number of training epochs, default is 100.")
         training_args.add_argument("-b", "--batch_size", type=int, default=1, help="The number of batch size, default is 1.")
+        training_args.add_argument("-lr", "--learning_rate", type=float, default=5e-5, help="Learning rate, default is 5e-5.")
         training_args.add_argument("--seed", type=int, default=None, help="The random seed for training (torchmanager 1.2 required if given), default is `None`.")
         training_args.add_argument("--show_verbose", action="store_true", default=False, help="The flag to show probress bar during training.")
         _Configs.get_arguments(training_args)
@@ -72,5 +76,5 @@ class Configs(_Configs):
     def show_settings(self) -> None:
         view.logger.info(f"Dataset: data_dir={self.data_dir}, node={self.node_num}")
         view.logger.info(f"Output: output_model={self.output_model}")
-        view.logger.info(f"Training: epochs={self.epochs}, batch_size={self.batch_size}, seed={self.seed}, show_verbose={self.show_verbose}")
+        view.logger.info(f"Training: epochs={self.epochs}, batch_size={self.batch_size}, learning_rate={self.learning_rate}, seed={self.seed}, show_verbose={self.show_verbose}")
         view.logger.info(f"Device: device={self.device}, use_multi_gpus={self.use_multi_gpus}")

@@ -23,7 +23,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     model = ezpred.build(1, 2)
 
     # load optimizer, loss, and metrics
-    optimizer = torch.optim.Adam(model.parameters(), lr=5e-5, weight_decay=5e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
     main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(6)]
     kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean') for _ in range(5)]
     mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE() for _ in range(5)]
@@ -39,10 +39,10 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
 
     # initialize callbacks
     experiment_callback = tm.callbacks.Experiment(cfg.experiment, manager, monitors=["accuracy", "bal_accuracy"])
-    early_stop = tm.callbacks.EarlyStop("bal_accuracy", steps=20)
+    # early_stop = tm.callbacks.EarlyStop("bal_accuracy", steps=20)
 
     # train
-    model = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=validation_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=[experiment_callback, early_stop], show_verbose=configs.show_verbose)
+    model = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=validation_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=[experiment_callback], show_verbose=configs.show_verbose)
 
     # test
     summary = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
