@@ -57,13 +57,12 @@ def test(cfg: TestingConfigs, /) -> dict[str, float]:
         raise NotImplementedError(f"Checkpoint {cfg.model} is currently not supported.")
     
     # set up confusion metrics
+    bal_acc_fn = metrics.BalancedAccuracyScore()
     conf_met_fn = metrics.ConfusionMetrics(2)
     manager.metric_fns.update({
-        # "val_bal_accuracy": bal_acc_fn,
+        "val_bal_accuracy": bal_acc_fn,
         "conf_met": conf_met_fn
         })
-
-    # manager.metric_fns["val_bal_accuracy"]._eps = 0
 
     # test checkpoint
     summary: dict[str, Any] = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
