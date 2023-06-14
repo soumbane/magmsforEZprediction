@@ -20,7 +20,7 @@ class BalancedAccuracyScore(BinaryConfusionMetric):
 
     def __init__(self, dim: int = -1, *, eps: float = 1e-7, target: Optional[str] = None):
         super().__init__(dim, eps=eps, target=target)
-        self.conf_met = torch.zeros((2,2))
+        self.conf_met = torch.nn.Parameter(torch.zeros((2,2)))
 
     def forward_metric(self, tp: torch.Tensor, tn: torch.Tensor, fp: torch.Tensor, fn: torch.Tensor) -> torch.Tensor:
         self.conf_met[0, 0] += tp
@@ -35,3 +35,7 @@ class BalancedAccuracyScore(BinaryConfusionMetric):
         # Calculate balanced accuracy score
         balanced_acc = 0.5 * (sensitivity + specificity).mean()
         return balanced_acc
+
+    def reset(self) -> None:
+        self.conf_met = torch.nn.Parameter(torch.zeros((2,2)))
+        return super().reset()
