@@ -1,1 +1,1 @@
-python eval.py /home/share/Data/EZ_Pred_Dataset/All_Hemispheres/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/experiments/test_948.exp/checkpoints/best_bal_accuracy.model -node 948 -b 4 --replace_experiment --show_verbose --device cuda:1
+python eval.py /home/share/Data/EZ_Pred_Dataset/All_Hemispheres/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/experiments/test_948.exp/checkpoints/last.model -node 948 -b 8 --replace_experiment --show_verbose --device cuda:1

@@ -1,1 +1,1 @@
-python train.py /home/share/Data/EZ_Pred_Dataset/All_Hemispheres/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/trained_models/test_948.model -node 948 -b 64 -e 100 --seed 500 -exp test_948.exp --replace_experiment --show_verbose --device cuda:1
+python train.py /home/share/Data/EZ_Pred_Dataset/All_Hemispheres/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/trained_models/test_948.model -node 948 -b 16 -lr 1e-2 -e 20 --seed 518 -exp test_948.exp --replace_experiment --show_verbose --device cuda:1
