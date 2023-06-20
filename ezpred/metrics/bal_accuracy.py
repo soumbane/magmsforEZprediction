@@ -37,3 +37,7 @@ class BalancedAccuracyScore(BinaryConfusionMetric):
         self.conf_met[1, 0] += fp
         self.conf_met[1, 1] += tn
         return self.calculate_bal_acc(tp, tn, fp, fn)
+
+    def reset(self) -> None:
+        self.conf_met *= 0
+        return super().reset()
