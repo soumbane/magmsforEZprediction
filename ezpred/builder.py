@@ -1,10 +1,11 @@
 import torch
-from magnet import nn, MAGNET2
+from magnet import MAGNET2
 
 from .nn import MSFE, SHFE, SCH
+from .nn.fusion import FusionType
 
 
-def build(in_ch: int, num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool = False, *, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,256,512]) -> MAGNET2[MSFE]:
+def build(in_ch: int, num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool = False, *, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,256,512], fusion: FusionType = FusionType.MID_MEAN) -> MAGNET2[MSFE]:
     r"""
     Build `magnet.MAGNET2` for EzPred
     Args:
@@ -18,7 +19,7 @@ def build(in_ch: int, num_classes: int = 2, /, out_main_ch: int = 32, main_downs
         filters_dwi (list[int]): The output channels of each 1D `conv` layer blocks in either `course` scale or `fine` scale of each `msfe` block for DWI modality. `len(filters)` indicate the number of `1D conv` blocks for each scale.
         filters_dwic (list[int]): The output channels of each 1D `conv` layer blocks in either `course` scale or `fine` scale of each `msfe` block for DWIC modality. `len(filters)` indicate the number of `1D conv` blocks for each scale.
         filters_shfe (list[int]): The output channels of each 1D `conv` layer blocks in either `course` scale or `fine` scale of each `shfe` block for DWIC modality. `len(filters)` indicate the number of `1D conv` blocks for each scale.
-        mlp_features (int): The number of features for MLP layers.
+        fusion (FusionType): The type of fusion block to fuse the multi-modality features.
     """
     # MSFE for each modalities
     msfe_T1 = MSFE(in_ch=in_ch, out_main_ch=out_main_ch, filters=filters_t1, main_downsample=main_downsample)
@@ -28,7 +29,7 @@ def build(in_ch: int, num_classes: int = 2, /, out_main_ch: int = 32, main_downs
     msfe_DWIC = MSFE(in_ch=in_ch, out_main_ch=out_main_ch, filters=filters_dwic, main_downsample=main_downsample)
 
     # fusion module
-    fuse = nn.fusion.MidFusion()
+    fuse = fusion.load()
 
     # SHFE for all modalities
     shfe = SHFE(in_ch=128, out_main_ch=128, filters=filters_shfe, main_downsample=False)

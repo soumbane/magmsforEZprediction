@@ -1,8 +1,8 @@
 from magnet import Manager as _Manager
-from torchmanager_core.typing import Any, Module
+from torchmanager_core import deprecated
+from torchmanager_core.typing import Module
 
 
+@deprecated('v0.2', 'v1.0')
 class Manager(_Manager[Module]):
-    def unpack_data(self, data: dict[str, Any]) -> tuple[Any, Any]:
-        image, label = data["image"], data["label"]
-        return image, label
+    pass
