@@ -35,7 +35,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     }
 
     # compile manager
-    manager = ezpred.Manager(model, optimizer=optimizer, loss_fn=magms_loss, metrics=metric_fns)
+    manager = magnet.Manager(model, optimizer=optimizer, loss_fn=magms_loss, metrics=metric_fns)
 
     # initialize callbacks
     experiment_callback = tm.callbacks.Experiment(cfg.experiment, manager, monitors=["accuracy", "bal_accuracy"])
