@@ -2,7 +2,9 @@
 import torch
 import torch.nn as nn
 from enum import Enum
-from typing import Union
+from typing import Optional, Union
+
+from .pad import PaddingLast1D
 
 
 class EZScale(Enum):
@@ -160,15 +162,19 @@ class MSFE(torch.nn.Module):
     """
     cs: MSFEScale
     cs_conv: torch.nn.Conv1d
+    cs_padding: Union[PaddingLast1D, torch.nn.Identity]
     fs: MSFEScale
     fs_conv: torch.nn.Conv1d
+    fs_padding: Union[PaddingLast1D, torch.nn.Identity]
 
-    def __init__(self, in_ch: int = 1, out_main_ch: int = 32, filters: list[int] = [32,64,128], main_downsample: bool = False) -> None:
+    def __init__(self, in_ch: int = 1, out_main_ch: int = 32, filters: list[int] = [32,64,128], main_downsample: bool = False, *, padding: Optional[int] = None) -> None:
         super().__init__()
         self.cs = MSFEScale(in_ch, out_main_ch, filters=filters, main_downsample=main_downsample, scale=EZScale.COURSE)
         self.cs_conv = torch.nn.Conv1d(filters[-1], filters[-1], kernel_size=1)
+        self.cs_padding = PaddingLast1D(padding) if padding is not None else torch.nn.Identity()
         self.fs = MSFEScale(in_ch, out_main_ch, filters=filters, main_downsample=main_downsample, scale=EZScale.FINE)
         self.fs_conv = torch.nn.Conv1d(filters[-1], filters[-1], kernel_size=1)
+        self.fs_padding = PaddingLast1D(padding) if padding is not None else torch.nn.Identity()
 
     def forward(self, x: Union[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]) -> tuple[torch.Tensor, torch.Tensor]:
         # unpack data
@@ -176,11 +182,13 @@ class MSFE(torch.nn.Module):
 
         # course block
         x_cs = self.cs(x_cs)
-        y_cs = self.cs_conv(x_cs)
+        x_cs = self.cs_conv(x_cs)
+        y_cs = self.cs_padding(x_cs)
 
         # fine block
         x_fs = self.fs(x_fs)
-        y_fs = self.fs_conv(x_fs)
+        x_fs = self.fs_conv(x_fs)
+        y_fs = self.fs_padding(x_fs)
         return y_cs, y_fs
 
 
