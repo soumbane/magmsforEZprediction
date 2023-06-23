@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "magms-ezpred"
-version = "0.1a4"
-description = "MAG-MS for EZ Prediction (Alpha 4)"
+version = "0.1a3"
+description = "MAG-MS for EZ Prediction (Alpha 3)"
 authors = ["Qisheng He <Qisheng.He@wayne.edu>","Soumyanil Banerjee <s.banerjee@wayne.edu>"]
 packages = [
     { include = "ezpred" }
