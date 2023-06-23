@@ -131,11 +131,11 @@ class DatasetEZ(Dataset):
         assert isinstance(x, torch.Tensor) and isinstance(y, torch.Tensor), "Data should be valid `torch.Tensor`."
 
         # unpack data (b, 1899) -> [(b, m, f), ...]
-        x_t1 = F.pad(x[:, :300], (0, 400)).unsqueeze(1)
-        x_t2 = F.pad(x[:, 300:500], (0, 500)).unsqueeze(1)
-        x_flair = F.pad(x[:, 500:700], (0, 500)).unsqueeze(1)
+        x_t1 = x[:, :300].unsqueeze(1)
+        x_t2 = x[:, 300:500].unsqueeze(1)
+        x_flair = x[:, 500:700].unsqueeze(1)
         x_dwi = x[:, 700:1400].unsqueeze(1)
-        x_dwic = F.pad(x[:, 1400:], (0, 201)).unsqueeze(1)
+        x_dwic = x[:, 1400:].unsqueeze(1)
         return torch.cat([x_t1, x_t2, x_flair, x_dwi, x_dwic], dim=1), y
 
 
