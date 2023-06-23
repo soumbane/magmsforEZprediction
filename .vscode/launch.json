@@ -21,7 +21,7 @@
                 "-exp", "test.exp",
                 "--replace_experiment",
                 "--show_verbose",
-                "--device", "cuda:1",
+                "--device", "cuda:0",
             ]
         },
         {
