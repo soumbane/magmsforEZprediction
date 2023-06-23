@@ -125,18 +125,18 @@ class DatasetEZ(Dataset):
         return X_multi_modal[index], Y_label[index]
 
     @staticmethod
-    def unpack_data(data: Any) -> tuple[torch.Tensor, torch.Tensor]:
+    def unpack_data(data: Any) -> tuple[list[torch.Tensor], torch.Tensor]:
         # fetch input and label
         x, y = Dataset.unpack_data(data)
         assert isinstance(x, torch.Tensor) and isinstance(y, torch.Tensor), "Data should be valid `torch.Tensor`."
 
         # unpack data (b, 1899) -> [(b, m, f), ...]
-        x_t1 = F.pad(x[:, :300], (0, 400)).unsqueeze(1)
-        x_t2 = F.pad(x[:, 300:500], (0, 500)).unsqueeze(1)
-        x_flair = F.pad(x[:, 500:700], (0, 500)).unsqueeze(1)
-        x_dwi = x[:, 700:1400].unsqueeze(1)
-        x_dwic = F.pad(x[:, 1400:], (0, 201)).unsqueeze(1)
-        return torch.cat([x_t1, x_t2, x_flair, x_dwi, x_dwic], dim=1), y
+        x_t1 = x[:, :300]
+        x_t2 = x[:, 300:500]
+        x_flair = x[:, 500:700]
+        x_dwi = x[:, 700:1400]
+        x_dwic = x[:, 1400:]
+        return [x_t1, x_t2, x_flair, x_dwi, x_dwic], y
 
 
 if __name__ == "__main__":
