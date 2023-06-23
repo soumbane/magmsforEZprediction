@@ -5,10 +5,11 @@ from .nn import MSFE, SHFE, SCH
 from .nn.fusion import FusionType
 
 
-def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool = False, *, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,256,512], fusion: FusionType = FusionType.MID_MEAN) -> MAGNET2[MSFE]:
+def build(in_ch: int, num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool = False, *, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,256,512], fusion: FusionType = FusionType.MID_MEAN) -> MAGNET2[MSFE]:
     r"""
     Build `magnet.MAGNET2` for EzPred
     Args:
+        in_ch (int): The number of input channels
         num_classes (int): The number of output classes
         out_main_ch (int): The number of main feature channels
         main_downsample (bool): whether to use the first main downsample layer before branching into `course` or `fine` scales
@@ -21,11 +22,11 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
         fusion (FusionType): The type of fusion block to fuse the multi-modality features.
     """
     # MSFE for each modalities
-    msfe_T1 = MSFE(in_ch=300, out_main_ch=out_main_ch, filters=filters_t1, main_downsample=main_downsample)
-    msfe_T2 = MSFE(in_ch=200, out_main_ch=out_main_ch, filters=filters_t2, main_downsample=main_downsample)
-    msfe_FLAIR = MSFE(in_ch=200, out_main_ch=out_main_ch, filters=filters_flair, main_downsample=main_downsample)
-    msfe_DWI = MSFE(in_ch=700, out_main_ch=out_main_ch, filters=filters_dwi, main_downsample=main_downsample)
-    msfe_DWIC = MSFE(in_ch=499, out_main_ch=out_main_ch, filters=filters_dwic, main_downsample=main_downsample)
+    msfe_T1 = MSFE(in_ch=in_ch, out_main_ch=out_main_ch, filters=filters_t1, main_downsample=main_downsample)
+    msfe_T2 = MSFE(in_ch=in_ch, out_main_ch=out_main_ch, filters=filters_t2, main_downsample=main_downsample)
+    msfe_FLAIR = MSFE(in_ch=in_ch, out_main_ch=out_main_ch, filters=filters_flair, main_downsample=main_downsample)
+    msfe_DWI = MSFE(in_ch=in_ch, out_main_ch=out_main_ch, filters=filters_dwi, main_downsample=main_downsample)
+    msfe_DWIC = MSFE(in_ch=in_ch, out_main_ch=out_main_ch, filters=filters_dwic, main_downsample=main_downsample)
 
     # fusion module
     fuse = fusion.load()

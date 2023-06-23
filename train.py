@@ -20,7 +20,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     testing_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, node_num=cfg.node_num)
 
     # build model
-    model = ezpred.build(2)
+    model = ezpred.build(1, 2)
 
     # load optimizer, loss, and metrics
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
