@@ -25,11 +25,11 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
     assert fusion == FusionType.MID_CONCAT or fusion == FusionType.MID_MEAN, f"Fusion type {fusion} is not supported for MSFE."
 
     # MSFE for each modalities
-    msfe_T1 = MSFE(in_ch=300, out_main_ch=out_main_ch, filters=filters_t1, main_downsample=main_downsample, padding=400 if fusion == FusionType.MID_MEAN else None)
-    msfe_T2 = MSFE(in_ch=200, out_main_ch=out_main_ch, filters=filters_t2, main_downsample=main_downsample, padding=500 if fusion == FusionType.MID_MEAN else None)
-    msfe_FLAIR = MSFE(in_ch=200, out_main_ch=out_main_ch, filters=filters_flair, main_downsample=main_downsample, padding=500 if fusion == FusionType.MID_MEAN else None)
+    msfe_T1 = MSFE(in_ch=300, out_main_ch=out_main_ch, filters=filters_t1, main_downsample=main_downsample, padding=400)
+    msfe_T2 = MSFE(in_ch=200, out_main_ch=out_main_ch, filters=filters_t2, main_downsample=main_downsample, padding=500)
+    msfe_FLAIR = MSFE(in_ch=200, out_main_ch=out_main_ch, filters=filters_flair, main_downsample=main_downsample, padding=500)
     msfe_DWI = MSFE(in_ch=700, out_main_ch=out_main_ch, filters=filters_dwi, main_downsample=main_downsample)
-    msfe_DWIC = MSFE(in_ch=499, out_main_ch=out_main_ch, filters=filters_dwic, main_downsample=main_downsample, padding=201 if fusion == FusionType.MID_MEAN else None)
+    msfe_DWIC = MSFE(in_ch=499, out_main_ch=out_main_ch, filters=filters_dwic, main_downsample=main_downsample, padding=201)
 
     # fusion module
     fuse = fusion.load()
