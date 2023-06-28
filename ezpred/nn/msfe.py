@@ -181,13 +181,13 @@ class MSFE(torch.nn.Module):
         x_cs, x_fs = (x, x) if isinstance(x, torch.Tensor) else x
 
         # course block
-        x_cs = x_cs.squeeze(1) if len(x_cs.shape) == 3 else x_cs
+        # x_cs = x_cs.squeeze(1) if len(x_cs.shape) == 3 else x_cs
         x_cs = self.cs(x_cs)
         x_cs = self.cs_conv(x_cs)
         y_cs = self.cs_padding(x_cs)
 
         # fine block
-        x_fs = x_fs.squeeze(1) if len(x_fs.shape) == 3 else x_fs
+        # x_fs = x_fs.squeeze(1) if len(x_fs.shape) == 3 else x_fs
         x_fs = self.fs(x_fs)
         x_fs = self.fs_conv(x_fs)
         y_fs = self.fs_padding(x_fs)

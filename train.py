@@ -16,17 +16,19 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
 
     # initialize dataset
     training_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, drop_last=True, mode=data.EZMode.TRAIN, shuffle=True, node_num=cfg.node_num)
-    validation_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, node_num=cfg.node_num)
+    # validation_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, node_num=cfg.node_num)
     testing_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, node_num=cfg.node_num)
 
     # build model
-    model = ezpred.build(1, 2)
+    model = ezpred.build(2)
+
+    num_modal = 2
 
     # load optimizer, loss, and metrics
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
-    main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(6)]
-    kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean') for _ in range(5)]
-    mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE() for _ in range(5)]
+    main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(num_modal+1)]
+    kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean') for _ in range(num_modal)]
+    mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE() for _ in range(num_modal)]
     magms_loss = magnet.losses.MAGMSLoss(main_losses, distillation_loss=kldiv_losses, feature_losses=mse_losses)
     metric_fns: dict[str, tm.metrics.Metric] = {
         "CE_loss_all": main_losses[0],
@@ -42,7 +44,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # early_stop = tm.callbacks.EarlyStop("bal_accuracy", steps=20)
 
     # train
-    model = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=validation_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=[experiment_callback], show_verbose=configs.show_verbose)
+    model = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=testing_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=[experiment_callback], show_verbose=configs.show_verbose)
 
     # test
     summary = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)

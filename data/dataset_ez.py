@@ -167,8 +167,8 @@ class DatasetEZ(Dataset):
         # x_t2 = x[:, 300:500]
         # x_flair = x[:, 500:700]
         # x_dwi = x[:, 700:1400]
-        x_all = x[:, :1400] # all modalities
-        x_dwic = x[:, 1400:] # dwic only
+        x_all = x[:, :1400].unsqueeze(dim=1) # all modalities
+        x_dwic = x[:, 1400:].unsqueeze(dim=1) # dwic only
         return [x_all, x_dwic], y
 
 
