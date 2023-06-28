@@ -1,14 +1,10 @@
 # Use SMOTE to augment EZ predict dataset to balance both classes and create more samples
 import os
-import random
 import numpy as np
 from collections import Counter
 from scipy.io import loadmat, savemat
-
-import torch
-import torch.nn as nn
-
 from imblearn.over_sampling import SMOTE
+
 
 def load_data(root: str, node_num: str, mode: str = "model"):
 
@@ -89,14 +85,17 @@ def load_data(root: str, node_num: str, mode: str = "model"):
 
         return X_combined_2, Y_mat_aug_2
 
-def augment_data(X: np.ndarray, Y: np.ndarray, num_samples: int = 100, random_state: int = 100):
-    
-    sm = SMOTE(random_state=random_state, sampling_strategy={0:num_samples, 1:num_samples}) # type:ignore
+    else:
+        raise NotImplementedError(f"Mode must be either model or valid to load dataset.")
+
+def augment_data(X: np.ndarray, Y: np.ndarray, k_neighbors: int = 5, num_samples: int = 100, random_state: int = 100):
+
+    sm = SMOTE(k_neighbors=k_neighbors, random_state=random_state, sampling_strategy={0:num_samples, 1:num_samples}) # type:ignore
     X_aug, Y_aug = sm.fit_resample(X, Y) # type:ignore
     
     return X_aug, Y_aug
 
-def main(root: str, node_num: str):
+def main(root: str, node_num: str, num_aug_samples: int = 100, k_neighbors: int = 5):
     X_model, Y_model = load_data(root, node_num, mode="model")  # type:ignore
 
     X_valid, Y_valid = load_data(root, node_num, mode="valid")  # type:ignore
@@ -106,17 +105,14 @@ def main(root: str, node_num: str):
     Y_combined = np.concatenate((Y_model, Y_valid), axis=0)
 
     # augment all patients data using SMOTE (balance dataset and create more samples)
-    X_aug, Y_aug = augment_data(X_combined, Y_combined, num_samples = 1000, random_state=100)
+    X_aug, Y_aug = augment_data(X_combined, Y_combined, k_neighbors = k_neighbors, num_samples = num_aug_samples, random_state=100)
 
     # randomly shuffle (with seed) data
     np.random.seed(0)
     np.random.shuffle(X_aug)
-    print(X_aug.shape)
 
     np.random.seed(0)
     np.random.shuffle(Y_aug)
-    print(Y_aug)
-    print(Y_aug.shape)
 
     # divide data into training and testing
     x_train_len = int(0.8*len(X_aug))
@@ -127,17 +123,27 @@ def main(root: str, node_num: str):
     X_aug_test = X_aug[x_train_len:,:] # type:ignore
     Y_aug_test = Y_aug[x_train_len:]
 
-    # save the augmented data
-    savemat('X_train_aug.mat', X_aug_train)
-    savemat('Y_train_aug.mat', Y_aug_train)
+    print(X_aug_train.shape)
+    print(Y_aug_train.shape)
+    print('Resampled Y_train shape %s' % Counter(Y_aug_train))
 
-    savemat('X_test_aug.mat', X_aug_test)
-    savemat('Y_test_aug.mat', Y_aug_test)
+    print(X_aug_test.shape)
+    print(Y_aug_test.shape)
+    print('Resampled Y_test shape %s' % Counter(Y_aug_test))
+
+    # save the augmented data
+    savemat('X_train_aug_node948.mat', {"X_aug_train":X_aug_train})
+    savemat('Y_train_aug_node948.mat', {"Y_aug_train":Y_aug_train})
+
+    savemat('X_test_aug_node948.mat', {"X_aug_test":X_aug_test})
+    savemat('Y_test_aug_node948.mat', {"Y_aug_test":Y_aug_test})
 
 
 if __name__ == "__main__":
+
     # Root Folder
     root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
     node_num = "948"
-    main(root, node_num)
+
+    main(root, node_num, num_aug_samples=5000, k_neighbors=4)
 
