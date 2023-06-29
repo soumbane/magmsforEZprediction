@@ -1,9 +1,11 @@
 import torch
 from magnet import MAGNET2
+from .networks import Basic
 
 from .nn import MSFE, SHFE, SCH
 from .nn.fusion import FusionType
 
+# def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool = False, *, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,256,512], fusion: FusionType = FusionType.MID_CONCAT) -> Basic: # for Min-Hee's code
 
 def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool = False, *, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,128], fusion: FusionType = FusionType.MID_MEAN) -> MAGNET2[MSFE]:
     r"""
@@ -29,17 +31,18 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
     # msfe_T2 = MSFE(in_ch=200, out_main_ch=out_main_ch, filters=filters_t2, main_downsample=main_downsample, padding=500 if fusion == FusionType.MID_MEAN else None)
     # msfe_FLAIR = MSFE(in_ch=200, out_main_ch=out_main_ch, filters=filters_flair, main_downsample=main_downsample, padding=500 if fusion == FusionType.MID_MEAN else None)
     # msfe_DWI = MSFE(in_ch=700, out_main_ch=out_main_ch, filters=filters_dwi, main_downsample=main_downsample)
-    msfe_ALL = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_dwi, main_downsample=main_downsample)
-    msfe_DWIC = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_dwic, main_downsample=main_downsample, padding=901 if fusion == FusionType.MID_MEAN else None)
+    msfe_ALL = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=False)
+    msfe_DWIC = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=False, padding=901)
 
     # fusion module
     fuse = fusion.load()
 
     # SHFE for all modalities
-    shfe = SHFE(in_ch=128, out_main_ch=128, filters=filters_shfe, main_downsample=False)
+    shfe = SHFE(in_ch=64, out_main_ch=64, filters=[64,128], main_downsample=False)
 
     # SCH for all modalities
-    sch = SCH(mlp_features=filters_shfe[-1] * 2, num_classes=num_classes)
+    sch = SCH(mlp_features=128 * 2, num_classes=num_classes)
+    # sch = SCH(mlp_features=64 * 4, num_classes=num_classes) # for Min-Hee's code
 
     # build magnet
     # target_dict = {
@@ -55,7 +58,9 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
         1: "DWIC"
     }
 
-    magnet = MAGNET2(msfe_ALL, msfe_DWIC, fusion=fuse, decoder=torch.nn.Sequential(shfe, sch), target_dict=target_dict, return_features=True)
+    model = MAGNET2(msfe_ALL, msfe_DWIC, fusion=fuse, decoder=torch.nn.Sequential(shfe, sch), target_dict=target_dict, return_features=True)
+
+    # model = Basic(msfe_ALL, msfe_DWIC, fusion=fuse, sch=sch) # for Min-Hee's code
 
     # build losses
-    return magnet
+    return model

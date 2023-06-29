@@ -37,7 +37,8 @@ class SCH(nn.Module):
 
         x_final = self.mlp(x_combined)
 
-        return self.softmax(x_final)
+        # return self.softmax(x_final)
+        return x_final
 
 
 if __name__ == "__main__":

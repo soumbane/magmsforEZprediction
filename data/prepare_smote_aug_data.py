@@ -90,8 +90,8 @@ def load_data(root: str, node_num: str, mode: str = "model"):
 
 def augment_data(X: np.ndarray, Y: np.ndarray, k_neighbors: int = 5, num_samples: int = 100, random_state: int = 100):
 
-    # sm = SMOTE(k_neighbors=k_neighbors, random_state=random_state, sampling_strategy={0:num_samples, 1:num_samples}) # type:ignore
-    sm = ADASYN(n_neighbors=k_neighbors, random_state=random_state, sampling_strategy={0:num_samples, 1:num_samples}) # type:ignore
+    sm = SMOTE(k_neighbors=k_neighbors, random_state=random_state, sampling_strategy={0:num_samples, 1:num_samples}) # type:ignore
+    # sm = ADASYN(n_neighbors=k_neighbors, random_state=random_state, sampling_strategy={0:num_samples, 1:num_samples}) # type:ignore
     X_aug, Y_aug = sm.fit_resample(X, Y) # type:ignore
     
     return X_aug, Y_aug
@@ -146,5 +146,5 @@ if __name__ == "__main__":
     root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
     node_num = "948"
 
-    main(root, node_num, num_aug_samples=6000, k_neighbors=3)
+    main(root, node_num, num_aug_samples=5000, k_neighbors=3)
 
