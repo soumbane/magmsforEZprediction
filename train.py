@@ -28,7 +28,8 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
 
     # initialize learning rate scheduler 
-    lr_step = max(int(cfg.epochs / 3), 1)  
+    # lr_step = max(int(cfg.epochs / 3), 1)  # for 30 epochs
+    lr_step = max(int(cfg.epochs / 4), 1)  # for 20 epochs
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, lr_step, gamma=0.5) # reduce lr by half 
     # lr_scheduler = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.95)
 
