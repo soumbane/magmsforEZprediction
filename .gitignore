@@ -161,4 +161,8 @@ cython_debug/
 
 experiments/*
 
+test_magms_ALL_mod_node948.exp/*
+test1_948.exp/*
+test2_948.exp/*
+
 trained_models/*
