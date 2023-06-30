@@ -163,13 +163,13 @@ class DatasetEZ(Dataset):
         assert isinstance(x, torch.Tensor) and isinstance(y, torch.Tensor), "Data should be valid `torch.Tensor`."
 
         # unpack data (b, 1899) -> [(b, m, f), ...]
-        # x_t1 = x[:, :300]
-        # x_t2 = x[:, 300:500]
-        # x_flair = x[:, 500:700]
-        # x_dwi = x[:, 700:1400]
-        x_all = x[:, :1400].unsqueeze(dim=1) # all modalities
+        x_t1 = x[:, :300].unsqueeze(dim=1) # t1 only
+        x_t2 = x[:, 300:500].unsqueeze(dim=1) # t2 only
+        x_flair = x[:, 500:700].unsqueeze(dim=1) # flair only
+        x_dwi = x[:, 700:1400].unsqueeze(dim=1) # dwi only
+        # x_all = x[:, :1400].unsqueeze(dim=1) # all modalities
         x_dwic = x[:, 1400:].unsqueeze(dim=1) # dwic only
-        return [x_all, x_dwic], y
+        return [x_t1, x_t2, x_flair, x_dwi, x_dwic], y
 
 
 if __name__ == "__main__":

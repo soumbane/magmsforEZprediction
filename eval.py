@@ -1,5 +1,6 @@
 import torch
-from ezpred import metrics, Manager
+from ezpred import metrics
+from magnet import Manager
 from ezpred.configs import TestingConfigs
 from sklearn.metrics import balanced_accuracy_score, confusion_matrix
 from torchmanager.metrics import metric
@@ -63,6 +64,12 @@ def test(cfg: TestingConfigs, /) -> dict[str, float]:
         "val_bal_accuracy": bal_acc_fn,
         "conf_met": conf_met_fn
         })
+
+    manager.target = [0,1,2,3]
+    # manager.target_dict = {
+    #     0: "T1",
+    #     1: "T2"
+    # }
 
     # test checkpoint
     summary: dict[str, Any] = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)

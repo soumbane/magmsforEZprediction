@@ -24,8 +24,6 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # build model
     model = ezpred.build(2)
 
-    num_modal = 2
-
     # load optimizer, loss, and metrics
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
 
@@ -37,9 +35,9 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
 
     # loss_fn = magnet.losses.CrossEntropy() # only for Min-Hee's code
     
-    main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(num_modal+1)]
-    kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean') for _ in range(num_modal)]
-    mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE() for _ in range(num_modal)]
+    main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)]
+    kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean') for _ in range(cfg.num_mod)]
+    mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE() for _ in range(cfg.num_mod)]
     magms_loss = magnet.losses.MAGMSLoss(main_losses, distillation_loss=kldiv_losses, feature_losses=mse_losses)
     metric_fns: dict[str, tm.metrics.Metric] = {
         "CE_loss_all": main_losses[0],

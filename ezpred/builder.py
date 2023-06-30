@@ -27,12 +27,14 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
     assert fusion == FusionType.MID_MEAN or FusionType.MID_CONCAT, f"{fusion} is not supported for MSFE."
 
     # MSFE for each modalities
-    # msfe_T1 = MSFE(in_ch=300, out_main_ch=out_main_ch, filters=filters_t1, main_downsample=main_downsample, padding=400 if fusion == FusionType.MID_MEAN else None)
-    # msfe_T2 = MSFE(in_ch=200, out_main_ch=out_main_ch, filters=filters_t2, main_downsample=main_downsample, padding=500 if fusion == FusionType.MID_MEAN else None)
-    # msfe_FLAIR = MSFE(in_ch=200, out_main_ch=out_main_ch, filters=filters_flair, main_downsample=main_downsample, padding=500 if fusion == FusionType.MID_MEAN else None)
-    # msfe_DWI = MSFE(in_ch=700, out_main_ch=out_main_ch, filters=filters_dwi, main_downsample=main_downsample)
-    msfe_ALL = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=False)
-    msfe_DWIC = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=False, padding=901)
+    msfe_T1 = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=main_downsample, padding=400)
+    msfe_T2 = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=main_downsample, padding=500)
+    msfe_FLAIR = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=main_downsample, padding=500)
+    msfe_DWI = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=main_downsample)
+    msfe_DWIC = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=False, padding=201)
+
+    # msfe_ALL = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=False)
+    # msfe_DWIC = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=False, padding=901)
 
     # fusion module
     fuse = fusion.load()
@@ -45,20 +47,21 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
     # sch = SCH(mlp_features=64 * 4, num_classes=num_classes) # for Min-Hee's code
 
     # build magnet
-    # target_dict = {
-    #     0: "T1",
-    #     1: "T2",
-    #     2: "FLAIR",
-    #     3: "DWI",
-    #     4: "DWIC",
-    # }
-
     target_dict = {
-        0: "ALL",
-        1: "DWIC"
+        0: "T1",
+        1: "T2",
+        2: "FLAIR",
+        3: "DWI",
+        4: "DWIC",
     }
 
-    model = MAGNET2(msfe_ALL, msfe_DWIC, fusion=fuse, decoder=torch.nn.Sequential(shfe, sch), target_dict=target_dict, return_features=True)
+    # target_dict = {
+    #     0: "ALL",
+    #     1: "DWIC"
+    # }
+
+    # model = MAGNET2(msfe_ALL, msfe_DWIC, fusion=fuse, decoder=torch.nn.Sequential(shfe, sch), target_dict=target_dict, return_features=True)
+    model = MAGNET2(msfe_T1, msfe_T2, msfe_FLAIR, msfe_DWI, msfe_DWIC, fusion=fuse, decoder=torch.nn.Sequential(shfe, sch), target_dict=target_dict, return_features=True)
 
     # model = Basic(msfe_ALL, msfe_DWIC, fusion=fuse, sch=sch) # for Min-Hee's code
 
