@@ -26,12 +26,15 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
     # fusion type check
     assert fusion == FusionType.MID_MEAN or FusionType.MID_CONCAT, f"{fusion} is not supported for MSFE."
 
+    filters_msfe=[32,64,128]
+    # filters_msfe=[16,32]
+
     # MSFE for each modalities
-    msfe_T1 = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=main_downsample, padding=400)
-    msfe_T2 = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=main_downsample, padding=500)
-    msfe_FLAIR = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=main_downsample, padding=500)
-    msfe_DWI = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=main_downsample)
-    msfe_DWIC = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=False, padding=201)
+    msfe_T1 = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_msfe, main_downsample=main_downsample, padding=400)
+    msfe_T2 = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_msfe, main_downsample=main_downsample, padding=500)
+    msfe_FLAIR = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_msfe, main_downsample=main_downsample, padding=500)
+    msfe_DWI = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_msfe, main_downsample=main_downsample)
+    msfe_DWIC = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_msfe, main_downsample=main_downsample, padding=201)
 
     # msfe_ALL = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=False)
     # msfe_DWIC = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=False, padding=901)
@@ -39,11 +42,14 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
     # fusion module
     fuse = fusion.load()
 
+    filters_shfe=[filters_msfe[-1],256]
+    # filters_shfe=[filters_msfe[-1],64]
+
     # SHFE for all modalities
-    shfe = SHFE(in_ch=64, out_main_ch=64, filters=[64,128], main_downsample=False)
+    shfe = SHFE(in_ch=filters_msfe[-1], out_main_ch=filters_msfe[-1], filters=filters_shfe, main_downsample=False)
 
     # SCH for all modalities
-    sch = SCH(mlp_features=128 * 2, num_classes=num_classes)
+    sch = SCH(mlp_features=filters_shfe[-1] * 2, num_classes=num_classes)
     # sch = SCH(mlp_features=64 * 4, num_classes=num_classes) # for Min-Hee's code
 
     # build magnet

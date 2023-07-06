@@ -65,13 +65,13 @@ def test(cfg: TestingConfigs, /) -> dict[str, float]:
         "conf_met": conf_met_fn
         })
 
-    # 0:T1, 1:T2, 2:FLAIR, 3:DWI, 4:DWIC
-    # manager.target = [0,1,2,3,4] # ALL modalities
-    manager.target = [4] # DWIC Only
-
+    ## 0:T1, 1:T2, 2:FLAIR, 3:DWI, 4:DWIC
     # manager.target_dict = {
     #     0: "T1",
-    #     1: "T2"
+    #     1: "T2",
+    #     2: "FLAIR",
+    #     3: "DWI",
+    #     4: "DWIC",
     # }
 
     # test checkpoint

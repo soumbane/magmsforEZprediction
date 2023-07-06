@@ -64,7 +64,8 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     lr_scheduler_callback = tm.callbacks.LrSchedueler(lr_scheduler, tf_board_writer=tensorboard_callback.writer) # type:ignore   
 
     # Final callbacks list
-    callbacks_list: list[tm.callbacks.Callback] = [experiment_callback, tensorboard_callback, lr_scheduler_callback]
+    # callbacks_list: list[tm.callbacks.Callback] = [experiment_callback, tensorboard_callback, lr_scheduler_callback]
+    callbacks_list: list[tm.callbacks.Callback] = [experiment_callback, tensorboard_callback]
     # callbacks_list: list[tm.callbacks.Callback] = [experiment_callback]
 
     # train
