@@ -26,8 +26,8 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
     # fusion type check
     assert fusion == FusionType.MID_MEAN or FusionType.MID_CONCAT, f"{fusion} is not supported for MSFE."
 
-    filters_msfe=[32,64,128]
-    # filters_msfe=[16,32]
+    # filters_msfe=[64,128,256] # deep model
+    filters_msfe=[8,16] # shallow model
 
     # MSFE for each modalities
     msfe_T1 = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_msfe, main_downsample=main_downsample, padding=400)
@@ -42,8 +42,8 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
     # fusion module
     fuse = fusion.load()
 
-    filters_shfe=[filters_msfe[-1],256]
-    # filters_shfe=[filters_msfe[-1],64]
+    # filters_shfe=[filters_msfe[-1],512] # deep model
+    filters_shfe=[filters_msfe[-1],32] # shallow model
 
     # SHFE for all modalities
     shfe = SHFE(in_ch=filters_msfe[-1], out_main_ch=filters_msfe[-1], filters=filters_shfe, main_downsample=False)

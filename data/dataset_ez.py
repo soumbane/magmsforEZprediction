@@ -27,8 +27,8 @@ class DatasetEZ(Dataset):
     mode: EZMode
     node_num: int
 
-    def __init__(self, batch_size: int, root: str, drop_last: bool = False, mode: EZMode = EZMode.TRAIN, shuffle: bool = False, node_num: int = 1) -> None:
-        super().__init__(batch_size, drop_last=drop_last, shuffle=shuffle)
+    def __init__(self, batch_size: int, root: str, drop_last: bool = False, mode: EZMode = EZMode.TRAIN, shuffle: bool = False, node_num: int = 1, device=torch.device("cuda:0")) -> None:
+        super().__init__(batch_size, drop_last=drop_last, shuffle=shuffle, device=device)
         self.mode = mode
         self.root = root
         self.node_num = node_num
@@ -50,13 +50,18 @@ class DatasetEZ(Dataset):
             self.y_mat_name = "Y_aug_train"
 
         elif self.mode == EZMode.VALIDATE:
-            self.path = os.path.join(self.root,'Valid_NonEZvsEZ_ALL')
-            self.RI_file = f"Valid_NonEZvsEZ_RI_node{self.node_num}_ALL.mat"
-            self.Conn_file = f"Valid_NonEZvsEZ_Conn_node{self.node_num}_ALL.mat"
-            self.label_file = f"Valid_NonEZvsEZ_label_node{self.node_num}_ALL.mat"
-            self.RI_mat_name = "ModelCohort_NonEZvsEZ_RI"
-            self.Conn_mat_name = "ModelCohort_NonEZvsEZ_Conn"
-            self.label_mat_name = "ModelCohort_NonEZvsEZ_label"
+            # self.path = os.path.join(self.root,'Valid_NonEZvsEZ_ALL')
+            # self.RI_file = f"Valid_NonEZvsEZ_RI_node{self.node_num}_ALL.mat"
+            # self.Conn_file = f"Valid_NonEZvsEZ_Conn_node{self.node_num}_ALL.mat"
+            # self.label_file = f"Valid_NonEZvsEZ_label_node{self.node_num}_ALL.mat"
+            # self.RI_mat_name = "ModelCohort_NonEZvsEZ_RI"
+            # self.Conn_mat_name = "ModelCohort_NonEZvsEZ_Conn"
+            # self.label_mat_name = "ModelCohort_NonEZvsEZ_label"
+            self.path = os.path.join(self.root, 'Val_NonEZvsEZ_ALL_aug')
+            self.x_file = f"X_val_aug_node{self.node_num}.mat"
+            self.y_file = f"Y_val_aug_node{self.node_num}.mat"
+            self.x_mat_name = "X_aug_val"
+            self.y_mat_name = "Y_aug_val"
 
         elif self.mode == EZMode.TEST:
             # self.path = os.path.join(self.root,'ValidCohort_NonEZvsEZ_ALL')

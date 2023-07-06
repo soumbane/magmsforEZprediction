@@ -10,41 +10,6 @@ import numpy as np
 
 import data
 
-'''y_pred_list_bal: list[torch.Tensor] = []
-y_true_list_bal: list[torch.Tensor] = []
-
-y_pred_list_conf: list[torch.Tensor] = []
-y_true_list_conf: list[torch.Tensor] = []
-
-
-@metric
-def bal_acc_fn(input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-    y_pred = input.argmax(dim=-1).cpu().detach().numpy()
-    y_pred_list_bal.append(y_pred)
-    y_pred_list_bal_np = np.concatenate(y_pred_list_bal).ravel()
-
-    y_true = target.cpu().detach().numpy()
-    y_true_list_bal.append(y_true)
-    y_true_list_bal_np = np.concatenate(y_true_list_bal).ravel()
-
-    r = balanced_accuracy_score(y_true_list_bal_np, y_pred_list_bal_np)
-    print(f"Balanced Accuracy: {r}")
-    return torch.tensor(torch.nan)
-
-@metric
-def conf_met_func(input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-    y_pred = input.argmax(dim=-1).cpu().detach().numpy()
-    y_pred_list_conf.append(y_pred)
-    y_pred_list_conf_np = np.concatenate(y_pred_list_conf).ravel()
-
-    y_true = target.cpu().detach().numpy()
-    y_true_list_conf.append(y_true)
-    y_true_list_conf_np = np.concatenate(y_true_list_conf).ravel()
-
-    r = confusion_matrix(y_true_list_conf_np, y_pred_list_conf_np)
-    print(f"Confusion matrix: {r}")
-    return torch.tensor(torch.nan, dtype=torch.float)'''
-
 
 def test(cfg: TestingConfigs, /) -> dict[str, float]:
     # load dataset

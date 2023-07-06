@@ -18,7 +18,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
 
     # initialize dataset
     training_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, drop_last=True, mode=data.EZMode.TRAIN, shuffle=True, node_num=cfg.node_num)
-    # validation_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, node_num=cfg.node_num)
+    validation_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, node_num=cfg.node_num)
     testing_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, node_num=cfg.node_num)
 
     # build model
@@ -29,7 +29,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
 
     # initialize learning rate scheduler 
     # lr_step = max(int(cfg.epochs / 3), 1)  # for 30 epochs
-    lr_step = max(int(cfg.epochs / 4), 1)  # for 20 epochs
+    lr_step = max(int(cfg.epochs / 5), 1)  # for 20 epochs
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, lr_step, gamma=0.5) # reduce lr by half 
     # lr_scheduler = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.95)
 
@@ -57,19 +57,18 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # manager = magnet.Manager(model, optimizer=optimizer, loss_fn=loss_fn, metrics=metric_fns) # only for Min-Hee's code
 
     # initialize callbacks
-    tensorboard_callback = tm.callbacks.TensorBoard(os.path.join(cfg.experiment, "data"))
+    # tensorboard_callback = tm.callbacks.TensorBoard(os.path.join(cfg.experiment, "data"))
     experiment_callback = tm.callbacks.Experiment(cfg.experiment, manager, monitors=["accuracy", "bal_accuracy"])
     # early_stop = tm.callbacks.EarlyStop("bal_accuracy", steps=20)    
     
-    lr_scheduler_callback = tm.callbacks.LrSchedueler(lr_scheduler, tf_board_writer=tensorboard_callback.writer) # type:ignore   
+    lr_scheduler_callback = tm.callbacks.LrSchedueler(lr_scheduler, tf_board_writer=experiment_callback.tensorboard.writer) # type:ignore   
 
     # Final callbacks list
-    # callbacks_list: list[tm.callbacks.Callback] = [experiment_callback, tensorboard_callback, lr_scheduler_callback]
-    callbacks_list: list[tm.callbacks.Callback] = [experiment_callback, tensorboard_callback]
+    callbacks_list: list[tm.callbacks.Callback] = [experiment_callback, lr_scheduler_callback]
     # callbacks_list: list[tm.callbacks.Callback] = [experiment_callback]
 
     # train
-    model = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=testing_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=callbacks_list, show_verbose=configs.show_verbose)
+    model = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=validation_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=callbacks_list, show_verbose=configs.show_verbose)
 
     # test
     summary = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
