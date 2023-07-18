@@ -54,6 +54,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
 if __name__ == "__main__":
     # get configs
     configs = TrainingConfigs.from_arguments()
+    assert isinstance(configs, TrainingConfigs)
 
     # train
     train(configs)
