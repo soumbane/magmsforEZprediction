@@ -17,19 +17,27 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
         cudnn.deterministic = True  
 
     # initialize dataset
-    training_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, drop_last=True, mode=data.EZMode.TRAIN, shuffle=True, node_num=cfg.node_num)
-    validation_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, node_num=cfg.node_num)
-    testing_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, node_num=cfg.node_num)
+    # training_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, drop_last=True, mode=data.EZMode.TRAIN, shuffle=True, node_num=cfg.node_num)
+    # validation_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, node_num=cfg.node_num)
+    # testing_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, node_num=cfg.node_num)
+
+    # initialize dataset for whole brain
+    training_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, drop_last=True, mode=data.EZMode.TRAIN, shuffle=True)
+    validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE)
+    testing_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST)
 
     # build model
     model = ezpred.build(2)
+
+    total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f'The total number of model parameter is: {total_params}')
 
     # load optimizer, loss, and metrics
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
 
     # initialize learning rate scheduler 
     # lr_step = max(int(cfg.epochs / 3), 1)  # for 30 epochs
-    lr_step = max(int(cfg.epochs / 5), 1)  # for 20 epochs
+    lr_step = max(int(cfg.epochs / 5), 1)  # for 20/50 epochs
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, lr_step, gamma=0.5) # reduce lr by half 
     # lr_scheduler = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.95)
 

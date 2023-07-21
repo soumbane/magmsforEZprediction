@@ -112,9 +112,8 @@ def main(root: str, node_num: str, num_train_aug_samples: int = 100, num_test_au
     np.random.seed(1000)
     np.random.shuffle(Y_combined)
 
-    # zipped_data = zip(X_combined, Y_combined)
-    # np.random.shuffle(tuple(zipped_data))
-    # X_combined, Y_combined = zip(*zipped_data)
+    # idx = np.random.permutation(len(X_combined))
+    # X_combined, Y_combined = X_combined[idx], Y_combined[idx]
 
     # divide data into training and testing
     x_train_len = int(0.8*len(X_combined))
@@ -122,16 +121,17 @@ def main(root: str, node_num: str, num_train_aug_samples: int = 100, num_test_au
     X_train: np.ndarray = X_combined[:x_train_len,:] # type:ignore
     Y_train: np.ndarray = Y_combined[:x_train_len]
 
-    print(X_train.shape)
-    print(Y_train.shape)
-    print('Resampled Y_train shape %s' % Counter(Y_train))
+    print('Original Y_train shape %s' % Counter(Y_train))
+
+    # augment all patients data using SMOTE (balance dataset and create more samples)
+    X_aug_train, Y_aug_train = augment_data(X_train, Y_train, k_neighbors = k_neighbors_train, num_samples = num_train_aug_samples//2, random_state=100)
+
+    print('Augmented Y_train shape %s' % Counter(Y_aug_train))
 
     X_test: np.ndarray = X_combined[x_train_len:,:] # type:ignore
     Y_test: np.ndarray = Y_combined[x_train_len:]
 
-    print(X_test.shape)
-    print(Y_test.shape)
-    print('Resampled Y_test shape %s' % Counter(Y_test))
+    print('Augmented Y_test shape %s' % Counter(Y_test))
 
     X_aug_test, Y_aug_test = augment_data(X_test, Y_test, k_neighbors = k_neighbors_test, num_samples = num_test_aug_samples//2, random_state=100)
 
@@ -142,6 +142,9 @@ def main(root: str, node_num: str, num_train_aug_samples: int = 100, num_test_au
     np.random.seed(1000)
     np.random.shuffle(Y_aug_test)
 
+    # idx = np.random.permutation(len(X_aug_test))
+    # X_aug_test, Y_aug_test = X_aug_test[idx], Y_aug_test[idx]
+
     x_val_len = int(0.5*len(X_aug_test))
 
     X_val: np.ndarray = X_aug_test[:x_val_len,:] # type:ignore
@@ -150,33 +153,9 @@ def main(root: str, node_num: str, num_train_aug_samples: int = 100, num_test_au
     X_test: np.ndarray = X_aug_test[x_val_len:,:] # type:ignore
     Y_test: np.ndarray = Y_aug_test[x_val_len:] # type:ignore    
 
-    print(X_val.shape)
-    print(Y_val.shape)
-    print('Resampled Y_val shape %s' % Counter(Y_val))
+    print('Final Augmented Y_val shape %s' % Counter(Y_val))
 
-    print(X_test.shape)
-    print(Y_test.shape)
-    print('Resampled Y_test shape %s' % Counter(Y_test))
-
-    # augment all patients data using SMOTE (balance dataset and create more samples)
-    X_aug_train, Y_aug_train = augment_data(X_train, Y_train, k_neighbors = k_neighbors_train, num_samples = num_train_aug_samples//2, random_state=100)
-
-    print(X_aug_train.shape)
-    print(Y_aug_train.shape)
-    print('Resampled Y_train shape %s' % Counter(Y_aug_train))
-    
-    # X_aug_val, Y_aug_val = augment_data(X_val, Y_val, k_neighbors = k_neighbors_test, num_samples = num_test_aug_samples//2, random_state=100)
-
-    # print(X_aug_val.shape)
-    # print(Y_aug_val.shape)
-    # print('Resampled Y_val shape %s' % Counter(Y_aug_val)) 
-
-    # X_aug_test, Y_aug_test = augment_data(X_test, Y_test, k_neighbors = k_neighbors_test, num_samples = num_test_aug_samples//2, random_state=100)
-
-
-    # print(X_aug_test.shape)
-    # print(Y_aug_test.shape)
-    # print('Resampled Y_test shape %s' % Counter(Y_aug_test))   
+    print('Final Augmented Y_test shape %s' % Counter(Y_test))
 
     # save the augmented data
     savemat('X_train_aug_node' + node_num + '.mat', {"X_aug_train":X_aug_train})
@@ -200,7 +179,7 @@ if __name__ == "__main__":
     # node_num = "416"
 
     # Node 948/552/416
-    main(root, node_num, num_train_aug_samples=8000, num_test_aug_samples=2000, k_neighbors_train=3, k_neighbors_test=2)
+    main(root, node_num, num_train_aug_samples=8000, num_test_aug_samples=2000, k_neighbors_train=5, k_neighbors_test=2)
 
     # Node 900/397
     # main(root, node_num, num_train_aug_samples=8000, num_test_aug_samples=2000, k_neighbors_train=3, k_neighbors_test=1)

@@ -44,7 +44,7 @@ class Configs(_Configs):
         assert self.learning_rate > 0, f"Learning rate must be positive, got {self.learning_rate}."
         assert self.epochs > 0, f"Number of epochs must be a positive number, got {self.epochs}."
         assert self.num_mod > 0, f"Number of available modalities must be a positive number, got {self.num_mod}."
-        assert self.node_num in range(1, 999), f"Node number must be in range of [1, 998], got {self.node_num}."
+        # assert self.node_num in range(1, 999), f"Node number must be in range of [1, 998], got {self.node_num}."
         if self.seed is not None:
             assert torchmanager.version > "v1.1", f"Torchmanager version 1.2 required to freeze seed, {torchmanager.version} installed."
             assert self.seed >= 0, f"Seed must be a non-negative number, got {self.seed}."
@@ -54,7 +54,8 @@ class Configs(_Configs):
         # main arguments
         parser.add_argument("data_dir", type=str, help="The root directory of the dataset.")
         parser.add_argument("output_model", type=str, help="The output directory for the final trained (last) model.")
-        parser.add_argument("-node", "--node_num", type=int, required=True, help="The node number to train, must be specified.")
+        # parser.add_argument("-node", "--node_num", type=int, required=True, help="The node number to train, must be specified.")
+        parser.add_argument("-node", "--node_num", type=int, required=False, help="The node number to train, must be specified.")
 
         # training arguments
         training_args = parser.add_argument_group("Training arguments")

@@ -167,6 +167,7 @@ test_magms_ALL_mod_node552.exp/*
 test_magms_ALL_mod_node948_v1.exp/*
 
 test_magms_ALL_mod_node948_shallow.exp/*
+test_magms_ALL_mod_node948_deep.exp/*
 test1_948.exp/*
 test2_948.exp/*
 
