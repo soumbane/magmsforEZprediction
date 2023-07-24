@@ -13,7 +13,8 @@ import data
 
 def test(cfg: TestingConfigs, /) -> dict[str, float]:
     # load dataset
-    testing_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, node_num=cfg.node_num)
+    # testing_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, node_num=cfg.node_num)
+    testing_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST)
 
     # load checkpoint
     if cfg.model.endswith(".model"):

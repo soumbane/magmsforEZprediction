@@ -1,1 +1,1 @@
-python eval.py /home/share/Data/EZ_Pred_Dataset/whole_brain_both_hemisphere/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/experiments/test_magms_ALL_mod_node948_deep.exp/checkpoints/best_accuracy.model -node 948 -b 32 --replace_experiment --show_verbose --device cuda:0
+python eval.py /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/baselines_all_hemispheres/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/experiments/test_magms_ALL_mod_WB_deep_both_hemis.exp/checkpoints/best_accuracy.model -b 96 --replace_experiment --show_verbose --device cuda:0
