@@ -36,9 +36,6 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
     msfe_DWI = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_msfe, main_downsample=main_downsample)
     msfe_DWIC = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_msfe, main_downsample=main_downsample, padding=201)
 
-    # msfe_ALL = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=False)
-    # msfe_DWIC = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=[32,64], main_downsample=False, padding=901)
-
     # fusion module
     fuse = fusion.load()
 
@@ -50,7 +47,7 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
 
     # SCH for all modalities
     sch = SCH(mlp_features=filters_shfe[-1] * 2, num_classes=num_classes)
-    # sch = SCH(mlp_features=64 * 4, num_classes=num_classes) # for Min-Hee's code
+    # sch = SCH(mlp_features=filters_msfe[-1] * 10, num_classes=num_classes) # for Min-Hee's code
 
     # build magnet
     target_dict = {
@@ -61,15 +58,9 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
         4: "DWIC",
     }
 
-    # target_dict = {
-    #     0: "ALL",
-    #     1: "DWIC"
-    # }
-
-    # model = MAGNET2(msfe_ALL, msfe_DWIC, fusion=fuse, decoder=torch.nn.Sequential(shfe, sch), target_dict=target_dict, return_features=True)
     model = MAGNET2(msfe_T1, msfe_T2, msfe_FLAIR, msfe_DWI, msfe_DWIC, fusion=fuse, decoder=torch.nn.Sequential(shfe, sch), target_dict=target_dict, return_features=True)
 
-    # model = Basic(msfe_ALL, msfe_DWIC, fusion=fuse, sch=sch) # for Min-Hee's code
+    # model = Basic(msfe_T1, msfe_T2, msfe_FLAIR, msfe_DWI, msfe_DWIC, fusion=fuse, sch=sch) # for Min-Hee's code
 
     # build losses
     return model
