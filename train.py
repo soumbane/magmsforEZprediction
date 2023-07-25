@@ -37,7 +37,8 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
 
     # initialize learning rate scheduler 
     # lr_step = max(int(cfg.epochs / 3), 1)  # for 30 epochs
-    lr_step = max(int(cfg.epochs / 5), 1)  # for 20/50 epochs
+    # lr_step = max(int(cfg.epochs / 5), 1)  # for 20/50 epochs
+    lr_step = max(int(cfg.epochs / 10), 1)  # for 100 epochs
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, lr_step, gamma=0.5) # reduce lr by half 
     # lr_scheduler = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.95)
 
