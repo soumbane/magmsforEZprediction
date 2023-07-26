@@ -162,3 +162,5 @@ cython_debug/
 experiments/*
 
 trained_models/*
+Icon*
+*.DS_Store
