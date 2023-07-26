@@ -211,12 +211,21 @@ class DatasetEZ_WB(Dataset):
             self.size = 18684
 
         elif self.mode == EZMode.TEST:
-            self.path = os.path.join(self.root, 'Test_NonEZvsEZ_whole_brain_aug_separate')
-            self.x_file = f"X_test_aug_whole_brain_node"
-            self.y_file = f"Y_test_aug_whole_brain_node"
-            self.x_mat_name = "X_aug_test_node"
-            self.y_mat_name = "Y_aug_test_node"
-            self.size = 18834
+            # For augmented test set
+            # self.path = os.path.join(self.root, 'Test_NonEZvsEZ_whole_brain_aug_separate')
+            # self.x_file = f"X_test_aug_whole_brain_node"
+            # self.y_file = f"Y_test_aug_whole_brain_node"
+            # self.x_mat_name = "X_aug_test_node"
+            # self.y_mat_name = "Y_aug_test_node"
+            # self.size = 18834
+
+            # For unaugmented test set
+            self.path = os.path.join(self.root, 'Test_NonEZvsEZ_whole_brain_Unaug_separate')
+            self.x_file = f"X_test_unaug_whole_brain_node"
+            self.y_file = f"Y_test_unaug_whole_brain_node"
+            self.x_mat_name = "X_unaug_test_node"
+            self.y_mat_name = "Y_unaug_test_node"
+            self.size = 9924
 
         else:
             raise NotImplementedError("Select either train, validate or test mode.")

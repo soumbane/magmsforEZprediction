@@ -14,6 +14,7 @@ import data
 def test(cfg: TestingConfigs, /) -> dict[str, float]:
     # load dataset
     # testing_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, node_num=cfg.node_num)
+    validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE)
     testing_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST)
 
     # load checkpoint
@@ -32,15 +33,23 @@ def test(cfg: TestingConfigs, /) -> dict[str, float]:
         })
 
     ## 0:T1, 1:T2, 2:FLAIR, 3:DWI, 4:DWIC
-    # manager.target_dict = {
-    #     0: "T1",
-    #     1: "T2",
-    #     2: "FLAIR",
-    #     3: "DWI",
-    #     4: "DWIC",
-    # }
+    manager.target_dict = {
+        0: "T1",
+        1: "T2",
+        2: "FLAIR",
+        3: "DWI",
+        4: "DWIC",
+    }
 
-    # test checkpoint
+    print(f'The best accuracy on validation set occurs at {manager.current_epoch + 1} epoch number')
+
+    # test checkpoint with validation dataset
+    summary: dict[str, Any] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    if conf_met_fn.results is not None:
+        summary.update({"conf_met": conf_met_fn.results})
+    view.logger.info(summary)
+    
+    # test checkpoint with testing dataset
     summary: dict[str, Any] = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
     if conf_met_fn.results is not None:
         summary.update({"conf_met": conf_met_fn.results})
