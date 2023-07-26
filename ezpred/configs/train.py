@@ -82,3 +82,26 @@ class Configs(_Configs):
         view.logger.info(f"Output: output_model={self.output_model}")
         view.logger.info(f"Training: epochs={self.epochs}, batch_size={self.batch_size}, learning_rate={self.learning_rate}, num_modalities={self.num_mod}, seed={self.seed}, show_verbose={self.show_verbose}")
         view.logger.info(f"Device: device={self.device}, use_multi_gpus={self.use_multi_gpus}")
+
+
+class FinetuningConfigs(Configs):
+    """
+    The training configs for fine-tuning
+
+    - Properties:
+        - pretrained_model: A `str` of the pretrained model directory
+    """
+    pretrained_model: str
+
+    def format_arguments(self) -> None:
+        self.pretrained_model = os.path.normpath(self.pretrained_model)
+        super().format_arguments()
+
+    @staticmethod
+    def get_arguments(parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup] = argparse.ArgumentParser()) -> Union[argparse.ArgumentParser, argparse._ArgumentGroup]:
+        parser.add_argument("pretrained_model", type=str, help="The directory of pre-trained model.")
+        return super().get_arguments(parser)
+    
+    def show_settings(self) -> None:
+        view.logger.info(f"Pretrained model: {self.pretrained_model}")
+        super().show_settings()

@@ -1,5 +1,5 @@
 from torchmanager.metrics import BinaryConfusionMetric
-from torchmanager_core import torch, Version
+from torchmanager_core import torch
 from torchmanager_core.typing import Optional
 
 
