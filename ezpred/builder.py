@@ -23,8 +23,8 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
         filters_shfe (list[int]): The output channels of each 1D `conv` layer blocks in either `course` scale or `fine` scale of each `shfe` block for DWIC modality. `len(filters)` indicate the number of `1D conv` blocks for each scale.
         fusion (FusionType): The type of fusion block to fuse the multi-modality features.
     """
-    # fusion type check
-    assert fusion == FusionType.MID_MEAN or FusionType.MID_CONCAT, f"{fusion} is not supported for MSFE."
+    # assert fusion type for MSFE
+    assert fusion == FusionType.MID_CONCAT or fusion == FusionType.MID_MEAN, f"Fusion type {fusion} is not supported for MSFE."
 
     filters_msfe=[64,128,256] # deep model
     # filters_msfe=[8,16] # shallow model
