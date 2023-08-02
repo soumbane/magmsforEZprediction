@@ -426,7 +426,7 @@ def main(root: str, k_neighbors: int = 5, num_nodes: int = 3, fold_no: str = "1"
 if __name__ == "__main__":
 
     # Root Folder
-    root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
+    root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
 
     main(root, k_neighbors=6, num_nodes=827, fold_no="1")
 
