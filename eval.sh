@@ -1,1 +1,1 @@
-python eval.py /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/baselines_all_hemispheres/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/experiments/test_magms_ALL_mod_WB_deep_both_hemis_1.exp/checkpoints/last.model -b 96 --replace_experiment --show_verbose --device cuda:0
+python eval.py /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/baselines_all_hemispheres/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/experiments/test_magms_ALL_mod_WB_deep_both_hemis_2.exp/checkpoints/best_accuracy.model -b 96 --replace_experiment --show_verbose --device cuda:0

@@ -100,7 +100,7 @@ class FinetuningConfigs(Configs):
     @staticmethod
     def get_arguments(parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup] = argparse.ArgumentParser()) -> Union[argparse.ArgumentParser, argparse._ArgumentGroup]:
         parser.add_argument("pretrained_model", type=str, help="The directory of pre-trained model.")
-        return super().get_arguments(parser)
+        return Configs.get_arguments(parser)
     
     def show_settings(self) -> None:
         view.logger.info(f"Pretrained model: {self.pretrained_model}")

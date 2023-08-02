@@ -13,9 +13,10 @@ import data
 
 def test(cfg: TestingConfigs, /) -> dict[str, float]:
     # load dataset
-    # testing_dataset = data.DatasetEZ(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, node_num=cfg.node_num)
     validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE)
-    testing_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST)
+    # testing_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST)
+    
+    # validation_dataset = data.DatasetEZ_NodeLevel(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE)
 
     # load checkpoint
     if cfg.model.endswith(".model"):
@@ -50,10 +51,10 @@ def test(cfg: TestingConfigs, /) -> dict[str, float]:
     view.logger.info(summary)
     
     # test checkpoint with testing dataset
-    summary: dict[str, Any] = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
-    if conf_met_fn.results is not None:
-        summary.update({"conf_met": conf_met_fn.results})
-    view.logger.info(summary)
+    # summary: dict[str, Any] = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    # if conf_met_fn.results is not None:
+    #     summary.update({"conf_met": conf_met_fn.results})
+    # view.logger.info(summary)
     return summary
 
 
