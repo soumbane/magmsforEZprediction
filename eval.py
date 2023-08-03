@@ -35,10 +35,10 @@ def test(cfg: TestingConfigs, /) -> dict[str, float]:
 
     ## 0:T1, 1:T2, 2:FLAIR, 3:DWI, 4:DWIC
     manager.target_dict = {
-        0: "T1",
-        1: "T2",
-        2: "FLAIR",
-        3: "DWI",
+        # 0: "T1",
+        # 1: "T2",
+        # 2: "FLAIR",
+        # 3: "DWI",
         4: "DWIC",
     }
 
