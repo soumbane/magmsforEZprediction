@@ -111,7 +111,7 @@ def train_val_split(X: np.ndarray, Y: np.ndarray, fold: str = "1", num_nodes: in
         # For the training set and its augmentations
         total_ones_train = []
         for i in range(54):
-            total_ones_train.append(sum(Y[num_nodes*i:num_nodes*(i+1)])) 
+            total_ones_train.append(sum(Y[num_nodes*i:num_nodes*(i+1)])) # original nodes for each patient 
 
         original_ones_train = sum(total_ones_train)
         original_zeros_train = len(total_ones_train)*num_nodes - sum(total_ones_train)
@@ -183,10 +183,11 @@ def main(root: str, k_neighbors: int = 5, num_nodes: int = 3, fold_no: str = "1"
     print(f"X_all_patients min: {np.min(X_combined_all_patients_norm)}")
     Y_combined_all_patients = Y_combined_all_patients.reshape(Y_combined_all_patients.shape[1])
 
+    print('UnAugmented Y_all_patients shape %s' % Counter(Y_combined_all_patients))
+
     # augment data using SMOTE (balance dataset) for all 827 nodes of 68 patients
     X_aug_all_patients, Y_aug_all_patients = augment_data(X_combined_all_patients_norm, Y_combined_all_patients, k_neighbors = k_neighbors, random_state=100) # type:ignore
 
-    print('UnAugmented Y_all_patients shape %s' % Counter(Y_combined_all_patients))
     print('Augmented Y_all_patients shape %s' % Counter(Y_aug_all_patients))
 
     # split the data into training and validation (80%-20% split) 
