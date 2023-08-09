@@ -161,6 +161,21 @@ cython_debug/
 
 experiments/*
 
+Train_NonEZvsEZ_whole_brain_aug_separate_fold1/*
+Val_NonEZvsEZ_whole_brain_aug_separate_fold1/*
+
+Train_NonEZvsEZ_whole_brain_aug_separate_fold2/*
+Val_NonEZvsEZ_whole_brain_aug_separate_fold2/*
+
+Train_NonEZvsEZ_whole_brain_aug_separate_fold3/*
+Val_NonEZvsEZ_whole_brain_aug_separate_fold3/*
+
+Train_NonEZvsEZ_whole_brain_aug_separate_fold4/*
+Val_NonEZvsEZ_whole_brain_aug_separate_fold4/*
+
+Train_NonEZvsEZ_whole_brain_aug_separate_fold5/*
+Val_NonEZvsEZ_whole_brain_aug_separate_fold5/*
+
 trained_models/*
 Icon*
 *.DS_Store
