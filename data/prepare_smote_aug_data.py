@@ -71,224 +71,6 @@ node_numbers_with_smote = get_list_of_node_nums()
 
 print(len(node_numbers_with_smote))
 
-# New code for both hemisphere (combining all nodes)
-
-def load_data(root: str, mode: str = "model"):
-    
-    if mode == "all":        
-        X_combined_whole_brain = np.zeros((1,1899))
-        Y_combined_whole_brain = []
-
-        for i in node_numbers_with_smote:      
-            ## Load ModelCohort
-            # print(f"Loading ModelCohort for Node num: {i}")
-
-            path = os.path.join(root,'Valid_NonEZvsEZ_ALL')
-
-            RI_file = f"Valid_NonEZvsEZ_RI_node{i}_ALL.mat"
-            Conn_file = f"Valid_NonEZvsEZ_Conn_node{i}_ALL.mat"
-            label_file = f"Valid_NonEZvsEZ_label_node{i}_ALL.mat"
-            RI_mat_name = "ModelCohort_NonEZvsEZ_RI"
-            Conn_mat_name = "ModelCohort_NonEZvsEZ_Conn"
-            label_mat_name = "ModelCohort_NonEZvsEZ_label"
-
-            raw_path_RI = os.path.join(path,RI_file)
-            raw_path_Conn = os.path.join(path,Conn_file)
-            raw_path_label = os.path.join(path,label_file)
-
-            """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
-            X_mat_l = loadmat(raw_path_RI)
-            X_mat_RI = X_mat_l[RI_mat_name] # RI matrix: 1x1400
-        
-            # check for NaN values and replace NaN values with 0
-            if (np.isnan(X_mat_RI).any()):  
-                X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
-
-            """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
-            X_mat_lconn = loadmat(raw_path_Conn)
-            X_mat_DWIC = X_mat_lconn[Conn_mat_name]  # DWIC matrix: 1x499
-                        
-            # check for NaN values and replace NaN values with 0
-            if (np.isnan(X_mat_DWIC).any()):
-                X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)
-
-            X_combined_1 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
-
-            """Load the Label Matrix from .mat files.""" 
-            Y_mat_l = loadmat(raw_path_label)
-            Y_mat_aug = Y_mat_l[label_mat_name]
-            Y_mat_aug_1 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
-
-            X_combined_whole_brain = np.concatenate((X_combined_whole_brain, X_combined_1), axis=0)
-            if i == node_numbers_with_smote[0]:
-                X_combined_whole_brain = X_combined_whole_brain[1:,:]
-
-            Y_combined_whole_brain = np.concatenate((Y_combined_whole_brain, Y_mat_aug_1), axis=0)
-
-            ###################################################################################################
-            ## Load ValidCohort
-            # print(f"Loading ValidCohort for Node num: {i}")
-
-            path = os.path.join(root,'ValidCohort_NonEZvsEZ_ALL')
-        
-            RI_file = f"ValidCohort_NonEZvsEZ_RI_node{i}_ALL.mat"
-            Conn_file = f"ValidCohort_NonEZvsEZ_Conn_node{i}_ALL.mat"
-            label_file = f"ValidCohort_NonEZvsEZ_label_node{i}_ALL.mat"
-            RI_mat_name = "ValidCohort_NonEZvsEZ_RI"
-            Conn_mat_name = "ValidCohort_NonEZvsEZ_Conn"
-            label_mat_name = "ValidCohort_NonEZvsEZ_label"
-
-            raw_path_RI = os.path.join(path,RI_file)
-            raw_path_Conn = os.path.join(path,Conn_file)
-            raw_path_label = os.path.join(path,label_file)
-
-            """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
-            X_mat_l = loadmat(raw_path_RI)
-            X_mat_RI = X_mat_l[RI_mat_name] # RI matrix: 1x1400
-
-            # check for NaN values and replace NaN values with 0
-            if (np.isnan(X_mat_RI).any()):  
-                X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
-
-            """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
-            X_mat_lconn = loadmat(raw_path_Conn)
-            X_mat_DWIC = X_mat_lconn[Conn_mat_name]  # DWIC matrix: 1x499
-                        
-            # check for NaN values and replace NaN values with 0
-            if (np.isnan(X_mat_DWIC).any()):
-                X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)
-
-            X_combined_2 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
-
-            """Load the Label Matrix from .mat files.""" 
-            Y_mat_l = loadmat(raw_path_label)
-            Y_mat_aug = Y_mat_l[label_mat_name]
-            Y_mat_aug_2 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
-
-            X_combined_whole_brain = np.concatenate((X_combined_whole_brain, X_combined_2), axis=0)            
-                            
-            Y_combined_whole_brain = np.concatenate((Y_combined_whole_brain, Y_mat_aug_2), axis=0)
-            Y_combined_whole_brain = Y_combined_whole_brain.astype(int) 
-            print(f"Combined node {i} of 68 patients.")
-
-        print("Finished combining all 827 nodes of 68 patients.")
-
-        return X_combined_whole_brain, Y_combined_whole_brain 
-
-    elif mode == "patient_level":        
-        X_combined_whole_brain = np.zeros((1,1899))
-        Y_combined_whole_brain = []
-
-        for j in range(68):
-            for i in node_numbers_with_smote:   
-                if j < 44:   
-                    ## Load ModelCohort
-                    # print(f"Loading ModelCohort for Node num: {i}")
-
-                    path = os.path.join(root,'Valid_NonEZvsEZ_ALL')
-
-                    RI_file = f"Valid_NonEZvsEZ_RI_node{i}_ALL.mat"
-                    Conn_file = f"Valid_NonEZvsEZ_Conn_node{i}_ALL.mat"
-                    label_file = f"Valid_NonEZvsEZ_label_node{i}_ALL.mat"
-                    RI_mat_name = "ModelCohort_NonEZvsEZ_RI"
-                    Conn_mat_name = "ModelCohort_NonEZvsEZ_Conn"
-                    label_mat_name = "ModelCohort_NonEZvsEZ_label"
-
-                    raw_path_RI = os.path.join(path,RI_file)
-                    raw_path_Conn = os.path.join(path,Conn_file)
-                    raw_path_label = os.path.join(path,label_file)
-
-                    """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
-                    X_mat_l = loadmat(raw_path_RI)
-                    X_mat_RI = X_mat_l[RI_mat_name] # RI matrix: 1x1400
-                
-                    # check for NaN values and replace NaN values with 0
-                    if (np.isnan(X_mat_RI).any()):  
-                        X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
-
-                    """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
-                    X_mat_lconn = loadmat(raw_path_Conn)
-                    X_mat_DWIC = X_mat_lconn[Conn_mat_name]  # DWIC matrix: 1x499
-                                
-                    # check for NaN values and replace NaN values with 0
-                    if (np.isnan(X_mat_DWIC).any()):
-                        X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)
-
-                    X_combined_1 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
-
-                    """Load the Label Matrix from .mat files.""" 
-                    Y_mat_l = loadmat(raw_path_label)
-                    Y_mat_aug = Y_mat_l[label_mat_name]
-                    # Y_mat_aug_1 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
-                    Y_mat_aug_1 = Y_mat_aug[j,:]
-
-                    X_mat_temp = X_combined_1[j,:].reshape(1, X_combined_1.shape[1])
-
-                    X_combined_whole_brain = np.concatenate((X_combined_whole_brain, X_mat_temp), axis=0)
-                    if j == 0 and i == node_numbers_with_smote[0]:
-                        X_combined_whole_brain = X_combined_whole_brain[1:,:]
-
-                    Y_combined_whole_brain = np.concatenate((Y_combined_whole_brain, Y_mat_aug_1), axis=0)
-                    print(f"ModelCohort: Patient {j+1}, Node {i}")
-
-                ###################################################################################################
-                else:
-                    ## Load ValidCohort
-                    # print(f"Loading ValidCohort for Node num: {i}")
-
-                    path = os.path.join(root,'ValidCohort_NonEZvsEZ_ALL')
-                
-                    RI_file = f"ValidCohort_NonEZvsEZ_RI_node{i}_ALL.mat"
-                    Conn_file = f"ValidCohort_NonEZvsEZ_Conn_node{i}_ALL.mat"
-                    label_file = f"ValidCohort_NonEZvsEZ_label_node{i}_ALL.mat"
-                    RI_mat_name = "ValidCohort_NonEZvsEZ_RI"
-                    Conn_mat_name = "ValidCohort_NonEZvsEZ_Conn"
-                    label_mat_name = "ValidCohort_NonEZvsEZ_label"
-
-                    raw_path_RI = os.path.join(path,RI_file)
-                    raw_path_Conn = os.path.join(path,Conn_file)
-                    raw_path_label = os.path.join(path,label_file)
-
-                    """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
-                    X_mat_l = loadmat(raw_path_RI)
-                    X_mat_RI = X_mat_l[RI_mat_name] # RI matrix: 1x1400
-
-                    # check for NaN values and replace NaN values with 0
-                    if (np.isnan(X_mat_RI).any()):  
-                        X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
-
-                    """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
-                    X_mat_lconn = loadmat(raw_path_Conn)
-                    X_mat_DWIC = X_mat_lconn[Conn_mat_name]  # DWIC matrix: 1x499
-                                
-                    # check for NaN values and replace NaN values with 0
-                    if (np.isnan(X_mat_DWIC).any()):
-                        X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)
-
-                    X_combined_2 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
-
-                    """Load the Label Matrix from .mat files.""" 
-                    Y_mat_l = loadmat(raw_path_label)
-                    Y_mat_aug = Y_mat_l[label_mat_name]
-                    # Y_mat_aug_2 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
-
-                    Y_mat_aug_2 = Y_mat_aug[j-44,:]
-
-                    X_mat_temp = X_combined_2[j-44,:].reshape(1, X_combined_2.shape[1])
-
-                    X_combined_whole_brain = np.concatenate((X_combined_whole_brain, X_mat_temp), axis=0)
-                    
-                    Y_combined_whole_brain = np.concatenate((Y_combined_whole_brain, Y_mat_aug_2), axis=0)
-                    print(f"ValidationCohort: Patient {(j)+1}, Node {i}")                    
-
-        Y_combined_whole_brain = Y_combined_whole_brain.astype(int) # type:ignore
-        print("Finished combining all 827 nodes of 68 patients.")
-
-        return X_combined_whole_brain, Y_combined_whole_brain 
-
-    else:
-        raise NotImplementedError(f"Mode must be either model or valid to load dataset.")
-
 
 def z_score_norm(X: np.ndarray):
 
@@ -375,16 +157,31 @@ def save_aug_data_as_separate_nodes(save_dir: str, X: np.ndarray, Y: np.ndarray,
             raise KeyError(f"The mode must be either train, valid.")
 
 
-def main(root: str, k_neighbors: int = 5, num_nodes: int = 3, fold_no: str = "1"):
+def main(root: str, k_neighbors: int = 5, num_nodes: int = 3, fold_no: str = "1"):    
     
-    # Combining all brain nodes patient by patient (Pat 1 Node 1, Pat 1 Node 2, ...., Pat 68 Node 948)
-    X_combined_all_patients, Y_combined_all_patients = load_data(root, mode="patient_level")  # type:ignore 
+    # Load the data of all nodes of 68 patients
+    path = os.path.join(root,'NonEZvsEZ_whole_brain_patient_level')                
+    X_file = f"X_whole_brain.mat"
+    Y_file = f"Y_whole_brain.mat"    
+    X_mat_name = "X_whole_brain"
+    Y_mat_name = "Y_whole_brain"
+    
+    raw_path_X = os.path.join(path,X_file)
+    raw_path_Y = os.path.join(path,Y_file)
+
+    """Load the X Matrix from .mat files.""" 
+    X_mat_l = loadmat(raw_path_X)
+    X_combined_all_patients = X_mat_l[X_mat_name]
+
+    """Load the Y Matrix from .mat files.""" 
+    Y_mat_l = loadmat(raw_path_Y)
+    Y_combined_all_patients = Y_mat_l[Y_mat_name]
 
     # Perform z-score normalization across patients
     X_combined_all_patients_norm = z_score_norm(X_combined_all_patients)  # type:ignore
     print(f"X_all_patients max: {np.max(X_combined_all_patients_norm)}")
     print(f"X_all_patients min: {np.min(X_combined_all_patients_norm)}")
-    Y_combined_all_patients = Y_combined_all_patients
+    Y_combined_all_patients = Y_combined_all_patients.reshape(Y_combined_all_patients.shape[1])
 
     # augment data using SMOTE (balance dataset) for all 827 nodes of 68 patients
     X_aug_all_patients, Y_aug_all_patients = augment_data(X_combined_all_patients_norm, Y_combined_all_patients, k_neighbors = k_neighbors, random_state=100) # type:ignore
@@ -426,7 +223,8 @@ def main(root: str, k_neighbors: int = 5, num_nodes: int = 3, fold_no: str = "1"
 if __name__ == "__main__":
 
     # Root Folder
-    root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
+    # root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
+    root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/'
 
     main(root, k_neighbors=6, num_nodes=827, fold_no="1")
 
