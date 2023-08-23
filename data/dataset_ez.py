@@ -188,27 +188,35 @@ class DatasetEZ_WB(Dataset):
     root: str
     mode: EZMode
 
-    def __init__(self, batch_size: int, root: str, drop_last: bool = False, mode: EZMode = EZMode.TRAIN, shuffle: bool = False, device=torch.device("cuda:0")) -> None:
+    def __init__(self, batch_size: int, root: str, drop_last: bool = False, mode: EZMode = EZMode.TRAIN, fold_no: str = "1", shuffle: bool = False, device=torch.device("cuda:0")) -> None:
         super().__init__(batch_size, drop_last=drop_last, shuffle=shuffle, device=device)
         self.mode = mode
         self.root = root
 
         # initialize path
         if self.mode == EZMode.TRAIN:
-            self.path = os.path.join(self.root, 'Train_NonEZvsEZ_whole_brain_aug_separate_fold1')
+            self.path = os.path.join(self.root, 'Train_NonEZvsEZ_whole_brain_aug_separate_fold'+fold_no)
             self.x_file = f"X_train_aug_whole_brain_node"
             self.y_file = f"Y_train_aug_whole_brain_node"
             self.x_mat_name = "X_aug_train_node"
             self.y_mat_name = "Y_aug_train_node"
-            self.size = 81612
+            # self.size = 81612 # fold 1
+            # self.size = 81672 # fold 2
+            # self.size = 83006 # fold 3
+            # self.size = 82766 # fold 4
+            # self.size = 84960 # fold 5
 
         elif self.mode == EZMode.VALIDATE:
-            self.path = os.path.join(self.root, 'Val_NonEZvsEZ_whole_brain_aug_separate_fold1')
+            self.path = os.path.join(self.root, 'Val_NonEZvsEZ_whole_brain_aug_separate_fold'+fold_no)
             self.x_file = f"X_val_aug_whole_brain_node"
             self.y_file = f"Y_val_aug_whole_brain_node"
             self.x_mat_name = "X_aug_valid_node"
             self.y_mat_name = "Y_aug_valid_node"
-            self.size = 21892
+            # self.size = 21892 # fold 1
+            # self.size = 21832 # fold 2
+            # self.size = 20498 # fold 3
+            # self.size = 20738 # fold 4
+            # self.size = 18544 # fold 5
 
         elif self.mode == EZMode.TEST:
             # For augmented test set
@@ -217,7 +225,6 @@ class DatasetEZ_WB(Dataset):
             self.y_file = f"Y_test_aug_whole_brain_node"
             self.x_mat_name = "X_aug_test_node"
             self.y_mat_name = "Y_aug_test_node"
-            self.size = 18834
 
         else:
             raise NotImplementedError("Select either train, validate or test mode.")
@@ -225,7 +232,9 @@ class DatasetEZ_WB(Dataset):
     @property
     def unbatched_len(self) -> int:
         r"""Returns the total length of the dataset (before forming into batches)."""
-        """Load the Label Matrix from .mat files.""" 
+        """Load the Label Matrix from .mat files."""
+
+        self.size = (len(os.listdir(self.path)))//2
         
         return self.size
 
@@ -368,7 +377,7 @@ class DatasetEZ_NodeLevel(Dataset):
 if __name__ == "__main__":
 
     print("Whole Brain EZ Dataset ...")
-    ez_dataset = DatasetEZ_WB(batch_size=1, root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/baselines_all_hemispheres/', drop_last=False, mode=EZMode.TRAIN, shuffle=True)
+    ez_dataset = DatasetEZ_WB(batch_size=1, root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/SMOTE_Augmented_Data/', drop_last=False, mode=EZMode.VALIDATE, fold_no="1", shuffle=True)
 
     print(ez_dataset.unbatched_len)
     # print((ez_dataset.__getitem__(0))[0][4].shape)
@@ -376,7 +385,7 @@ if __name__ == "__main__":
 
     X_combined, Y_label = ez_dataset.__getitem__(0)
     print(X_combined.shape)
-    print(Y_label)
+    print(Y_label.shape)
 
     # print("Whole Brain EZ Dataset ...")
     # ez_dataset = DatasetEZ_NodeLevel(batch_size=1, root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/baselines_all_hemispheres/', drop_last=False, mode=EZMode.TEST, shuffle=True)
