@@ -7,7 +7,7 @@ from .nn.fusion import FusionType
 
 # def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool = False, *, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,256,512], fusion: FusionType = FusionType.MID_CONCAT) -> Basic: # for Min-Hee's code
 
-def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool = False, *, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,128], fusion: FusionType = FusionType.MID_MEAN) -> MAGNET2[MSFE]:
+def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool = False, *, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,128], fusion: FusionType = FusionType.MID_MEAN, train_modality: str = "ALL") -> MAGNET2[MSFE]:
     r"""
     Build `magnet.MAGNET2` for EzPred
     Args:
@@ -49,14 +49,50 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
     sch = SCH(mlp_features=filters_shfe[-1] * 2, num_classes=num_classes)
     # sch = SCH(mlp_features=filters_msfe[-1] * 10, num_classes=num_classes) # for Min-Hee's code
 
-    # build magnet
-    target_dict = {
-        0: "T1",
-        1: "T2",
-        2: "FLAIR",
-        3: "DWI",
-        4: "DWIC",
-    }
+    ## Build target_dict for magnet (Training modalities)
+    if train_modality == "ALL": # Training with ALL modalities
+        target_dict = {
+            0: "T1",
+            1: "T2",
+            2: "FLAIR",
+            3: "DWI",
+            4: "DWIC",
+        }
+    elif train_modality == "FLAIR": # Training with FLAIR Only - Bottom 3 modalities    
+        target_dict = {
+            2: "FLAIR"
+        }
+    elif train_modality == "T2": # Training with T2 Only - Bottom 3 modalities    
+        target_dict = {
+            1: "T2"
+        }
+    elif train_modality == "T2-FLAIR": # Training with T2 and FLAIR Only - Bottom 3 modalities    
+        target_dict = {
+            1: "T2",
+            2: "FLAIR"
+        }
+    elif train_modality == "T1-FLAIR-DWIC": # Training with T1, FLAIR and DWIC Only - Top 3 modalities    
+        target_dict = {
+            0: "T1",
+            2: "FLAIR",
+            4: "DWIC"
+        }
+    elif train_modality == "T1-FLAIR-DWI-DWIC": # Training with T1, FLAIR, DWI and DWIC Only - Top 3 modalities    
+        target_dict = {
+            0: "T1",
+            2: "FLAIR",
+            3: "DWI",
+            4: "DWIC"
+        }
+    elif train_modality == "T1-T2-FLAIR-DWIC": # Training with T1, T2, FLAIR and DWIC Only - Top 3 modalities    
+        target_dict = {
+            0: "T1",
+            1: "T2",
+            2: "FLAIR",
+            4: "DWIC"
+        }
+    else:
+        raise NotImplementedError("Modality combination training is not needed.")
 
     model = MAGNET2(msfe_T1, msfe_T2, msfe_FLAIR, msfe_DWI, msfe_DWIC, fusion=fuse, decoder=torch.nn.Sequential(shfe, sch), target_dict=target_dict, return_features=True)
 
