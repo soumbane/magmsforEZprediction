@@ -391,7 +391,10 @@ class DatasetEZ_WB_Control(Dataset):
             raise NotImplementedError("Train data not saved for control patients.") 
 
         elif self.mode == EZMode.VALIDATE:
+            # with z-score norm
             self.path = os.path.join(self.root, 'Val_NonEZvsEZ_whole_brain_control_separate')
+            # NO z-score norm
+            # self.path = os.path.join(self.root, 'Val_NonEZvsEZ_whole_brain_control_separate_NO_Norm')
             self.x_file = f"X_val_control_whole_brain_node"
             self.y_file = f"Y_val_control_whole_brain_node"
             self.x_mat_name = "X_control_valid_node"
