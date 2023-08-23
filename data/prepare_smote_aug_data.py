@@ -124,15 +124,6 @@ def train_val_split(X: np.ndarray, Y: np.ndarray, fold: str = "1", num_nodes: in
         print('Y_train: %s' % Counter(Y_train))
 
         # For the validation set and its augmentations
-        total_ones_val = []
-        for i in range(54,68):
-            total_ones_val.append(sum(Y[num_nodes*i:num_nodes*(i+1)]))  
-
-        original_ones_val = sum(total_ones_val)
-        original_zeros_val = len(total_ones_val)*num_nodes - sum(total_ones_val)
-
-        augmented_ones_val = original_zeros_val - original_ones_val
-
         X_val = np.concatenate((X[54*num_nodes:68*num_nodes,:], X[(68*num_nodes+augmented_ones_train):,:]), axis=0)
         Y_val = np.concatenate((Y[54*num_nodes:68*num_nodes], Y[(68*num_nodes+augmented_ones_train):]), axis=0)
 
@@ -251,15 +242,7 @@ def train_val_split(X: np.ndarray, Y: np.ndarray, fold: str = "1", num_nodes: in
 
         print('Y_val: %s' % Counter(Y_val))
         
-        # For the original training set and its augmentations
-        total_ones_train_1 = []
-        for i in range(12,68):
-            total_ones_train_1.append(sum(Y[num_nodes*i:num_nodes*(i+1)])) # original nodes for each patient 
-        original_ones_train_1 = sum(total_ones_train_1)
-        original_zeros_train_1 = len(total_ones_train_1)*num_nodes - sum(total_ones_train_1)
-
-        augmented_ones_train_1 = original_zeros_train_1 - original_ones_train_1        
-        
+        # For the original training set and its augmentations        
         X_train = np.concatenate((X[12*num_nodes:68*num_nodes,:], X[(68*num_nodes+augmented_ones_val):,:]), axis=0)
         
         Y_train = np.concatenate((Y[12*num_nodes:68*num_nodes], Y[(68*num_nodes+augmented_ones_val):]), axis=0)
