@@ -46,7 +46,7 @@ class Configs(_Configs):
         # testing arguments
         testing_args = parser.add_argument_group("Testing arguments")
         testing_args.add_argument("-b", "--batch_size", type=int, default=1, help="The number of batch size, default is 1.")
-        testing_args.add_argument("--fold_no", type=str, default=1, help="Fold number for validation, default is 1.")
+        testing_args.add_argument("--fold_no", type=str, required=False, help="Fold number for validation, default is 1.")
         testing_args.add_argument("--show_verbose", action="store_true", default=False, help="The flag to show probress bar during testing.")
         _Configs.get_arguments(testing_args)
 
