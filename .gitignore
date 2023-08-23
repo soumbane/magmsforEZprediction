@@ -177,5 +177,6 @@ Train_NonEZvsEZ_whole_brain_aug_separate_fold5/*
 Val_NonEZvsEZ_whole_brain_aug_separate_fold5/*
 
 trained_models/*
+Control_Data_Results/*
 Icon*
 *.DS_Store
