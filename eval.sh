@@ -1,1 +1,1 @@
-python eval.py /home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/ /home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/experiments/magms_ALL_mod_WB_fold1.exp/checkpoints/best_accuracy.model -b 32 --replace_experiment --show_verbose --device cuda:0
+python eval.py /home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/ /home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/experiments/magms_ALL_mod_WB_fold1.exp/checkpoints/best_accuracy.model -b 2 --replace_experiment --show_verbose --device cuda:0
