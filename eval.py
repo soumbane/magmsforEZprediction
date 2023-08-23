@@ -82,8 +82,11 @@ def get_target_dict(num: int) -> dict[int, str]:
 
 
 def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
-    # load dataset
-    validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+    # load whole brain dataset
+    # validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+
+    # load whole brain control dataset
+    validation_dataset = data.DatasetEZ_WB_Control(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE)
     
     # load checkpoint
     if cfg.model.endswith(".model"):
@@ -133,7 +136,7 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
 if __name__ == "__main__":
     configs = TestingConfigs.from_arguments()
 
-    dict_mod = get_target_dict(6)    
+    dict_mod = get_target_dict(31)    
     acc, mod_dict = test(configs, target_dict=dict_mod)
     
     print(f"Testing modality combination: {mod_dict}, accuracy is: {acc}\n")
