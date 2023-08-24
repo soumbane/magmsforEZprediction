@@ -7,6 +7,8 @@ from torchmanager.metrics import metric
 from torchmanager_core import view
 from typing import Any
 import numpy as np
+import pandas as pd
+import os
 
 import data
 
@@ -82,9 +84,11 @@ def get_target_dict(num: int) -> dict[int, str]:
 
 
 def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
-    # load dataset
-    validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE)
-    # testing_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST)    
+    # load whole brain dataset
+    validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+
+    # load whole brain control dataset
+    # validation_dataset = data.DatasetEZ_WB_Control(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE)
     
     # load checkpoint
     if cfg.model.endswith(".model"):
@@ -117,8 +121,10 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
     # print(f'The best accuracy on validation set occurs at {manager.current_epoch + 1} epoch number')
 
     # test checkpoint with validation dataset
-    # summary: dict[str, Any] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
-    summary: dict[str, Any] = manager.test(validation_dataset, show_verbose=False, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    summary: dict[str, Any] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+
+    # preds = manager.predict(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+
     if conf_met_fn.results is not None:
         summary.update({"conf_met": conf_met_fn.results})
     # view.logger.info(summary)
@@ -128,11 +134,41 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
     # if conf_met_fn.results is not None:
     #     summary.update({"conf_met": conf_met_fn.results})
     # view.logger.info(summary)
+    # return summary['accuracy'], manager.target_dict, preds # only if predictions are needed
     return summary['accuracy'], manager.target_dict
 
 
 if __name__ == "__main__":
     configs = TestingConfigs.from_arguments()
+
+    # dict_mod = get_target_dict(31)    
+    # acc, mod_dict, preds = test(configs, target_dict=dict_mod)
+    
+    # print(f"Testing modality combination: {mod_dict}, accuracy is: {acc}\n")
+
+    # predicted_acc = []
+
+    # for i in range(1654):
+    #     preds_1 = preds[i].squeeze(0)
+    #     preds_f = torch.argmax(preds_1, dim=0)
+    #     predicted_acc.append(preds_f.item())
+    
+    # # dictionary of lists
+    # predicted_acc_dict = {'Accuracy': predicted_acc}    
+
+    # df = pd.DataFrame(predicted_acc_dict)  
+
+    # # saving the dataframe
+    # path = "/home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/"  
+    # save_path = os.path.join(path, "Control_Data_Results")
+    # if not os.path.exists(save_path):
+    #     os.makedirs(save_path)
+    
+    # filename  = "control_data_accuracy_model_fold5.csv"
+    # save_filepath = os.path.join(save_path, filename)
+
+    # df.to_csv(save_filepath, header=False, index=False)
+
 
     accuracy = []
 

@@ -207,7 +207,7 @@ class DatasetEZ_NodeLevel(Dataset):
 
         return [x_t1, x_t2, x_flair, x_dwi, x_dwic], y
 
-    
+      
 class DatasetEZ_WB_Control(Dataset):
     r"""
     Args:

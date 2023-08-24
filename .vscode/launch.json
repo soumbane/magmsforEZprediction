@@ -32,9 +32,9 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/baselines_all_hemispheres/",
-                "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/experiments/test_magms_ALL_mod_WB_deep_both_hemis_2.exp/checkpoints/best_accuracy.model",
-                "-b", "64",
+                "/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/",
+                "/home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/experiments/magms_ALL_mod_WB_fold1.exp/checkpoints/best_accuracy.model",
+                "-b", "1",
                 "--replace_experiment",
                 "--show_verbose",
                 "--device", "cuda:0",
