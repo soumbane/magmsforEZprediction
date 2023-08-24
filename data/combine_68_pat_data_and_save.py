@@ -79,7 +79,7 @@ def load_data(root: str, mode: str = "node_level"):
 
         for i in node_numbers_with_smote:      
             ## Load ModelCohort
-            print(f"Loading ModelCohort for Node num: {i}")
+            # print(f"Loading ModelCohort for Node num: {i}")
 
             path = os.path.join(root,'Valid_NonEZvsEZ_ALL')
 
@@ -125,7 +125,7 @@ def load_data(root: str, mode: str = "node_level"):
 
             ###################################################################################################
             ## Load ValidCohort
-            print(f"Loading ValidCohort for Node num: {i}")
+            # print(f"Loading ValidCohort for Node num: {i}")
 
             path = os.path.join(root,'ValidCohort_NonEZvsEZ_ALL')
         
@@ -296,7 +296,8 @@ def save_whole_brain_data(save_dir: str, X: np.ndarray, Y: np.ndarray) -> None:
 
 def main(root: str, mode: str = "patient_level"):
     
-    # Combining all brain nodes patient by patient (Pat 1 Node 1, Pat 1 Node 2, ...., Pat 68 Node 983)
+    # Combining all brain nodes patient by patient (Pat 1 Node 1, Pat 1 Node 2, ...., Pat 68 Node 983): Pat. Level
+    # Combining all brain nodes node by node (Pat 1 Node 1, Pat 2 Node 1, ...., Pat 68 Node 983): Node Level
     X_combined_all_patients, Y_combined_all_patients = load_data(root, mode=mode)  # type:ignore
        
     # save the data
@@ -313,7 +314,7 @@ if __name__ == "__main__":
     # root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
     root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
 
-    # main(root, mode = "node_level")
-    main(root, mode = "patient_level")
+    main(root, mode = "node_level")
+    # main(root, mode = "patient_level")
 
 
