@@ -176,6 +176,14 @@ Val_NonEZvsEZ_whole_brain_aug_separate_fold4/*
 Train_NonEZvsEZ_whole_brain_aug_separate_fold5/*
 Val_NonEZvsEZ_whole_brain_aug_separate_fold5/*
 
+NonEZvsEZ_whole_brain_patient_level/*
+NonEZvsEZ_whole_brain_node_level/*
+
 trained_models/*
+Control_Data_Results/*
+pretrained_models/*
+Node_Level_Data/*
+finetuned_node_level_models/*
+
 Icon*
 *.DS_Store
