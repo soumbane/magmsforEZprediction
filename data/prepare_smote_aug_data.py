@@ -352,8 +352,8 @@ def main(root: str, k_neighbors: int = 5, num_nodes: int = 3, fold_no: str = "1"
 if __name__ == "__main__":
 
     # Root Folder
-    root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
-    # root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/'
+    # root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
+    root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/'
 
     main(root, k_neighbors=6, num_nodes=827, fold_no="1")
     # main(root, k_neighbors=6, num_nodes=827, fold_no="2")
