@@ -85,7 +85,10 @@ def get_target_dict(num: int) -> dict[int, str]:
 
 def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
     # load whole brain dataset
-    validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+    # validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+
+    # load whole brain original validation dataset
+    validation_dataset = data.DatasetEZ_WB_Val_Original(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
 
     # load whole brain control dataset
     # validation_dataset = data.DatasetEZ_WB_Control(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE)
@@ -127,7 +130,7 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
 
     if conf_met_fn.results is not None:
         summary.update({"conf_met": conf_met_fn.results})
-    # view.logger.info(summary)
+    view.logger.info(summary)
     
     # test checkpoint with testing dataset
     # summary: dict[str, Any] = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
@@ -141,10 +144,11 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
 if __name__ == "__main__":
     configs = TestingConfigs.from_arguments()
 
-    # dict_mod = get_target_dict(31)    
+    dict_mod = get_target_dict(31)    
     # acc, mod_dict, preds = test(configs, target_dict=dict_mod)
+    acc, mod_dict = test(configs, target_dict=dict_mod)
     
-    # print(f"Testing modality combination: {mod_dict}, accuracy is: {acc}\n")
+    print(f"Testing modality combination: {mod_dict}, accuracy is: {acc}\n")
 
     # predicted_acc = []
 
@@ -170,13 +174,13 @@ if __name__ == "__main__":
     # df.to_csv(save_filepath, header=False, index=False)
 
 
-    accuracy = []
+    # accuracy = []
 
-    for i in range(1,32):
-        dict_mod = get_target_dict(i)    
-        acc, mod_dict = test(configs, target_dict=dict_mod)
-        accuracy.append(acc)
-        print(f"Testing modality combination: {mod_dict}, accuracy is: {acc}\n")
+    # for i in range(1,32):
+    #     dict_mod = get_target_dict(i)    
+    #     acc, mod_dict = test(configs, target_dict=dict_mod)
+    #     accuracy.append(acc)
+    #     print(f"Testing modality combination: {mod_dict}, accuracy is: {acc}\n")
 
-    print(f"Final Testing modality combination mean is: {np.mean(accuracy)}")
+    # print(f"Final Testing modality combination mean is: {np.mean(accuracy)}")
     
