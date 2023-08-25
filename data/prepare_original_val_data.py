@@ -327,9 +327,9 @@ if __name__ == "__main__":
     root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/'
 
     # main(root, k_neighbors=6, num_nodes=827, fold_no="1")
-    main(root, k_neighbors=6, num_nodes=827, fold_no="2")
+    # main(root, k_neighbors=6, num_nodes=827, fold_no="2")
     # main(root, k_neighbors=6, num_nodes=827, fold_no="3")
     # main(root, k_neighbors=6, num_nodes=827, fold_no="4")
-    # main(root, k_neighbors=6, num_nodes=827, fold_no="5")
+    main(root, k_neighbors=6, num_nodes=827, fold_no="5")
 
 
