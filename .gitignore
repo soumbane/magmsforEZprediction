@@ -176,6 +176,12 @@ Val_NonEZvsEZ_whole_brain_aug_separate_fold4/*
 Train_NonEZvsEZ_whole_brain_aug_separate_fold5/*
 Val_NonEZvsEZ_whole_brain_aug_separate_fold5/*
 
+Val_NonEZvsEZ_whole_brain_original_separate_fold1/*
+Val_NonEZvsEZ_whole_brain_original_separate_fold2/*
+Val_NonEZvsEZ_whole_brain_original_separate_fold3/*
+Val_NonEZvsEZ_whole_brain_original_separate_fold4/*
+Val_NonEZvsEZ_whole_brain_original_separate_fold5/*
+
 NonEZvsEZ_whole_brain_patient_level/*
 NonEZvsEZ_whole_brain_node_level/*
 
