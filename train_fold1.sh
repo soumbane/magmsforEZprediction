@@ -1,0 +1,11 @@
+python train.py /home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/SMOTE_Augmented_Data/ /home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/trained_models/magms_FLAIR_WB_fold2.model -b 32 -lr 5e-4 --num_mod 5 --fold_no 2 --train_mod FLAIR -e 25 -exp magms_FLAIR_WB_fold2.exp --replace_experiment --show_verbose --device cuda:0
+
+python train.py /home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/SMOTE_Augmented_Data/ /home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/trained_models/magms_T2_WB_fold2.model -b 32 -lr 5e-4 --num_mod 5 --fold_no 2 --train_mod T2 -e 25 -exp magms_T2_WB_fold2.exp --replace_experiment --show_verbose --device cuda:0
+
+python train.py /home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/SMOTE_Augmented_Data/ /home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/trained_models/magms_T2_FLAIR_WB_fold2.model -b 32 -lr 5e-4 --num_mod 5 --fold_no 2 --train_mod T2-FLAIR -e 25 -exp magms_T2_FLAIR_WB_fold2.exp --replace_experiment --show_verbose --device cuda:0
+
+python train.py /home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/SMOTE_Augmented_Data/ /home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/trained_models/magms_T1_FLAIR_DWIC_WB_fold2.model -b 32 -lr 5e-4 --num_mod 5 --fold_no 2 --train_mod T1-FLAIR-DWIC -e 25 -exp magms_T1_FLAIR_DWIC_WB_fold2.exp --replace_experiment --show_verbose --device cuda:0
+
+python train.py /home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/SMOTE_Augmented_Data/ /home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/trained_models/magms_T1_FLAIR_DWI_DWIC_WB_fold2.model -b 32 -lr 5e-4 --num_mod 5 --fold_no 2 --train_mod T1-FLAIR-DWI-DWIC -e 25 -exp magms_T1_FLAIR_DWI_DWIC_WB_fold2.exp --replace_experiment --show_verbose --device cuda:0
+
+python train.py /home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/SMOTE_Augmented_Data/ /home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/trained_models/magms_T1_T2_FLAIR_DWIC_WB_fold2.model -b 32 -lr 5e-4 --num_mod 5 --fold_no 2 --train_mod T1-T2-FLAIR-DWIC -e 25 -exp magms_T1_T2_FLAIR_DWIC_WB_fold2.exp --replace_experiment --show_verbose --device cuda:0
