@@ -314,7 +314,7 @@ if __name__ == "__main__":
     # root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
     root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
 
-    main(root, mode = "node_level")
-    # main(root, mode = "patient_level")
+    # main(root, mode = "node_level")
+    main(root, mode = "patient_level")
 
 
