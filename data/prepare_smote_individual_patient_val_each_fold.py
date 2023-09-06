@@ -95,16 +95,7 @@ def augment_data(X: np.ndarray, Y: np.ndarray, k_neighbors: int = 5, random_stat
     return X_aug, Y_aug
 
 
-'''def augment_data(X: np.ndarray, Y: np.ndarray, k_neighbors: int = 5, num_samples: int = 100, random_state: int = 100):
-
-    sm = SMOTE(k_neighbors=k_neighbors, random_state=random_state, sampling_strategy={0:num_samples, 1:num_samples}) # type:ignore
-    
-    X_aug, Y_aug = sm.fit_resample(X, Y) # type:ignore
-    
-    return X_aug, Y_aug'''
-
-
-def train_val_split(X: np.ndarray, Y: np.ndarray, fold: str = "1", num_nodes: int = 827):
+def val_split(X: np.ndarray, Y: np.ndarray, fold: str = "1", num_nodes: int = 827):
 
     if fold == "1": # Last 14 patients for validation/First 54 patients for training
     
@@ -123,142 +114,71 @@ def train_val_split(X: np.ndarray, Y: np.ndarray, fold: str = "1", num_nodes: in
 
         print('Y_train: %s' % Counter(Y_train))
 
-        # For the validation set and its augmentations
-        X_val = np.concatenate((X[54*num_nodes:68*num_nodes,:], X[(68*num_nodes+augmented_ones_train):,:]), axis=0)
-        Y_val = np.concatenate((Y[54*num_nodes:68*num_nodes], Y[(68*num_nodes+augmented_ones_train):]), axis=0)
+        # For the validation set of 1 patient and its augmentations
+        # X_val = np.concatenate((X[54*num_nodes:68*num_nodes,:], X[(68*num_nodes+augmented_ones_train):,:]), axis=0)
+        # Y_val = np.concatenate((Y[54*num_nodes:68*num_nodes], Y[(68*num_nodes+augmented_ones_train):]), axis=0)
 
-        print('Y_val: %s' % Counter(Y_val))
+        ############################################################################################################
+        ############################################################################################################
 
-    elif fold == "2": # patients 41-54 for validation/First 40 and last 14 patients for training
-    
-        # For the original training set and its augmentations
-        total_ones_train_1 = []
-        for i in range(40):
-            total_ones_train_1.append(sum(Y[num_nodes*i:num_nodes*(i+1)])) # original nodes for each patient 
-        original_ones_train_1 = sum(total_ones_train_1)
-        original_zeros_train_1 = len(total_ones_train_1)*num_nodes - sum(total_ones_train_1)
+        # For patient 55(J0040) - SF1
+        patient = 55
+        patient_range_start = (patient-1)*num_nodes
+        patient_range_end = patient*num_nodes
+        Y_val_temp = Y[patient_range_start:patient_range_end]
 
-        augmented_ones_train_1 = original_zeros_train_1 - original_ones_train_1
+        print('Original Y_val: %s' % Counter(Y_val_temp))       
 
-        # For the original validation set and its augmentations
-        total_ones_val = []
-        for i in range(40,54):
-            total_ones_val.append(sum(Y[num_nodes*i:num_nodes*(i+1)]))  
+        individual_ones_val = sum(Y_val_temp)
+        individual_zeros_val = 827 - individual_ones_val
 
-        original_ones_val = sum(total_ones_val)
-        original_zeros_val = len(total_ones_val)*num_nodes - sum(total_ones_val)
+        aug_ones_pat_55 = individual_zeros_val - individual_ones_val
 
-        augmented_ones_val = original_zeros_val - original_ones_val
+        aug_start_ind = 68*num_nodes + augmented_ones_train
+        aug_end_ind = aug_start_ind + aug_ones_pat_55
 
-        X_train = np.concatenate((X[:40*num_nodes,:], X[54*num_nodes:68*num_nodes,:], X[68*num_nodes:(68*num_nodes+augmented_ones_train_1),:], X[(68*num_nodes+augmented_ones_train_1+augmented_ones_val):,:]), axis=0)
-        
-        Y_train = np.concatenate((Y[:40*num_nodes], Y[54*num_nodes:68*num_nodes], Y[68*num_nodes:(68*num_nodes+augmented_ones_train_1)], Y[(68*num_nodes+augmented_ones_train_1+augmented_ones_val):]), axis=0)
+        aug_end_ind_temp = aug_end_ind
 
-        print('Y_train: %s' % Counter(Y_train))
+        X_val = np.concatenate((X[patient_range_start:patient_range_end,:], X[aug_start_ind:aug_end_ind,:]), axis=0)
+        Y_val = np.concatenate((Y[patient_range_start:patient_range_end], Y[aug_start_ind:aug_end_ind]), axis=0)
 
-        X_val = np.concatenate((X[40*num_nodes:54*num_nodes,:], X[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val),:]), axis=0)
-        Y_val = np.concatenate((Y[40*num_nodes:54*num_nodes], Y[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val)]), axis=0)
+        print('Augmented Y_val: %s' % Counter(Y_val))
 
-        print('Y_val: %s' % Counter(Y_val))
+        ############################################################################################################
 
-    elif fold == "3": # patients 27-40 for validation/First 26 and last 28 patients for training
-    
-        # For the original training set and its augmentations
-        total_ones_train_1 = []
-        for i in range(26):
-            total_ones_train_1.append(sum(Y[num_nodes*i:num_nodes*(i+1)])) # original nodes for each patient 
-        original_ones_train_1 = sum(total_ones_train_1)
-        original_zeros_train_1 = len(total_ones_train_1)*num_nodes - sum(total_ones_train_1)
+        # For patient 58(J0052) - SF1
+        patient = 58
+        patient_range_start = (patient-1)*num_nodes
+        patient_range_end = patient*num_nodes
+        Y_val_temp = Y[patient_range_start:patient_range_end]
 
-        augmented_ones_train_1 = original_zeros_train_1 - original_ones_train_1
+        print('Original Y_val: %s' % Counter(Y_val_temp))       
 
-        # For the original validation set and its augmentations
-        total_ones_val = []
-        for i in range(26,40):
-            total_ones_val.append(sum(Y[num_nodes*i:num_nodes*(i+1)]))  
+        individual_ones_val = sum(Y_val_temp)
+        individual_zeros_val = 827 - individual_ones_val
 
-        original_ones_val = sum(total_ones_val)
-        original_zeros_val = len(total_ones_val)*num_nodes - sum(total_ones_val)
+        aug_ones_pat_58 = individual_zeros_val - individual_ones_val
 
-        augmented_ones_val = original_zeros_val - original_ones_val
+        aug_start_ind = aug_end_ind_temp
+        aug_end_ind = aug_start_ind + aug_ones_pat_58
 
-        X_train = np.concatenate((X[:26*num_nodes,:], X[40*num_nodes:68*num_nodes,:], X[68*num_nodes:(68*num_nodes+augmented_ones_train_1),:], X[(68*num_nodes+augmented_ones_train_1+augmented_ones_val):,:]), axis=0)
-        
-        Y_train = np.concatenate((Y[:26*num_nodes], Y[40*num_nodes:68*num_nodes], Y[68*num_nodes:(68*num_nodes+augmented_ones_train_1)], Y[(68*num_nodes+augmented_ones_train_1+augmented_ones_val):]), axis=0)
+        aug_end_ind_temp = aug_end_ind
 
-        print('Y_train: %s' % Counter(Y_train))
+        X_val = np.concatenate((X_val, X[patient_range_start:patient_range_end,:], X[aug_start_ind:aug_end_ind,:]), axis=0)
+        Y_val = np.concatenate((Y_val, Y[patient_range_start:patient_range_end], Y[aug_start_ind:aug_end_ind]), axis=0)
 
-        X_val = np.concatenate((X[26*num_nodes:40*num_nodes,:], X[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val),:]), axis=0)
-        Y_val = np.concatenate((Y[26*num_nodes:40*num_nodes], Y[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val)]), axis=0)
+        print('Augmented Y_val: %s' % Counter(Y_val))
 
-        print('Y_val: %s' % Counter(Y_val))
+        print("Fold 1 - Patient 55")
 
-    elif fold == "4": # patients 13-26 for validation/First 12 and last 42 patients for training
-    
-        # For the original training set and its augmentations
-        total_ones_train_1 = []
-        for i in range(12):
-            total_ones_train_1.append(sum(Y[num_nodes*i:num_nodes*(i+1)])) # original nodes for each patient 
-        original_ones_train_1 = sum(total_ones_train_1)
-        original_zeros_train_1 = len(total_ones_train_1)*num_nodes - sum(total_ones_train_1)
-
-        augmented_ones_train_1 = original_zeros_train_1 - original_ones_train_1
-
-        # For the original validation set and its augmentations
-        total_ones_val = []
-        for i in range(12,26):
-            total_ones_val.append(sum(Y[num_nodes*i:num_nodes*(i+1)]))  
-
-        original_ones_val = sum(total_ones_val)
-        original_zeros_val = len(total_ones_val)*num_nodes - sum(total_ones_val)
-
-        augmented_ones_val = original_zeros_val - original_ones_val
-
-        X_train = np.concatenate((X[:12*num_nodes,:], X[26*num_nodes:68*num_nodes,:], X[68*num_nodes:(68*num_nodes+augmented_ones_train_1),:], X[(68*num_nodes+augmented_ones_train_1+augmented_ones_val):,:]), axis=0)
-        
-        Y_train = np.concatenate((Y[:12*num_nodes], Y[26*num_nodes:68*num_nodes], Y[68*num_nodes:(68*num_nodes+augmented_ones_train_1)], Y[(68*num_nodes+augmented_ones_train_1+augmented_ones_val):]), axis=0)
-
-        print('Y_train: %s' % Counter(Y_train))
-
-        X_val = np.concatenate((X[12*num_nodes:26*num_nodes,:], X[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val),:]), axis=0)
-        Y_val = np.concatenate((Y[12*num_nodes:26*num_nodes], Y[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val)]), axis=0)
-
-        print('Y_val: %s' % Counter(Y_val))
-
-    elif fold == "5": # First 12 patients for validation/Last 56 patients for training    
-        
-        # For the original validation set and its augmentations
-        total_ones_val = []
-        for i in range(12):
-            total_ones_val.append(sum(Y[num_nodes*i:num_nodes*(i+1)]))  
-
-        original_ones_val = sum(total_ones_val)
-        original_zeros_val = len(total_ones_val)*num_nodes - sum(total_ones_val)
-
-        augmented_ones_val = original_zeros_val - original_ones_val
-
-        X_val = np.concatenate((X[:12*num_nodes,:], X[(68*num_nodes):(68*num_nodes+augmented_ones_val),:]), axis=0)
-        Y_val = np.concatenate((Y[:12*num_nodes], Y[(68*num_nodes):(68*num_nodes+augmented_ones_val)]), axis=0)
-
-        print('Y_val: %s' % Counter(Y_val))
-        
-        # For the original training set and its augmentations        
-        X_train = np.concatenate((X[12*num_nodes:68*num_nodes,:], X[(68*num_nodes+augmented_ones_val):,:]), axis=0)
-        
-        Y_train = np.concatenate((Y[12*num_nodes:68*num_nodes], Y[(68*num_nodes+augmented_ones_val):]), axis=0)
-
-        print('Y_train: %s' % Counter(Y_train))
+    return X_val, Y_val  # type:ignore
 
 
-    return X_train, Y_train, X_val, Y_val  # type:ignore
-
-
-def save_aug_data_as_separate_nodes(save_dir: str, X: np.ndarray, Y: np.ndarray, mode: str = "train") -> None:
+def save_aug_data_as_separate_nodes(save_dir: str, X: np.ndarray, Y: np.ndarray, mode: str = "valid") -> None:
     
     for i in range(len(Y)):
         if mode == "train":
-            savemat(os.path.join(save_dir,'X_train_aug_whole_brain_node' + str(i) + '.mat'), {"X_aug_train_node" + str(i):X[i,:]})
-            savemat(os.path.join(save_dir,'Y_train_aug_whole_brain_node' + str(i) + '.mat'), {"Y_aug_train_node" + str(i):Y[i]})
+            raise NotImplementedError("Train mode not required for sub-group analysis.")
 
         elif mode == "valid":
             savemat(os.path.join(save_dir,'X_val_aug_whole_brain_node' + str(i) + '.mat'), {"X_aug_valid_node" + str(i):X[i,:]})
@@ -301,15 +221,8 @@ def main(root: str, k_neighbors: int = 5, num_nodes: int = 3, fold_no: str = "1"
 
     print('Augmented Y_all_patients shape %s' % Counter(Y_aug_all_patients))
 
-    # split the data into training and validation (80%-20% split) 
-    X_train, Y_train, X_val, Y_val = train_val_split(X_aug_all_patients, Y_aug_all_patients, fold=fold_no, num_nodes=num_nodes) # type:ignore 
-        
-    # Randomly shuffle X_train, Y_train with the same seed
-    np.random.seed(0)
-    np.random.shuffle(X_train)
-
-    np.random.seed(0)
-    np.random.shuffle(Y_train)
+    # split the data into individual validation patient and its augmentations 
+    X_val, Y_val = val_split(X_aug_all_patients, Y_aug_all_patients, fold=fold_no, num_nodes=num_nodes) # type:ignore
 
     # Randomly shuffle X_val, Y_val with the same seed
     np.random.seed(0)
@@ -318,18 +231,14 @@ def main(root: str, k_neighbors: int = 5, num_nodes: int = 3, fold_no: str = "1"
     np.random.seed(0)
     np.random.shuffle(Y_val)
     
-    # save the augmented data
-    save_dir_train = 'Train_NonEZvsEZ_whole_brain_aug_separate_fold' + fold_no
-    if not os.path.exists(save_dir_train):
-        os.makedirs(save_dir_train)
-    
-    save_aug_data_as_separate_nodes(save_dir_train, X_train, Y_train, mode="train")  # type:ignore  
+    # save the individual patient and its augmented validation data 
+    save_dir_val = 'Val_NonEZvsEZ_WB_SubGroup_Analysis'
+    if not os.path.exists(save_dir_val):
+        os.makedirs(save_dir_val)
+    save_path = os.path.join(save_dir_val,'Fold1','SF1') # For SF
+    # save_path = os.path.join(save_dir_val,'Fold1','MR1') # For MR
 
-    # save_dir_val = 'Val_NonEZvsEZ_whole_brain_aug_separate_fold' + fold_no
-    # if not os.path.exists(save_dir_val):
-    #     os.makedirs(save_dir_val)
-
-    # save_aug_data_as_separate_nodes(save_dir_val, X_val, Y_val, mode="valid")  # type:ignore
+    save_aug_data_as_separate_nodes(save_path, X_val, Y_val, mode="valid")  # type:ignore
 
 
 if __name__ == "__main__":

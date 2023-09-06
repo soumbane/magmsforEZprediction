@@ -123,9 +123,9 @@ def train_val_split(X: np.ndarray, Y: np.ndarray, fold: str = "1", num_nodes: in
 
         print('Y_train: %s' % Counter(Y_train))
 
-        # For the validation set and its augmentations
-        X_val = np.concatenate((X[54*num_nodes:68*num_nodes,:], X[(68*num_nodes+augmented_ones_train):,:]), axis=0)
-        Y_val = np.concatenate((Y[54*num_nodes:68*num_nodes], Y[(68*num_nodes+augmented_ones_train):]), axis=0)
+        # For the validation set and its augmentations only
+        X_val = X[(68*num_nodes+augmented_ones_train):,:]
+        Y_val = Y[(68*num_nodes+augmented_ones_train):]
 
         print('Y_val: %s' % Counter(Y_val))
 
@@ -140,7 +140,7 @@ def train_val_split(X: np.ndarray, Y: np.ndarray, fold: str = "1", num_nodes: in
 
         augmented_ones_train_1 = original_zeros_train_1 - original_ones_train_1
 
-        # For the original validation set and its augmentations
+        # For the original validation set and its augmentations only
         total_ones_val = []
         for i in range(40,54):
             total_ones_val.append(sum(Y[num_nodes*i:num_nodes*(i+1)]))  
@@ -156,8 +156,8 @@ def train_val_split(X: np.ndarray, Y: np.ndarray, fold: str = "1", num_nodes: in
 
         print('Y_train: %s' % Counter(Y_train))
 
-        X_val = np.concatenate((X[40*num_nodes:54*num_nodes,:], X[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val),:]), axis=0)
-        Y_val = np.concatenate((Y[40*num_nodes:54*num_nodes], Y[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val)]), axis=0)
+        X_val = X[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val),:]
+        Y_val = Y[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val)]
 
         print('Y_val: %s' % Counter(Y_val))
 
@@ -172,7 +172,7 @@ def train_val_split(X: np.ndarray, Y: np.ndarray, fold: str = "1", num_nodes: in
 
         augmented_ones_train_1 = original_zeros_train_1 - original_ones_train_1
 
-        # For the original validation set and its augmentations
+        # For the original validation set and its augmentations only
         total_ones_val = []
         for i in range(26,40):
             total_ones_val.append(sum(Y[num_nodes*i:num_nodes*(i+1)]))  
@@ -188,8 +188,8 @@ def train_val_split(X: np.ndarray, Y: np.ndarray, fold: str = "1", num_nodes: in
 
         print('Y_train: %s' % Counter(Y_train))
 
-        X_val = np.concatenate((X[26*num_nodes:40*num_nodes,:], X[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val),:]), axis=0)
-        Y_val = np.concatenate((Y[26*num_nodes:40*num_nodes], Y[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val)]), axis=0)
+        X_val = X[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val),:]
+        Y_val = Y[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val)]
 
         print('Y_val: %s' % Counter(Y_val))
 
@@ -204,7 +204,7 @@ def train_val_split(X: np.ndarray, Y: np.ndarray, fold: str = "1", num_nodes: in
 
         augmented_ones_train_1 = original_zeros_train_1 - original_ones_train_1
 
-        # For the original validation set and its augmentations
+        # For the original validation set and its augmentations only
         total_ones_val = []
         for i in range(12,26):
             total_ones_val.append(sum(Y[num_nodes*i:num_nodes*(i+1)]))  
@@ -220,14 +220,14 @@ def train_val_split(X: np.ndarray, Y: np.ndarray, fold: str = "1", num_nodes: in
 
         print('Y_train: %s' % Counter(Y_train))
 
-        X_val = np.concatenate((X[12*num_nodes:26*num_nodes,:], X[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val),:]), axis=0)
-        Y_val = np.concatenate((Y[12*num_nodes:26*num_nodes], Y[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val)]), axis=0)
+        X_val = X[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val),:]
+        Y_val = Y[(68*num_nodes+augmented_ones_train_1):(68*num_nodes+augmented_ones_train_1+augmented_ones_val)]
 
         print('Y_val: %s' % Counter(Y_val))
 
     elif fold == "5": # First 12 patients for validation/Last 56 patients for training    
         
-        # For the original validation set and its augmentations
+        # For the original validation set and its augmentations only
         total_ones_val = []
         for i in range(12):
             total_ones_val.append(sum(Y[num_nodes*i:num_nodes*(i+1)]))  
@@ -237,8 +237,8 @@ def train_val_split(X: np.ndarray, Y: np.ndarray, fold: str = "1", num_nodes: in
 
         augmented_ones_val = original_zeros_val - original_ones_val
 
-        X_val = np.concatenate((X[:12*num_nodes,:], X[(68*num_nodes):(68*num_nodes+augmented_ones_val),:]), axis=0)
-        Y_val = np.concatenate((Y[:12*num_nodes], Y[(68*num_nodes):(68*num_nodes+augmented_ones_val)]), axis=0)
+        X_val = X[(68*num_nodes):(68*num_nodes+augmented_ones_val),:]
+        Y_val = Y[(68*num_nodes):(68*num_nodes+augmented_ones_val)]
 
         print('Y_val: %s' % Counter(Y_val))
         
@@ -319,17 +319,18 @@ def main(root: str, k_neighbors: int = 5, num_nodes: int = 3, fold_no: str = "1"
     np.random.shuffle(Y_val)
     
     # save the augmented data
-    save_dir_train = 'Train_NonEZvsEZ_whole_brain_aug_separate_fold' + fold_no
-    if not os.path.exists(save_dir_train):
-        os.makedirs(save_dir_train)
+    # save_dir_train = 'Train_NonEZvsEZ_whole_brain_aug_separate_fold' + fold_no
+    # if not os.path.exists(save_dir_train):
+    #     os.makedirs(save_dir_train)
     
-    save_aug_data_as_separate_nodes(save_dir_train, X_train, Y_train, mode="train")  # type:ignore  
+    # save_aug_data_as_separate_nodes(save_dir_train, X_train, Y_train, mode="train")  # type:ignore  
 
-    # save_dir_val = 'Val_NonEZvsEZ_whole_brain_aug_separate_fold' + fold_no
-    # if not os.path.exists(save_dir_val):
-    #     os.makedirs(save_dir_val)
+    # save_dir_val = 'Val_NonEZvsEZ_whole_brain_aug_separate_fold' + fold_no # Orig+Augmented
+    save_dir_val = 'Val_NonEZvsEZ_whole_brain_aug_only_separate_fold' + fold_no # Augmented Only
+    if not os.path.exists(save_dir_val):
+        os.makedirs(save_dir_val)
 
-    # save_aug_data_as_separate_nodes(save_dir_val, X_val, Y_val, mode="valid")  # type:ignore
+    save_aug_data_as_separate_nodes(save_dir_val, X_val, Y_val, mode="valid")  # type:ignore
 
 
 if __name__ == "__main__":
@@ -338,10 +339,10 @@ if __name__ == "__main__":
     # root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
     root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/'
 
-    main(root, k_neighbors=6, num_nodes=827, fold_no="1")
+    # main(root, k_neighbors=6, num_nodes=827, fold_no="1")
     # main(root, k_neighbors=6, num_nodes=827, fold_no="2")
     # main(root, k_neighbors=6, num_nodes=827, fold_no="3")
     # main(root, k_neighbors=6, num_nodes=827, fold_no="4")
-    # main(root, k_neighbors=6, num_nodes=827, fold_no="5")
+    main(root, k_neighbors=6, num_nodes=827, fold_no="5")
 
 
