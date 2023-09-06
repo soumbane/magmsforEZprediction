@@ -18,7 +18,8 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
 
     # initialize dataset for whole brain
     training_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, drop_last=True, mode=data.EZMode.TRAIN, fold_no=cfg.fold_no, shuffle=True)
-    validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+    # validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+    validation_dataset = data.DatasetEZ_WB_Val_Original(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
     
     # build model
     model = ezpred.build(2, train_modality=cfg.train_mod)
@@ -34,8 +35,8 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, lr_step, gamma=0.5) # reduce lr by half     
 
     # loss_fn = magnet.losses.CrossEntropy() # only for Min-Hee's code
-    
     main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)]
+    # main_losses: list[magnet.losses.Loss] = [magnet.losses.Loss(torch.nn.CrossEntropyLoss(weight=[0.1,0.9])) for _ in range(cfg.num_mod+1)]
     kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean') for _ in range(cfg.num_mod)]
     mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE() for _ in range(cfg.num_mod)]
     magms_loss = magnet.losses.MAGMSLoss(main_losses, distillation_loss=kldiv_losses, feature_losses=mse_losses)

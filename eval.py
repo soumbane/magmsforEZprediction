@@ -85,10 +85,10 @@ def get_target_dict(num: int) -> dict[int, str]:
 
 def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
     # load whole brain dataset
-    # validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+    validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
 
     # load whole brain original validation dataset
-    validation_dataset = data.DatasetEZ_WB_Val_Original(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+    # validation_dataset = data.DatasetEZ_WB_Val_Original(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
 
     # load whole brain control dataset
     # validation_dataset = data.DatasetEZ_WB_Control(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE)
