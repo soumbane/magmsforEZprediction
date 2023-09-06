@@ -45,7 +45,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
         "val_accuracy": tm.metrics.SparseCategoricalAccuracy(),
         "val_bal_accuracy": ezpred.metrics.BalancedAccuracyScore()
     }
-
+    
     # only for Min-Hee's code
     # metric_fns: dict[str, tm.metrics.Metric] = {
     #     "val_accuracy": tm.metrics.SparseCategoricalAccuracy(),
