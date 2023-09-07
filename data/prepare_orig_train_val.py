@@ -3,7 +3,6 @@ import os
 import numpy as np
 from collections import Counter
 from scipy.io import loadmat, savemat
-from imblearn.under_sampling import RandomUnderSampler
 
 
 def get_list_of_node_nums():
@@ -251,8 +250,8 @@ def main(root: str, num_nodes: int = 3, fold_no: str = "1"):
 if __name__ == "__main__":
 
     # Root Folder
-    # root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
-    root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/'
+    root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
+    # root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/'
 
     main(root, num_nodes=827, fold_no="1")
     # main(root, num_nodes=827, fold_no="2")

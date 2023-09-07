@@ -16,8 +16,11 @@ def train(cfg: FinetuningConfigs, /, node_num: int = 1) -> Any:
         cudnn.deterministic = True  
 
     # initialize dataset
-    training_dataset = data.DatasetEZ_NodeLevel(cfg.batch_size, cfg.data_dir, node_num=node_num, drop_last=False, mode=data.EZMode.TRAIN, shuffle=True)
-    validation_dataset = data.DatasetEZ_NodeLevel(cfg.batch_size, cfg.data_dir, node_num=node_num, mode=data.EZMode.VALIDATE)
+    # training_dataset = data.DatasetEZ_NodeLevel(cfg.batch_size, cfg.data_dir, node_num=node_num, drop_last=False, mode=data.EZMode.TRAIN, shuffle=True)
+    # validation_dataset = data.DatasetEZ_NodeLevel(cfg.batch_size, cfg.data_dir, node_num=node_num, mode=data.EZMode.VALIDATE)
+
+    training_dataset = data.DatasetEZ_WB_ALL_Original(cfg.batch_size, cfg.data_dir, drop_last=False, mode=data.EZMode.TRAIN, fold_no=cfg.fold_no, shuffle=True)
+    validation_dataset = data.DatasetEZ_WB_ALL_Original(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
 
     # load checkpoint
     if cfg.pretrained_model.endswith(".model"):
@@ -40,7 +43,16 @@ def train(cfg: FinetuningConfigs, /, node_num: int = 1) -> Any:
     lr_step = max(int(cfg.epochs / 3), 1)  # for 15 epochs (step down every 5 epochs)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, lr_step, gamma=0.5) # reduce lr by half 
 
-    main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)]
+    # weighted cross-entropy with more weightage to class 1 than class 0
+    # class_0_weight = (40806+3852)/(40806*2)
+    # class_1_weight = (40806+3852)/(3852*2)
+    class_0_weight = 0.1
+    class_1_weight = 0.9
+    weights = torch.Tensor([class_0_weight,class_1_weight])
+    main_losses: list[magnet.losses.Loss] = [magnet.losses.Loss(torch.nn.CrossEntropyLoss(weight=weights)) for _ in range(cfg.num_mod+1)]
+    
+    # main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)] # Original un-weighted cross entropy
+    
     kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean') for _ in range(cfg.num_mod)]
     mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE() for _ in range(cfg.num_mod)]
     
@@ -68,6 +80,7 @@ def train(cfg: FinetuningConfigs, /, node_num: int = 1) -> Any:
 
     # test
     # save and test with best model on validation dataset  
+    # checkpoint_path = "experiments/magms_ALL_mod_WB_fold1_node_" + str(node_num) + "_finetuned.exp/checkpoints/best_accuracy.model"
     checkpoint_path = "experiments/magms_ALL_mod_WB_fold1_node_" + str(node_num) + "_finetuned.exp/checkpoints/best_accuracy.model"
     manager = magnet.Manager.from_checkpoint(checkpoint_path, map_location=cfg.device) 
 
