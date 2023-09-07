@@ -7,7 +7,7 @@ import data, ezpred
 from ezpred.configs import FinetuningConfigs
 
 
-def train(cfg: FinetuningConfigs, /, node_num: int = 1) -> Any:
+def train(cfg: FinetuningConfigs, /) -> Any:
     # initialize seed for reproducibility
     if cfg.seed is not None:
         from torchmanager_core import random
@@ -81,15 +81,16 @@ def train(cfg: FinetuningConfigs, /, node_num: int = 1) -> Any:
     # test
     # save and test with best model on validation dataset  
     # checkpoint_path = "experiments/magms_ALL_mod_WB_fold1_node_" + str(node_num) + "_finetuned.exp/checkpoints/best_accuracy.model"
-    checkpoint_path = "experiments/magms_ALL_mod_WB_fold1_node_" + str(node_num) + "_finetuned.exp/checkpoints/best_accuracy.model"
+    checkpoint_path = "experiments/magms_orig_WB_fold1_finetuned.exp/checkpoints/best_bal_accuracy.model"
     manager = magnet.Manager.from_checkpoint(checkpoint_path, map_location=cfg.device) 
 
     # print(f'The best accuracy on validation set occurs at {manager.current_epoch + 1} epoch number') # type:ignore
     
     summary = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus) # type:ignore
-    # view.logger.info(summary)
+    view.logger.info(summary)
     torch.save(model, cfg.output_model)
-    return model, summary['accuracy']
+    # return model, summary['accuracy']
+    return model
 
 
 if __name__ == "__main__":
@@ -98,7 +99,9 @@ if __name__ == "__main__":
     assert isinstance(configs, FinetuningConfigs)
 
     # train
-    _, acc = train(configs, node_num=configs.node_num)
-    print(f"Accuracy for Node num {configs.node_num} is: {acc}")
+    # _, acc = train(configs, node_num=configs.node_num)
+    # print(f"Accuracy for Node num {configs.node_num} is: {acc}")
+
+    train(configs)
 
 
