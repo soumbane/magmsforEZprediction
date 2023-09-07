@@ -1,0 +1,1 @@
+python eval_orig.py /home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Original_Patient_Data/ /home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/experiments/magms_orig_WB_fold1_finetuned.exp/checkpoints/best_bal_accuracy.model -b 32 --fold_no 1 --replace_experiment --show_verbose --device cuda:0
