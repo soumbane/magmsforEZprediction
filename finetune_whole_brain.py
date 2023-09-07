@@ -34,8 +34,8 @@ def train(cfg: FinetuningConfigs, /) -> Any:
     sch = decoder[1]
 
     # load optimizer, loss, and metrics
-    # optimizer = torch.optim.Adam(sch.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
-    optimizer = torch.optim.Adam(decoder.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
+    optimizer = torch.optim.Adam(sch.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
+    # optimizer = torch.optim.Adam(decoder.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
     # optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
 
     # initialize learning rate scheduler 
@@ -79,10 +79,10 @@ def train(cfg: FinetuningConfigs, /) -> Any:
 
     # test
     # save and test with best model on validation dataset  
-    checkpoint_path = "experiments/magms_orig_WB_fold1_finetune_last_layers.exp/checkpoints/best_bal_accuracy.model"
+    checkpoint_path = "experiments/magms_orig_WB_fold1_finetune_sch.exp/checkpoints/best_bal_accuracy.model"
     manager = magnet.Manager.from_checkpoint(checkpoint_path, map_location=cfg.device) 
 
-    # print(f'The best accuracy on validation set occurs at {manager.current_epoch + 1} epoch number') # type:ignore
+    print(f'The best accuracy on validation set occurs at {manager.current_epoch + 1} epoch number') # type:ignore
     
     summary = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus) # type:ignore
 
