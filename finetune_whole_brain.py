@@ -2,6 +2,7 @@ import magnet, torch, torchmanager as tm
 from torchmanager_core import view
 from torch.backends import cudnn
 from torchmanager_core.typing import Any
+from ezpred import metrics
 
 import data, ezpred
 from ezpred.configs import FinetuningConfigs
@@ -44,10 +45,10 @@ def train(cfg: FinetuningConfigs, /) -> Any:
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, lr_step, gamma=0.5) # reduce lr by half 
 
     # weighted cross-entropy with more weightage to class 1 than class 0
-    # class_0_weight = (40806+3852)/(40806*2)
-    # class_1_weight = (40806+3852)/(3852*2)
-    class_0_weight = 0.1
-    class_1_weight = 0.9
+    class_0_weight = (40806+3852)/(40806*2)
+    class_1_weight = (40806+3852)/(3852*2)
+    # class_0_weight = 0.1
+    # class_1_weight = 0.9
     weights = torch.Tensor([class_0_weight,class_1_weight])
     main_losses: list[magnet.losses.Loss] = [magnet.losses.Loss(torch.nn.CrossEntropyLoss(weight=weights)) for _ in range(cfg.num_mod+1)]
     
@@ -87,6 +88,15 @@ def train(cfg: FinetuningConfigs, /) -> Any:
     # print(f'The best accuracy on validation set occurs at {manager.current_epoch + 1} epoch number') # type:ignore
     
     summary = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus) # type:ignore
+
+    # set up confusion metrics
+    conf_met_fn = metrics.ConfusionMetrics(2)
+    manager.metric_fns.update({
+        "conf_met": conf_met_fn
+        })
+
+    if conf_met_fn.results is not None:
+        summary.update({"conf_met": conf_met_fn.results})
     view.logger.info(summary)
     torch.save(model, cfg.output_model)
     # return model, summary['accuracy']
