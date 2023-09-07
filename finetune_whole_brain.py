@@ -19,7 +19,7 @@ def train(cfg: FinetuningConfigs, /, node_num: int = 1) -> Any:
     # training_dataset = data.DatasetEZ_NodeLevel(cfg.batch_size, cfg.data_dir, node_num=node_num, drop_last=False, mode=data.EZMode.TRAIN, shuffle=True)
     # validation_dataset = data.DatasetEZ_NodeLevel(cfg.batch_size, cfg.data_dir, node_num=node_num, mode=data.EZMode.VALIDATE)
 
-    training_dataset = data.DatasetEZ_WB_ALL_Original(cfg.batch_size, cfg.data_dir, drop_last=False, mode=data.EZMode.TRAIN, fold_no=cfg.fold_no, shuffle=True)
+    training_dataset = data.DatasetEZ_WB_ALL_Original(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TRAIN, fold_no=cfg.fold_no, shuffle=True)
     validation_dataset = data.DatasetEZ_WB_ALL_Original(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
 
     # load checkpoint
