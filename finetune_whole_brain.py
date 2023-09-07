@@ -36,8 +36,8 @@ def train(cfg: FinetuningConfigs, /, node_num: int = 1) -> Any:
     sch = decoder[1]
 
     # load optimizer, loss, and metrics
-    optimizer = torch.optim.Adam(sch.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
-    # optimizer = torch.optim.Adam(decoder.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
+    # optimizer = torch.optim.Adam(sch.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
+    optimizer = torch.optim.Adam(decoder.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
 
     # initialize learning rate scheduler 
     lr_step = max(int(cfg.epochs / 3), 1)  # for 15 epochs (step down every 5 epochs)
