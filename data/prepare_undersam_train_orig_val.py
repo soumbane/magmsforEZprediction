@@ -3,6 +3,7 @@ import os
 import numpy as np
 from collections import Counter
 from scipy.io import loadmat, savemat
+from imblearn.under_sampling import RandomUnderSampler
 
 
 def get_list_of_node_nums():
@@ -173,6 +174,12 @@ def train_val_split(X: np.ndarray, Y: np.ndarray, fold: str = "1", num_nodes: in
     return X_train, Y_train, X_val, Y_val  # type:ignore
 
 
+def undersample_data(X: np.ndarray, Y: np.ndarray, random_state: int = 100):
+    rus = RandomUnderSampler(random_state=random_state)
+    X_under, Y_under = rus.fit_resample(X, Y)
+    return X_under, Y_under
+
+
 def save_aug_data_as_separate_nodes(save_dir: str, X: np.ndarray, Y: np.ndarray, mode: str = "train") -> None:
     
     for i in range(len(Y)):
@@ -219,22 +226,12 @@ def main(root: str, num_nodes: int = 3, fold_no: str = "1"):
     # split the data into training and validation (80%-20% split) 
     X_train, Y_train, X_val, Y_val = train_val_split(X_combined_all_patients_norm, Y_combined_all_patients, fold=fold_no, num_nodes=num_nodes) # type:ignore 
         
-    # # Randomly shuffle X_train, Y_train with the same seed
-    # np.random.seed(0)
-    # np.random.shuffle(X_train)
+    # Perform undersampling on the training data to balance the classes
+    X_train, Y_train = undersample_data(X_train, Y_train, random_state=100)
+    print('Undersampled dataset %s' % Counter(Y_train))
 
-    # np.random.seed(0)
-    # np.random.shuffle(Y_train)
-
-    # # Randomly shuffle X_val, Y_val with the same seed
-    # np.random.seed(0)
-    # np.random.shuffle(X_val)
-
-    # np.random.seed(0)
-    # np.random.shuffle(Y_val)
-    
     # save the augmented data
-    save_dir_train = 'Train_NonEZvsEZ_whole_brain_orig_fold' + fold_no
+    save_dir_train = 'Train_NonEZvsEZ_whole_brain_undersamp_fold' + fold_no
     if not os.path.exists(save_dir_train):
         os.makedirs(save_dir_train)
     
