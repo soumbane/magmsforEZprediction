@@ -391,7 +391,8 @@ class DatasetEZ_WB_ALL_Original(Dataset):
 
         # initialize path
         if self.mode == EZMode.TRAIN:
-            self.path = os.path.join(self.root, 'Train_NonEZvsEZ_whole_brain_orig_fold'+fold_no)
+            # self.path = os.path.join(self.root, 'Train_NonEZvsEZ_whole_brain_orig_fold'+fold_no)
+            self.path = os.path.join(self.root, 'Train_NonEZvsEZ_whole_brain_undersamp_fold'+fold_no)
             self.x_file = f"X_train_orig_whole_brain_node"
             self.y_file = f"Y_train_orig_whole_brain_node"
             self.x_mat_name = "X_orig_train_node"
