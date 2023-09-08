@@ -93,7 +93,7 @@ def train(cfg: FinetuningConfigs, /) -> Any:
         })
 
     if conf_met_fn.results is not None:
-        summary.update({"conf_met": conf_met_fn.results})
+        summary.update({"conf_met": conf_met_fn.results}) # type:ignore
     view.logger.info(summary)
     torch.save(model, cfg.output_model)
     # return model, summary['accuracy']
