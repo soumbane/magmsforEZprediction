@@ -1,1 +1,1 @@
-python eval.py /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/pretrained_models/magms_ALL_mod_WB_fold5.exp/checkpoints/best_accuracy.model -b 32 --fold_no 5 --replace_experiment --show_verbose --device cuda:0
+python eval.py /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/pretrained_models/magms_ALL_mod_WB_fold1.exp/checkpoints/best_accuracy.model -b 32 --fold_no 1 --replace_experiment --show_verbose --device cuda:0

@@ -45,8 +45,8 @@ class DatasetEZ_WB(Dataset):
             # self.size = 84960 # fold 5
 
         elif self.mode == EZMode.VALIDATE:
-            # self.path = os.path.join(self.root, 'Val_NonEZvsEZ_whole_brain_aug_separate_fold'+fold_no) # orig+aug
-            self.path = os.path.join(self.root, 'Val_NonEZvsEZ_whole_brain_aug_only_separate_fold'+fold_no) # aug only
+            self.path = os.path.join(self.root, 'Val_NonEZvsEZ_whole_brain_aug_separate_fold'+fold_no) # orig+aug
+            # self.path = os.path.join(self.root, 'Val_NonEZvsEZ_whole_brain_aug_only_separate_fold'+fold_no) # aug only
             self.x_file = f"X_val_aug_whole_brain_node"
             self.y_file = f"Y_val_aug_whole_brain_node"
             self.x_mat_name = "X_aug_valid_node"
