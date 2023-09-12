@@ -185,6 +185,8 @@ Val_NonEZvsEZ_whole_brain_original_separate_fold5/*
 NonEZvsEZ_whole_brain_patient_level/*
 NonEZvsEZ_whole_brain_node_level/*
 
+Val_NonEZvsEZ_whole_brain_orig_fold1/*
+
 trained_models/*
 Control_Data_Results/*
 pretrained_models/*

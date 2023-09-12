@@ -88,7 +88,9 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
     # validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
 
     # load whole brain original validation dataset
-    validation_dataset = data.DatasetEZ_WB_Val_Original(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+    # validation_dataset = data.DatasetEZ_WB_Val_Original(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+
+    validation_dataset = data.DatasetEZ_WB_ALL_Original(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
 
     # load whole brain control dataset
     # validation_dataset = data.DatasetEZ_WB_Control(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE)
@@ -121,7 +123,7 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
 
     # print(manager.target_dict)
 
-    # print(f'The best accuracy on validation set occurs at {manager.current_epoch + 1} epoch number')
+    print(f'The best accuracy on validation set occurs at {manager.current_epoch + 1} epoch number')
 
     # test checkpoint with validation dataset
     summary: dict[str, Any] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
