@@ -187,6 +187,8 @@ NonEZvsEZ_whole_brain_node_level/*
 
 Val_NonEZvsEZ_whole_brain_orig_fold1/*
 
+Val_NonEZvsEZ_WB_SubGroup_Analysis/*
+
 trained_models/*
 Control_Data_Results/*
 pretrained_models/*
