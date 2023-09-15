@@ -1,1 +1,0 @@
-python eval_node_level.py /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/Node_Level_Data/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/pretrained_models/magms_ALL_mod_WB_fold1.exp/checkpoints/best_accuracy.model -b 32 --replace_experiment --show_verbose --device cuda:0
