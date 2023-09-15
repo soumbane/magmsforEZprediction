@@ -33,14 +33,15 @@ class DatasetEZ_WB(Dataset):
 
         # initialize path
         if self.mode == EZMode.TRAIN:
-            self.path = os.path.join(self.root, 'Train_NonEZvsEZ_whole_brain_aug_separate_fold'+fold_no)
+            self.path = os.path.join(self.root, 'Train_NonEZvsEZ_whole_brain_duplicate_fold'+fold_no)
             self.x_file = f"X_train_aug_whole_brain_node"
             self.y_file = f"Y_train_aug_whole_brain_node"
             self.x_mat_name = "X_aug_train_node"
             self.y_mat_name = "Y_aug_train_node"
             
         elif self.mode == EZMode.VALIDATE:
-            self.path = os.path.join(self.root, 'Val_NonEZvsEZ_whole_brain_aug_separate_fold'+fold_no)
+            self.path = os.path.join(self.root, 'Val_NonEZvsEZ_whole_brain_duplicate_fold'+fold_no)
+            # self.path = os.path.join(self.root, 'Val_NonEZvsEZ_whole_brain_orig_fold'+fold_no)
             self.x_file = f"X_val_aug_whole_brain_node"
             self.y_file = f"Y_val_aug_whole_brain_node"
             self.x_mat_name = "X_aug_valid_node"
@@ -106,7 +107,7 @@ class DatasetEZ_WB(Dataset):
 if __name__ == "__main__":    
 
     print("Whole Brain EZ Dataset ...")
-    ez_dataset = DatasetEZ_WB(batch_size=1, root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/baselines_all_hemispheres/', drop_last=False, mode=EZMode.TRAIN, shuffle=True)
+    ez_dataset = DatasetEZ_WB(batch_size=1, root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/', drop_last=False, mode=EZMode.TRAIN, shuffle=False)
 
     print(ez_dataset.unbatched_len)
     # print((ez_dataset.__getitem__(0))[0][4].shape)
