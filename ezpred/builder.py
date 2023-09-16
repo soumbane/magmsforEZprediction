@@ -5,7 +5,6 @@ from .networks import Basic
 from .nn import MSFE, SHFE, SCH
 from .nn.fusion import FusionType
 
-# def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool = False, *, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,256,512], fusion: FusionType = FusionType.MID_CONCAT) -> Basic: # for Min-Hee's code
 
 def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool = False, *, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,128], fusion: FusionType = FusionType.MID_MEAN, train_modality: str = "ALL") -> MAGNET2[MSFE]:
     r"""
@@ -47,7 +46,6 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
 
     # SCH for all modalities
     sch = SCH(mlp_features=filters_shfe[-1] * 2, num_classes=num_classes)
-    # sch = SCH(mlp_features=filters_msfe[-1] * 10, num_classes=num_classes) # for Min-Hee's code
 
     ## Build target_dict for magnet (Training modalities)
     if train_modality == "ALL": # Training with ALL modalities
@@ -114,7 +112,4 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
 
     model = MAGNET2(msfe_T1, msfe_T2, msfe_FLAIR, msfe_DWI, msfe_DWIC, fusion=fuse, decoder=torch.nn.Sequential(shfe, sch), target_dict=target_dict, return_features=True)
 
-    # model = Basic(msfe_T1, msfe_T2, msfe_FLAIR, msfe_DWI, msfe_DWIC, fusion=fuse, sch=sch) # for Min-Hee's code
-
-    # build losses
     return model

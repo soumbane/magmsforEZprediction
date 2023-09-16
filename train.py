@@ -7,7 +7,6 @@ import data, ezpred
 from ezpred.configs import TrainingConfigs
 
 
-# def train(cfg: TrainingConfigs, /) -> torch.nn.Module: # for Min-Hee's code
 def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # initialize seed for reproducibility
     if cfg.seed is not None:
@@ -17,7 +16,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
         cudnn.deterministic = True  
 
     # initialize dataset for whole brain
-    training_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, drop_last=True, mode=data.EZMode.TRAIN, fold_no=cfg.fold_no, shuffle=True)
+    training_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, drop_last=False, mode=data.EZMode.TRAIN, fold_no=cfg.fold_no, shuffle=True)
     validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
     
     # build model
@@ -32,8 +31,6 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # initialize learning rate scheduler 
     lr_step = max(int(cfg.epochs / 5), 1)  # for 25 epochs
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, lr_step, gamma=0.5) # reduce lr by half     
-
-    # loss_fn = magnet.losses.CrossEntropy() # only for Min-Hee's code
     
     main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)]
     kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean') for _ in range(cfg.num_mod)]
@@ -45,18 +42,10 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
         "val_bal_accuracy": ezpred.metrics.BalancedAccuracyScore()
     }
 
-    # only for Min-Hee's code
-    # metric_fns: dict[str, tm.metrics.Metric] = {
-    #     "val_accuracy": tm.metrics.SparseCategoricalAccuracy(),
-    #     "val_bal_accuracy": ezpred.metrics.BalancedAccuracyScore()
-    # }
-
     # compile manager
     manager = magnet.Manager(model, optimizer=optimizer, loss_fn=magms_loss, metrics=metric_fns)
-    # manager = magnet.Manager(model, optimizer=optimizer, loss_fn=loss_fn, metrics=metric_fns) # only for Min-Hee's code
 
     # initialize callbacks
-    # tensorboard_callback = tm.callbacks.TensorBoard(os.path.join(cfg.experiment, "data"))
     experiment_callback = tm.callbacks.Experiment(cfg.experiment, manager, monitors=["accuracy", "bal_accuracy"])    
     
     lr_scheduler_callback = tm.callbacks.LrSchedueler(lr_scheduler, tf_board_writer=experiment_callback.tensorboard.writer) # type:ignore   
