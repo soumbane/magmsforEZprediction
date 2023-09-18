@@ -85,14 +85,14 @@ def get_target_dict(num: int) -> dict[int, str]:
 
 def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
     # load whole brain dataset
-    # validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+    validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
 
     # load whole brain original validation dataset
     # validation_dataset = data.DatasetEZ_WB_Val_Original(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
 
     # validation_dataset = data.DatasetEZ_WB_ALL_Original(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
 
-    validation_dataset = data.DatasetEZ_WB_SubGroupAnalysis(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+    # validation_dataset = data.DatasetEZ_WB_SubGroupAnalysis(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
 
     # load whole brain control dataset
     # validation_dataset = data.DatasetEZ_WB_Control(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE)
@@ -148,11 +148,11 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
 if __name__ == "__main__":
     configs = TestingConfigs.from_arguments()
 
-    # dict_mod = get_target_dict(31)    
-    # # acc, mod_dict, preds = test(configs, target_dict=dict_mod)
-    # acc, mod_dict = test(configs, target_dict=dict_mod)
+    dict_mod = get_target_dict(31)    
+    # acc, mod_dict, preds = test(configs, target_dict=dict_mod)
+    acc, mod_dict = test(configs, target_dict=dict_mod)
     
-    # print(f"Testing modality combination: {mod_dict}, accuracy is: {acc}\n")
+    print(f"Testing modality combination: {mod_dict}, accuracy is: {acc}\n")
 
     # predicted_acc = []
 
@@ -178,29 +178,29 @@ if __name__ == "__main__":
     # df.to_csv(save_filepath, header=False, index=False)
 
 
-    accuracy = []
+    # accuracy = []
 
-    for i in range(1,32):
-        dict_mod = get_target_dict(i)    
-        acc, mod_dict = test(configs, target_dict=dict_mod)
-        accuracy.append(acc)
-        print(f"Testing modality combination: {mod_dict}, accuracy is: {acc}\n")
+    # for i in range(1,32):
+    #     dict_mod = get_target_dict(i)    
+    #     acc, mod_dict = test(configs, target_dict=dict_mod)
+    #     accuracy.append(acc)
+    #     print(f"Testing modality combination: {mod_dict}, accuracy is: {acc}\n")
 
-    print(f"Final Testing modality combination mean is: {np.mean(accuracy)}")
+    # print(f"Final Testing modality combination mean is: {np.mean(accuracy)}")
 
-    # dictionary of lists
-    predicted_acc_dict = {'Accuracy': accuracy}    
+    # # dictionary of lists
+    # predicted_acc_dict = {'Accuracy': accuracy}    
 
-    df = pd.DataFrame(predicted_acc_dict)  
+    # df = pd.DataFrame(predicted_acc_dict)  
 
-    # saving the dataframe
-    path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/"  
-    save_path = os.path.join(path, "Subgroup_Analysis_Results")
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
+    # # saving the dataframe
+    # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/"  
+    # save_path = os.path.join(path, "Subgroup_Analysis_Results")
+    # if not os.path.exists(save_path):
+    #     os.makedirs(save_path)
     
-    filename  = "subgroup_analysis_SF0.csv"
-    save_filepath = os.path.join(save_path, filename)
+    # filename  = "subgroup_analysis_SF0.csv"
+    # save_filepath = os.path.join(save_path, filename)
 
-    df.to_csv(save_filepath, header=False, index=False)
+    # df.to_csv(save_filepath, header=False, index=False)
     
