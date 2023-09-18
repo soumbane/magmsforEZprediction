@@ -195,5 +195,9 @@ pretrained_models/*
 Node_Level_Data/*
 finetuned_node_level_models/*
 
+Train_NonEZvsEZ_whole_brain_undersamp_fold1/*
+Val_NonEZvsEZ_whole_brain_orig_fold1/*
+Val_NonEZvsEZ_whole_brain_undersamp_fold1/*
+
 Icon*
 *.DS_Store

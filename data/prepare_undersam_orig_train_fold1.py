@@ -226,6 +226,14 @@ def main(root: str, num_nodes: int = 3, fold_no: str = "1"):
 
     # split the data into training and validation (80%-20% split) 
     X_train_orig, Y_train_orig, X_val_orig, Y_val_orig = train_val_split(X_combined_all_patients_norm, Y_combined_all_patients, fold=fold_no, num_nodes=num_nodes) # type:ignore 
+
+    # save the original validation data
+    save_dir_val = 'Val_NonEZvsEZ_whole_brain_orig_fold' + fold_no
+    if not os.path.exists(save_dir_val):
+        os.makedirs(save_dir_val)
+
+    save_aug_data_as_separate_nodes(save_dir_val, X_val_orig, Y_val_orig, mode="valid")  # type:ignore
+    print('Original Y_val dataset %s' % Counter(Y_val_orig))
         
     # Perform undersampling on the training data to balance the classes
     X_train, Y_train = undersample_data(X_train_orig, Y_train_orig, random_state=100) # change random state everytime
@@ -235,13 +243,14 @@ def main(root: str, num_nodes: int = 3, fold_no: str = "1"):
     X_val, Y_val = undersample_data(X_val_orig, Y_val_orig, random_state=100) # change random state everytime
     print('Undersampled Y_val dataset %s' % Counter(Y_val))
 
-    # save the augmented data
+    # save the undersampled training data
     save_dir_train = 'Train_NonEZvsEZ_whole_brain_undersamp_fold' + fold_no
     if not os.path.exists(save_dir_train):
         os.makedirs(save_dir_train)
     
     save_aug_data_as_separate_nodes(save_dir_train, X_train, Y_train, mode="train")  # type:ignore  
 
+    # save the undersampled validation data
     save_dir_val = 'Val_NonEZvsEZ_whole_brain_undersamp_fold' + fold_no
     if not os.path.exists(save_dir_val):
         os.makedirs(save_dir_val)
@@ -252,8 +261,8 @@ def main(root: str, num_nodes: int = 3, fold_no: str = "1"):
 if __name__ == "__main__":
 
     # Root Folder
-    # root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
-    root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/'
+    root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
+    # root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/'
 
     main(root, num_nodes=827, fold_no="1")
     # main(root, num_nodes=827, fold_no="2")
