@@ -40,8 +40,8 @@ class DatasetEZ_WB(Dataset):
             self.y_mat_name = "Y_orig_train_node"
             
         elif self.mode == EZMode.VALIDATE:
-            self.path = os.path.join(self.root, 'Undersampled_Data', 'Val_NonEZvsEZ_whole_brain_undersamp_fold'+fold_no)
-            # self.path = os.path.join(self.root, 'Original_Patient_Data', 'Val_NonEZvsEZ_whole_brain_orig_fold'+fold_no)
+            # self.path = os.path.join(self.root, 'Undersampled_Data', 'Val_NonEZvsEZ_whole_brain_undersamp_fold'+fold_no)
+            self.path = os.path.join(self.root, 'Original_Patient_Data', 'Val_NonEZvsEZ_whole_brain_orig_fold'+fold_no)
             self.x_file = f"X_val_orig_whole_brain_node"
             self.y_file = f"Y_val_orig_whole_brain_node"
             self.x_mat_name = "X_orig_valid_node"

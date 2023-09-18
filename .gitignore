@@ -199,5 +199,8 @@ Train_NonEZvsEZ_whole_brain_undersamp_fold1/*
 Val_NonEZvsEZ_whole_brain_orig_fold1/*
 Val_NonEZvsEZ_whole_brain_undersamp_fold1/*
 
+Train_NonEZvsEZ_whole_brain_smote_undersampTomek_separate_fold1/*
+Train_NonEZvsEZ_whole_brain_smote_undersampENN_separate_fold1/*
+
 Icon*
 *.DS_Store
