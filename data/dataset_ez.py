@@ -33,15 +33,29 @@ class DatasetEZ_WB(Dataset):
 
         # initialize path
         if self.mode == EZMode.TRAIN:
-            self.path = os.path.join(self.root, 'Undersampled_Data','Train_NonEZvsEZ_whole_brain_undersamp_fold'+fold_no)
-            self.x_file = f"X_train_orig_whole_brain_node"
-            self.y_file = f"Y_train_orig_whole_brain_node"
-            self.x_mat_name = "X_orig_train_node"
-            self.y_mat_name = "Y_orig_train_node"
+            # self.path = os.path.join(self.root, 'Undersampled_Data','Train_NonEZvsEZ_whole_brain_undersamp_fold'+fold_no)
+
+            # self.path = os.path.join(self.root, 'Undersampled_Data','Train_NonEZvsEZ_whole_brain_smote_undersampTomek_separate_fold'+fold_no)
+            # self.path = os.path.join(self.root, 'Undersampled_Data','Train_NonEZvsEZ_whole_brain_smote_undersampENN_separate_fold'+fold_no)
+
+            # self.path = os.path.join(self.root, 'Duplicated_Data','Train_NonEZvsEZ_whole_brain_duplicate_fold'+fold_no)
+
+            self.path = os.path.join(self.root, 'SMOTE_Augmented_Data','Train_NonEZvsEZ_whole_brain_smoteaug_separate_fold'+fold_no)
+
+            # self.x_file = f"X_train_orig_whole_brain_node"
+            # self.y_file = f"Y_train_orig_whole_brain_node"
+            # self.x_mat_name = "X_orig_train_node"
+            # self.y_mat_name = "Y_orig_train_node"
+
+            self.x_file = f"X_train_aug_whole_brain_node"
+            self.y_file = f"Y_train_aug_whole_brain_node"
+            self.x_mat_name = "X_aug_train_node"
+            self.y_mat_name = "Y_aug_train_node"
             
         elif self.mode == EZMode.VALIDATE:
             # self.path = os.path.join(self.root, 'Undersampled_Data', 'Val_NonEZvsEZ_whole_brain_undersamp_fold'+fold_no)
             self.path = os.path.join(self.root, 'Original_Patient_Data', 'Val_NonEZvsEZ_whole_brain_orig_fold'+fold_no)
+            
             self.x_file = f"X_val_orig_whole_brain_node"
             self.y_file = f"Y_val_orig_whole_brain_node"
             self.x_mat_name = "X_orig_valid_node"

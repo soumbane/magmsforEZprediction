@@ -249,11 +249,11 @@ def main(root: str, num_nodes: int = 3, fold_no: str = "1"):
     X_train_orig, Y_train_orig, X_val_orig, Y_val_orig = train_val_split(X_combined_all_patients_norm, Y_combined_all_patients, fold=fold_no, num_nodes=num_nodes) # type:ignore   
 
     # save the original val data
-    save_dir_val = 'Val_NonEZvsEZ_whole_brain_orig_fold' + fold_no
-    if not os.path.exists(save_dir_val):
-        os.makedirs(save_dir_val)
+    # save_dir_val = 'Val_NonEZvsEZ_whole_brain_orig_fold' + fold_no
+    # if not os.path.exists(save_dir_val):
+    #     os.makedirs(save_dir_val)
 
-    save_aug_data_as_separate_nodes(save_dir_val, X_val_orig, Y_val_orig, mode="valid")  # type:ignore  
+    # save_aug_data_as_separate_nodes(save_dir_val, X_val_orig, Y_val_orig, mode="valid")  # type:ignore  
 
     # augment the training data using duplicate class 1 samples
     X_train, Y_train = augment_data(X_train_orig, Y_train_orig)  # type:ignore
@@ -268,18 +268,18 @@ def main(root: str, num_nodes: int = 3, fold_no: str = "1"):
     
     save_aug_data_as_separate_nodes(save_dir_train, X_train, Y_train, mode="train")  # type:ignore  
 
-    save_dir_val = 'Val_NonEZvsEZ_whole_brain_duplicate_fold' + fold_no
-    if not os.path.exists(save_dir_val):
-        os.makedirs(save_dir_val)
+    # save_dir_val = 'Val_NonEZvsEZ_whole_brain_duplicate_fold' + fold_no
+    # if not os.path.exists(save_dir_val):
+    #     os.makedirs(save_dir_val)
 
-    save_aug_data_as_separate_nodes(save_dir_val, X_val, Y_val, mode="valid")  # type:ignore
+    # save_aug_data_as_separate_nodes(save_dir_val, X_val, Y_val, mode="valid")  # type:ignore
 
 
 if __name__ == "__main__":
 
     # Root Folder
-    # root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
-    root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/'
+    root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
+    # root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/'
 
     main(root, num_nodes=827, fold_no="1")
     # main(root, num_nodes=827, fold_no="2")
