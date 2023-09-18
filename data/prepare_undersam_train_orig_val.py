@@ -225,23 +225,37 @@ def main(root: str, num_nodes: int = 3, fold_no: str = "1"):
 
     # split the data into training and validation (80%-20% split) 
     X_train, Y_train, X_val, Y_val = train_val_split(X_combined_all_patients_norm, Y_combined_all_patients, fold=fold_no, num_nodes=num_nodes) # type:ignore 
+
+    print('Original Val dataset %s' % Counter(Y_val))
+
+    # Save the original Val data
+    save_dir_val = 'Val_NonEZvsEZ_whole_brain_orig_fold' + fold_no
+    if not os.path.exists(save_dir_val):
+        os.makedirs(save_dir_val)
+
+    save_aug_data_as_separate_nodes(save_dir_val, X_val, Y_val, mode="valid")  # type:ignore
         
     # Perform undersampling on the training data to balance the classes
     X_train, Y_train = undersample_data(X_train, Y_train, random_state=100)
-    print('Undersampled dataset %s' % Counter(Y_train))
+    print('Undersampled Train dataset %s' % Counter(Y_train))
 
-    # save the augmented data
+    # save the undersampled training data
     save_dir_train = 'Train_NonEZvsEZ_whole_brain_undersamp_fold' + fold_no
     if not os.path.exists(save_dir_train):
         os.makedirs(save_dir_train)
     
     save_aug_data_as_separate_nodes(save_dir_train, X_train, Y_train, mode="train")  # type:ignore  
 
-    # save_dir_val = 'Val_NonEZvsEZ_whole_brain_orig_fold' + fold_no
-    # if not os.path.exists(save_dir_val):
-    #     os.makedirs(save_dir_val)
+    # Perform undersampling on the validation data to balance the classes
+    X_val, Y_val = undersample_data(X_val, Y_val, random_state=100)
+    print('Undersampled Val dataset %s' % Counter(Y_val))
 
-    # save_aug_data_as_separate_nodes(save_dir_val, X_val, Y_val, mode="valid")  # type:ignore
+    # save the undersampled validation data
+    save_dir_val = 'Val_NonEZvsEZ_whole_brain_undersamp_fold' + fold_no
+    if not os.path.exists(save_dir_val):
+        os.makedirs(save_dir_val)
+
+    save_aug_data_as_separate_nodes(save_dir_val, X_val, Y_val, mode="valid")  # type:ignore
 
 
 if __name__ == "__main__":
