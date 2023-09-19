@@ -33,19 +33,33 @@ class DatasetEZ_WB(Dataset):
 
         # initialize path
         if self.mode == EZMode.TRAIN:
-            self.path = os.path.join(self.root, 'Train_NonEZvsEZ_whole_brain_duplicate_fold'+fold_no)
+            # self.path = os.path.join(self.root, 'Undersampled_Data','Train_NonEZvsEZ_whole_brain_undersamp_fold'+fold_no)
+
+            # self.path = os.path.join(self.root, 'Undersampled_Data','Train_NonEZvsEZ_whole_brain_smote_undersampTomek_separate_fold'+fold_no)
+            # self.path = os.path.join(self.root, 'Undersampled_Data','Train_NonEZvsEZ_whole_brain_smote_undersampENN_separate_fold'+fold_no)
+
+            # self.path = os.path.join(self.root, 'Duplicated_Data','Train_NonEZvsEZ_whole_brain_duplicate_fold'+fold_no)
+
+            self.path = os.path.join(self.root, 'SMOTE_Augmented_Data','Train_NonEZvsEZ_whole_brain_smoteaug_separate_fold'+fold_no)
+
+            # self.x_file = f"X_train_orig_whole_brain_node"
+            # self.y_file = f"Y_train_orig_whole_brain_node"
+            # self.x_mat_name = "X_orig_train_node"
+            # self.y_mat_name = "Y_orig_train_node"
+
             self.x_file = f"X_train_aug_whole_brain_node"
             self.y_file = f"Y_train_aug_whole_brain_node"
             self.x_mat_name = "X_aug_train_node"
             self.y_mat_name = "Y_aug_train_node"
             
         elif self.mode == EZMode.VALIDATE:
-            self.path = os.path.join(self.root, 'Val_NonEZvsEZ_whole_brain_duplicate_fold'+fold_no)
-            # self.path = os.path.join(self.root, 'Val_NonEZvsEZ_whole_brain_orig_fold'+fold_no)
-            self.x_file = f"X_val_aug_whole_brain_node"
-            self.y_file = f"Y_val_aug_whole_brain_node"
-            self.x_mat_name = "X_aug_valid_node"
-            self.y_mat_name = "Y_aug_valid_node"
+            # self.path = os.path.join(self.root, 'Undersampled_Data', 'Val_NonEZvsEZ_whole_brain_undersamp_fold'+fold_no)
+            self.path = os.path.join(self.root, 'Original_Patient_Data', 'Val_NonEZvsEZ_whole_brain_orig_fold'+fold_no)
+            
+            self.x_file = f"X_val_orig_whole_brain_node"
+            self.y_file = f"Y_val_orig_whole_brain_node"
+            self.x_mat_name = "X_orig_valid_node"
+            self.y_mat_name = "Y_orig_valid_node"
             
         elif self.mode == EZMode.TEST:
             raise NotImplementedError("Test mode is not implemented yet.")
@@ -107,7 +121,7 @@ class DatasetEZ_WB(Dataset):
 if __name__ == "__main__":    
 
     print("Whole Brain EZ Dataset ...")
-    ez_dataset = DatasetEZ_WB(batch_size=1, root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/', drop_last=False, mode=EZMode.TRAIN, shuffle=False)
+    ez_dataset = DatasetEZ_WB(batch_size=1, root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/', drop_last=False, mode=EZMode.VALIDATE, shuffle=False)
 
     print(ez_dataset.unbatched_len)
     # print((ez_dataset.__getitem__(0))[0][4].shape)
