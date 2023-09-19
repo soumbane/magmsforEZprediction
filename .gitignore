@@ -195,5 +195,7 @@ pretrained_models/*
 Node_Level_Data/*
 finetuned_node_level_models/*
 
+pretrained_models_orig_val_data/*
+
 Icon*
 *.DS_Store
