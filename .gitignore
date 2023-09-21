@@ -197,5 +197,7 @@ finetuned_node_level_models/*
 
 pretrained_models_orig_val_data/*
 
+Train_NonEZvsEZ_whole_brain_smoteaug_separate_fold1/*
+
 Icon*
 *.DS_Store

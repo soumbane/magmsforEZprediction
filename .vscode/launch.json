@@ -12,16 +12,17 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/baselines_all_hemispheres/",
-                "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/trained_models/test_magms_ALL_mod_WB_deep.model",
-                "-b", "96",
+                "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/",
+                "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/pretrained_models/test_magms_ALL_mod_WB_example.model",
+                "-b", "32",
                 "-e", "10",
                 "-lr", "1e-3",
                 "--num_mod", "5",
-                "-exp", "test_magms_ALL_mod_WB_deep.exp",
+                "--fold_no", "1",
+                "-exp", "test_magms_ALL_mod_WB_example.exp",
                 "--replace_experiment",
                 "--show_verbose",
-                "--device", "cuda:0",
+                "--device", "cuda:1",
             ]
         },
         {
