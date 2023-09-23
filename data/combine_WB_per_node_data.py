@@ -2,6 +2,7 @@
 # Combine all brain nodes node by node (Pat 1 Node 1, Pat 2 Node 1, ...., Pat 44 Node 983): Node Level for Model and Validation Cohort
 import os
 import numpy as np
+from collections import Counter
 from scipy.io import loadmat, savemat
 from imblearn.over_sampling import SMOTE
 
@@ -67,28 +68,90 @@ def get_list_of_node_nums():
 # list of all 827 nodes for which SMOTE is possible (atleast 1 EZ)
 node_numbers_with_smote = get_list_of_node_nums()
 
-# node_numbers_with_smote = ["1","3","948"]
+# node_numbers_with_smote = ["134","1","14","3","948"]
 
 print(len(node_numbers_with_smote))
 
 # Combining all nodes node by node after performing SMOTE for each node
 
 # Perform SMOTE augmentation for each node
-def augment_data(X: np.ndarray, Y: np.ndarray, k_neighbors: int = 1, num_samples: int = 100, random_state: int = 100):
+def augment_data(X: np.ndarray, Y: np.ndarray, k_neighbors: int = 1, num_samples: int = 50, random_state: int = 100):
 
-    sm = SMOTE(k_neighbors=k_neighbors, random_state=random_state, sampling_strategy={0:num_samples, 1:num_samples}) # type:ignore
+    sm = SMOTE(k_neighbors=k_neighbors, random_state=random_state, sampling_strategy={0:num_samples, 1:num_samples+20}) # type:ignore
     
     X_aug, Y_aug = sm.fit_resample(X, Y) # type:ignore
     
     return X_aug, Y_aug
 
 
-def load_model_cohort(root: str):    
-          
-    X_combined_whole_brain = np.zeros((1,1899))
-    Y_combined_whole_brain = []
+def train_test_split(X: np.ndarray, Y: np.ndarray, fold: str = "1"):
+
+    if fold == "1": # Last 14 patients for testing/First 30 patients for training
+    
+        # For the training set (Original patients Only)  
+        X_train = X[:30,:]
+        Y_train = Y[:30]
+
+        print('Y_train: %s' % Counter(Y_train))
+
+        # For the testing set (Original patients Only)  
+        X_test = X[30:44,:]
+        Y_test = Y[30:44]
+
+        print('Y_test: %s' % Counter(Y_test))
+
+        print("Fold 1")
+
+    elif fold == "2": # patients 17-30 for testing/First 16 and last 14 patients for training
+    
+        # For the original training set
+        X_train = np.concatenate((X[:16,:], X[30:44,:]), axis=0)
+        
+        Y_train = np.concatenate((Y[:16], Y[30:44]), axis=0)
+
+        print('Y_train: %s' % Counter(Y_train))        
+
+        # For the original testing set
+        X_test = X[16:30,:]
+        Y_test = Y[16:30]
+
+        print('Y_test: %s' % Counter(Y_test))
+
+        print("Fold 2")
+
+    elif fold == "3": # last 28 patients for training/First 16 patients for testing
+    
+        # For the original training set
+        X_train = X[16:,:]
+        
+        Y_train = Y[16:]
+
+        print('Y_train: %s' % Counter(Y_train))
+
+        # For the original testing set    
+        X_test = X[:16,:]
+        Y_test = Y[:16]
+
+        print('Y_test: %s' % Counter(Y_test))
+
+        print("Fold 3")
+
+    else:
+        raise KeyError(f"The fold number must be either 1, 2 or 3.")
+
+    return X_train, Y_train, X_test, Y_test  # type:ignore
+
+
+def load_model_cohort(root: str, fold_no: str = "1", random_state: int = 100): 
+
+    X_combined_train = np.zeros((1,1899))
+    Y_combined_train = []
+
+    X_combined_test = np.zeros((1,1899))
+    Y_combined_test = []
 
     for i in node_numbers_with_smote:      
+
         ## Load ModelCohort
         print(f"Loading ModelCohort for Node num: {i}")
 
@@ -127,16 +190,74 @@ def load_model_cohort(root: str):
         Y_mat_l = loadmat(raw_path_label)
         Y_mat_aug = Y_mat_l[label_mat_name]
         Y_mat_aug_1 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
+        Y_mat_aug_1 = Y_mat_aug_1.astype(int) # type:ignore
 
-        X_combined_whole_brain = np.concatenate((X_combined_whole_brain, X_combined_1), axis=0)
+        print(f"Combined node {i} of 44 Model Cohort patients.")
+
+        # split the model cohort into training and testing sets
+        X_train_orig, Y_train_orig, X_test_orig, Y_test_orig = train_test_split(X_combined_1, Y_mat_aug_1, fold=fold_no) # type:ignore
+
+        if np.sum(Y_train_orig) == 0:
+            X_train, Y_train = X_train_orig, Y_train_orig
+
+        elif np.sum(Y_train_orig) == 1:
+            X_train, Y_train = X_train_orig, Y_train_orig
+
+        elif np.sum(Y_train_orig) == 2:
+            # augment training data using SMOTE (balance training dataset)
+            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=1, random_state=random_state) # type:ignore
+        
+        elif np.sum(Y_train_orig) == 3:
+            # augment training data using SMOTE (balance training dataset)
+            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=2, random_state=random_state) # type:ignore
+        
+        elif np.sum(Y_train_orig) == 4:
+            # augment training data using SMOTE (balance training dataset)
+            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=3, random_state=random_state) # type:ignore
+
+        elif np.sum(Y_train_orig) == 5:
+            # augment training data using SMOTE (balance training dataset)
+            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=4, random_state=random_state) # type:ignore
+
+        elif np.sum(Y_train_orig) == 6:
+            # augment training data using SMOTE (balance training dataset)
+            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=5, random_state=random_state) # type:ignore
+
+        else:
+            # augment training data using SMOTE (balance training dataset)
+            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=6, random_state=random_state) # type:ignore
+
+        # Combine the original+augmented training data for node i
+        X_combined_train = np.concatenate((X_combined_train, X_train), axis=0)
         if i == node_numbers_with_smote[0]:
-            X_combined_whole_brain = X_combined_whole_brain[1:,:]
+            X_combined_train = X_combined_train[1:,:]
 
-        Y_combined_whole_brain = np.concatenate((Y_combined_whole_brain, Y_mat_aug_1), axis=0)
+        Y_combined_train = np.concatenate((Y_combined_train, Y_train), axis=0)
+        Y_combined_train = Y_combined_train.astype(int) # type:ignore
 
-        ###################################################################################################
+        # Combine the original testing data for node i
+        X_combined_test = np.concatenate((X_combined_test, X_test_orig), axis=0)
+        if i == node_numbers_with_smote[0]:
+            X_combined_test = X_combined_test[1:,:]
+
+        Y_combined_test = np.concatenate((Y_combined_test, Y_test_orig), axis=0)
+        Y_combined_test = Y_combined_test.astype(int) # type:ignore
+
+        print("Finished Model Cohort")
+
+    print(f"Finished combining all {len(node_numbers_with_smote)} nodes of 30 training patients and 14 test patients.")
+
+    return X_combined_train, Y_combined_train, X_combined_test, Y_combined_test
+
+
+def load_validation_cohort(root: str):    
+          
+    X_combined_whole_brain = np.zeros((1,1899))
+    Y_combined_whole_brain = []
+
+    for i in node_numbers_with_smote:      
         ## Load ValidCohort
-        # print(f"Loading ValidCohort for Node num: {i}")
+        print(f"Loading ValidCohort for Node num: {i}")
 
         path = os.path.join(root,'ValidCohort_NonEZvsEZ_ALL')
     
@@ -174,34 +295,77 @@ def load_model_cohort(root: str):
         Y_mat_aug = Y_mat_l[label_mat_name]
         Y_mat_aug_2 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
 
-        X_combined_whole_brain = np.concatenate((X_combined_whole_brain, X_combined_2), axis=0)            
+        X_combined_whole_brain = np.concatenate((X_combined_whole_brain, X_combined_2), axis=0) 
+        if i == node_numbers_with_smote[0]:
+            X_combined_whole_brain = X_combined_whole_brain[1:,:]           
                         
         Y_combined_whole_brain = np.concatenate((Y_combined_whole_brain, Y_mat_aug_2), axis=0)
         Y_combined_whole_brain = Y_combined_whole_brain.astype(int) 
-        print(f"Combined node {i} of 68 patients.")
+        print(f"Combined node {i} of 24 Validation Cohort patients.")
 
-    print(f"Finished combining all {len(node_numbers_with_smote)} nodes of 68 patients.")
+    print(f"Finished combining all {len(node_numbers_with_smote)} nodes of 24 patients.")
 
     return X_combined_whole_brain, Y_combined_whole_brain
 
 
-def save_whole_brain_data(save_dir: str, X: np.ndarray, Y: np.ndarray) -> None:
+def save_aug_data_as_separate_nodes(save_dir: str, X: np.ndarray, Y: np.ndarray, mode: str = "train") -> None:
     
-    savemat(os.path.join(save_dir,'X_whole_brain.mat'), {"X_whole_brain":X})
-    savemat(os.path.join(save_dir,'Y_whole_brain.mat'), {"Y_whole_brain":Y})
+    for i in range(len(Y)):
+        if mode == "train":
+            savemat(os.path.join(save_dir,'X_train_aug_WB_node' + str(i) + '.mat'), {"X_aug_train_node" + str(i):X[i,:]})
+            savemat(os.path.join(save_dir,'Y_train_aug_WB_node' + str(i) + '.mat'), {"Y_aug_train_node" + str(i):Y[i]})
+
+        elif mode == "test":
+            savemat(os.path.join(save_dir,'X_test_orig_WB_node' + str(i) + '.mat'), {"X_orig_test_node" + str(i):X[i,:]})
+            savemat(os.path.join(save_dir,'Y_test_orig_WB_node' + str(i) + '.mat'), {"Y_orig_test_node" + str(i):Y[i]})
+
+        elif mode == "validation":
+            savemat(os.path.join(save_dir,'X_valid_orig_WB_node' + str(i) + '.mat'), {"X_orig_valid_node" + str(i):X[i,:]})
+            savemat(os.path.join(save_dir,'Y_valid_orig_WB_node' + str(i) + '.mat'), {"Y_orig_valid_node" + str(i):Y[i]})
+
+        else:
+            raise KeyError(f"The mode must be either train, test or validation.")
 
 
-def main(root: str):    
+def main(root: str, fold_no: str = "1"):    
     
-    # Combining all brain nodes node by node (Pat 1 Node 1, Pat 2 Node 1, ...., Pat 44 Node 983): Node Level for Model and Validation Cohort
-    X_combined_all_patients, Y_combined_all_patients = load_model_cohort(root)  # type:ignore
+    ## Load and save the Model cohort data (44 patients) divided into training (30 patients) and testing (14 patients)
+    # Combining node by node (Pat 1 Node 1, Pat 2 Node 1, ...., Pat 44 Node 983): Node Level for Model Cohort
+    X_combined_train, Y_combined_train, X_combined_test, Y_combined_test = load_model_cohort(root, fold_no=fold_no, random_state=100)  # type:ignore    
+
+    print('Y_combined_train: %s' % Counter(Y_combined_train))
+
+    print('Y_combined_test: %s' % Counter(Y_combined_test))
        
-    # save the data
-    save_dir = 'NonEZvsEZ_whole_brain_' 
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
+    # save the augmented training data
+    save_dir_train = 'Train_NonEZvsEZ_WB_smoteaug_fold' + fold_no
+    if not os.path.exists(save_dir_train):
+        os.makedirs(save_dir_train)
     
-    save_whole_brain_data(save_dir, X_combined_all_patients, Y_combined_all_patients)  # type:ignore 
+    save_aug_data_as_separate_nodes(save_dir_train, X_combined_train, Y_combined_train, mode="train")  # type:ignore  
+
+    # save the original testing data
+    save_dir_test = 'Test_NonEZvsEZ_WB_orig_fold' + fold_no
+    if not os.path.exists(save_dir_test):
+        os.makedirs(save_dir_test)
+    
+    save_aug_data_as_separate_nodes(save_dir_train, X_combined_test, Y_combined_test, mode="test")  # type:ignore  
+
+    ################################################################################################################
+    ## Load and save the original independent (Hold-out) validation cohort data (24 patients)
+    
+    # Combining node by node (Pat 1 Node 1, Pat 2 Node 1, ...., Pat 24 Node 983): Node Level for Validation Cohort
+    X_combined_validation, Y_combined_validation = load_validation_cohort(root)  # type:ignore
+
+    print('Y_combined_validation: %s' % Counter(Y_combined_validation))
+    
+    save_dir_val = 'ValidationCohort_NonEZvsEZ_WB_orig'
+    if not os.path.exists(save_dir_val):
+        os.makedirs(save_dir_val)
+
+    save_aug_data_as_separate_nodes(save_dir_val, X_combined_validation, Y_combined_validation, mode="validation")  # type:ignore
+
+    ################################################################################################################
 
 
 if __name__ == "__main__":
@@ -210,6 +374,8 @@ if __name__ == "__main__":
     # root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
     root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
 
-    main(root)
+    main(root, fold_no="1")
+    # main(root, fold_no="2")
+    # main(root, fold_no="3")
 
 
