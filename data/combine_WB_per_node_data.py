@@ -75,9 +75,9 @@ print(len(node_numbers_with_smote))
 # Combining all nodes node by node after performing SMOTE for each node
 
 # Perform SMOTE augmentation for each node
-def augment_data(X: np.ndarray, Y: np.ndarray, k_neighbors: int = 1, num_samples: int = 50, random_state: int = 100):
+def augment_data(X: np.ndarray, Y: np.ndarray, k_neighbors: int = 1, num_samples_nonEZ: int = 50, num_samples_EZ: int = 50, random_state: int = 100):
 
-    sm = SMOTE(k_neighbors=k_neighbors, random_state=random_state, sampling_strategy={0:num_samples, 1:num_samples+20}) # type:ignore
+    sm = SMOTE(k_neighbors=k_neighbors, random_state=random_state, sampling_strategy={0:num_samples_nonEZ, 1:num_samples_EZ}) # type:ignore
     
     X_aug, Y_aug = sm.fit_resample(X, Y) # type:ignore
     
@@ -142,7 +142,7 @@ def train_test_split(X: np.ndarray, Y: np.ndarray, fold: str = "1"):
     return X_train, Y_train, X_test, Y_test  # type:ignore
 
 
-def load_model_cohort(root: str, fold_no: str = "1", random_state: int = 100): 
+def load_model_cohort(root: str, fold_no: str = "1", num_samples_nonEZ: int = 50, num_samples_EZ: int = 50, random_state: int = 100): 
 
     X_combined_train = np.zeros((1,1899))
     Y_combined_train = []
@@ -205,27 +205,27 @@ def load_model_cohort(root: str, fold_no: str = "1", random_state: int = 100):
 
         elif np.sum(Y_train_orig) == 2:
             # augment training data using SMOTE (balance training dataset)
-            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=1, random_state=random_state) # type:ignore
+            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=1, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
         
         elif np.sum(Y_train_orig) == 3:
             # augment training data using SMOTE (balance training dataset)
-            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=2, random_state=random_state) # type:ignore
+            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=2, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
         
         elif np.sum(Y_train_orig) == 4:
             # augment training data using SMOTE (balance training dataset)
-            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=3, random_state=random_state) # type:ignore
+            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=3, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
 
         elif np.sum(Y_train_orig) == 5:
             # augment training data using SMOTE (balance training dataset)
-            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=4, random_state=random_state) # type:ignore
+            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=4, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
 
         elif np.sum(Y_train_orig) == 6:
             # augment training data using SMOTE (balance training dataset)
-            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=5, random_state=random_state) # type:ignore
+            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=5, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
 
         else:
             # augment training data using SMOTE (balance training dataset)
-            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=6, random_state=random_state) # type:ignore
+            X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=6, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
 
         # Combine the original+augmented training data for node i
         X_combined_train = np.concatenate((X_combined_train, X_train), axis=0)
@@ -245,7 +245,14 @@ def load_model_cohort(root: str, fold_no: str = "1", random_state: int = 100):
 
         print("Finished Model Cohort")
 
-    print(f"Finished combining all {len(node_numbers_with_smote)} nodes of 30 training patients and 14 test patients.")
+    if fold_no == "1":
+        print(f"Finished combining all {len(node_numbers_with_smote)} nodes of first 30 training patients and last 14 test patients (Fold 1) from Model Cohort.")
+    elif fold_no == "2":
+        print(f"Finished combining all {len(node_numbers_with_smote)} nodes of first 16 and last 14 training patients and 17-30 test patients (Fold 2) from Model Cohort.")
+    elif fold_no == "3":
+        print(f"Finished combining all {len(node_numbers_with_smote)} nodes of last 28 training patients and first 16 test patients (Fold 3) from Model Cohort.")
+    else:
+        raise KeyError(f"The fold number must be either 1, 2 or 3.")
 
     return X_combined_train, Y_combined_train, X_combined_test, Y_combined_test
 
@@ -303,7 +310,7 @@ def load_validation_cohort(root: str):
         Y_combined_whole_brain = Y_combined_whole_brain.astype(int) 
         print(f"Combined node {i} of 24 Validation Cohort patients.")
 
-    print(f"Finished combining all {len(node_numbers_with_smote)} nodes of 24 patients.")
+    print(f"Finished combining all {len(node_numbers_with_smote)} nodes of 24 patients of the independent Validation Cohort.")
 
     return X_combined_whole_brain, Y_combined_whole_brain
 
@@ -327,29 +334,36 @@ def save_aug_data_as_separate_nodes(save_dir: str, X: np.ndarray, Y: np.ndarray,
             raise KeyError(f"The mode must be either train, test or validation.")
 
 
-def main(root: str, fold_no: str = "1"):    
+def main(root: str, save_path_training: str, save_path_testing: str, save_path_validation: str, fold_no: str = "1", num_samples_nonEZ: int = 50, num_samples_EZ: int = 50):    
     
     ## Load and save the Model cohort data (44 patients) divided into training (30 patients) and testing (14 patients)
     # Combining node by node (Pat 1 Node 1, Pat 2 Node 1, ...., Pat 44 Node 983): Node Level for Model Cohort
-    X_combined_train, Y_combined_train, X_combined_test, Y_combined_test = load_model_cohort(root, fold_no=fold_no, random_state=100)  # type:ignore    
+    X_combined_train, Y_combined_train, X_combined_test, Y_combined_test = load_model_cohort(root, fold_no=fold_no, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=100)  # type:ignore    
 
     print('Y_combined_train: %s' % Counter(Y_combined_train))
 
     print('Y_combined_test: %s' % Counter(Y_combined_test))
        
     # save the augmented training data
-    save_dir_train = 'Train_NonEZvsEZ_WB_smoteaug_fold' + fold_no
+    save_path_training = save_path_training
+
+    save_dir_train_temp = 'Train_NonEZvsEZ_WB_smoteaug_fold' + fold_no
+    save_dir_train = os.path.join(save_path_training, save_dir_train_temp)
+
     if not os.path.exists(save_dir_train):
         os.makedirs(save_dir_train)
     
     save_aug_data_as_separate_nodes(save_dir_train, X_combined_train, Y_combined_train, mode="train")  # type:ignore  
 
     # save the original testing data
-    save_dir_test = 'Test_NonEZvsEZ_WB_orig_fold' + fold_no
+    save_path_testing = save_path_testing
+
+    save_dir_test_temp = 'Test_NonEZvsEZ_WB_orig_fold' + fold_no
+    save_dir_test = os.path.join(save_path_testing, save_dir_test_temp)
     if not os.path.exists(save_dir_test):
         os.makedirs(save_dir_test)
     
-    save_aug_data_as_separate_nodes(save_dir_train, X_combined_test, Y_combined_test, mode="test")  # type:ignore  
+    save_aug_data_as_separate_nodes(save_dir_test, X_combined_test, Y_combined_test, mode="test")  # type:ignore  
 
     ################################################################################################################
     ## Load and save the original independent (Hold-out) validation cohort data (24 patients)
@@ -358,8 +372,10 @@ def main(root: str, fold_no: str = "1"):
     X_combined_validation, Y_combined_validation = load_validation_cohort(root)  # type:ignore
 
     print('Y_combined_validation: %s' % Counter(Y_combined_validation))
+
+    save_path_validation = save_path_validation
     
-    save_dir_val = 'ValidationCohort_NonEZvsEZ_WB_orig'
+    save_dir_val = os.path.join(save_path_validation, 'ValidationCohort_NonEZvsEZ_WB_orig')
     if not os.path.exists(save_dir_val):
         os.makedirs(save_dir_val)
 
@@ -374,8 +390,17 @@ if __name__ == "__main__":
     # root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
     root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
 
-    main(root, fold_no="1")
-    # main(root, fold_no="2")
-    # main(root, fold_no="3")
+    save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/SMOTE_Augmented_Data/'
+    save_path_testing = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Original_Patient_Data/'
+    save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Original_Patient_Data/'
+
+    # num_samples_nonEZ: Number of samples of non-EZ (class 0) to generate per node with SMOTE
+    # num_samples_EZ: Number of samples of EZ (class 1) to generate per node with SMOTE
+
+    main(root, save_path_training, save_path_testing, save_path_validation, fold_no="1", num_samples_nonEZ=30, num_samples_EZ=40) # for trying
+
+    # main(root, save_path_training, save_path_testing, save_path_validation, fold_no="1", num_samples_nonEZ=80, num_samples_EZ=100)
+    # main(root, save_path_training, save_path_testing, save_path_validation, fold_no="2", num_samples_nonEZ=80, num_samples_EZ=100)
+    # main(root, save_path_training, save_path_testing, save_path_validation, fold_no="3", num_samples_nonEZ=80, num_samples_EZ=100)
 
 
