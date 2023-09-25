@@ -390,9 +390,9 @@ if __name__ == "__main__":
     # root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
     root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
 
-    save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/SMOTE_Augmented_Data/'
-    save_path_testing = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Original_Patient_Data/'
-    save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Original_Patient_Data/'
+    save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/NodebyNode_Data/SMOTE_Augmented_Data/'
+    save_path_testing = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/NodebyNode_Data/Original_Patient_Data/'
+    save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/NodebyNode_Data/Original_Patient_Data/'
 
     # num_samples_nonEZ: Number of samples of non-EZ (class 0) to generate per node with SMOTE
     # num_samples_EZ: Number of samples of EZ (class 1) to generate per node with SMOTE
