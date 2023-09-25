@@ -198,33 +198,36 @@ def load_model_cohort(root: str, fold_no: str = "1", num_samples_nonEZ: int = 50
         X_train_orig, Y_train_orig, X_test_orig, Y_test_orig = train_test_split(X_combined_1, Y_mat_aug_1, fold=fold_no) # type:ignore
 
         if np.sum(Y_train_orig) == 0:
+            # cannot perform SMOTE NO samples for EZ (class 1) is present - just append original node data to whole brain data
             X_train, Y_train = X_train_orig, Y_train_orig
 
         elif np.sum(Y_train_orig) == 1:
+            # cannot perform SMOTE as only 1 sample for EZ (class 1) is present - No nearest neighbors
+            # just append original node data to whole brain data
             X_train, Y_train = X_train_orig, Y_train_orig
 
         elif np.sum(Y_train_orig) == 2:
-            # augment training data using SMOTE (balance training dataset)
+            # augment training data using SMOTE with KNN=1 (balance training dataset with 1 nearest neighbor)
             X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=1, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
         
         elif np.sum(Y_train_orig) == 3:
-            # augment training data using SMOTE (balance training dataset)
+            # augment training data using SMOTE with KNN=2 (balance training dataset with 2 nearest neighbors)
             X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=2, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
         
         elif np.sum(Y_train_orig) == 4:
-            # augment training data using SMOTE (balance training dataset)
+            # augment training data using SMOTE with KNN=3 (balance training dataset with 3 nearest neighbors)
             X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=3, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
 
         elif np.sum(Y_train_orig) == 5:
-            # augment training data using SMOTE (balance training dataset)
+            # augment training data using SMOTE with KNN=4 (balance training dataset with 4 nearest neighbors)
             X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=4, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
 
         elif np.sum(Y_train_orig) == 6:
-            # augment training data using SMOTE (balance training dataset)
+            # augment training data using SMOTE with KNN=5 (balance training dataset with 5 nearest neighbors)
             X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=5, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
 
         else:
-            # augment training data using SMOTE (balance training dataset)
+            # augment training data using SMOTE with KNN=6 (balance training dataset with 6 nearest neighbors)
             X_train, Y_train = augment_data(X_train_orig, Y_train_orig, k_neighbors=6, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
 
         # Combine the original+augmented training data for node i
