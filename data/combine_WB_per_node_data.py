@@ -84,6 +84,22 @@ def augment_data(X: np.ndarray, Y: np.ndarray, k_neighbors: int = 1, num_samples
     return X_aug, Y_aug
 
 
+# perform z-score normalization of the data matrix X
+def z_score_norm(X: np.ndarray):
+
+    X_mean = np.mean(X, axis=0, dtype=np.float64)
+    X_std = np.std(X, axis=0, dtype=np.float64)
+
+    X_norm = (X - X_mean)/X_std
+
+    # check for NaN values and replace NaN values with 0
+    if (np.isnan(X_norm).any()):
+        X_norm = np.nan_to_num(X_norm, nan=0) 
+    
+    return X_norm
+
+
+# split the data into training and testing for each fold
 def train_test_split(X: np.ndarray, Y: np.ndarray, fold: str = "1"):
 
     if fold == "1": # Last 14 patients for testing/First 30 patients for training
@@ -341,7 +357,15 @@ def main(root: str, save_path_training: str, save_path_testing: str, save_path_v
     
     ## Load and save the Model cohort data (44 patients) divided into training (30 patients) and testing (14 patients)
     # Combining node by node (Pat 1 Node 1, Pat 2 Node 1, ...., Pat 44 Node 983): Node Level for Model Cohort
-    X_combined_train, Y_combined_train, X_combined_test, Y_combined_test = load_model_cohort(root, fold_no=fold_no, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=100)  # type:ignore    
+    X_combined_train, Y_combined_train, X_combined_test, Y_combined_test = load_model_cohort(root, fold_no=fold_no, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=100)  # type:ignore   
+
+    # Perform z-score normalization across patients for training and testing data matrix
+    X_combined_train = z_score_norm(X_combined_train)  # type:ignore
+    print(f"X_all_patients max: {np.max(X_combined_train)}")
+    print(f"X_all_patients min: {np.min(X_combined_train)}") 
+    # print(f"Y_combined_train shape: {Y_combined_train.shape}")
+
+    X_combined_test = z_score_norm(X_combined_test)  # type:ignore
 
     print('Y_combined_train: %s' % Counter(Y_combined_train))
 
@@ -374,6 +398,8 @@ def main(root: str, save_path_training: str, save_path_testing: str, save_path_v
     # Combining node by node (Pat 1 Node 1, Pat 2 Node 1, ...., Pat 24 Node 983): Node Level for Validation Cohort
     X_combined_validation, Y_combined_validation = load_validation_cohort(root)  # type:ignore
 
+    X_combined_validation = z_score_norm(X_combined_validation)  # type:ignore
+
     print('Y_combined_validation: %s' % Counter(Y_combined_validation))
 
     save_path_validation = save_path_validation
@@ -390,16 +416,16 @@ def main(root: str, save_path_training: str, save_path_testing: str, save_path_v
 if __name__ == "__main__":
 
     # Root Folder for the dataset
-    root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
-    # root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
+    # root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
+    root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
 
-    # save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/NodebyNode_Data/SMOTE_Augmented_Data/'
-    # save_path_testing = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/NodebyNode_Data/Original_Patient_Data/'
-    # save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/NodebyNode_Data/Original_Patient_Data/'
+    save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/NodebyNode_Data/SMOTE_Augmented_Data/'
+    save_path_testing = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/NodebyNode_Data/Original_Patient_Data/'
+    save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/NodebyNode_Data/Original_Patient_Data/'
 
-    save_path_training = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/NodebyNode_Data/SMOTE_Augmented_Data/'
-    save_path_testing = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/NodebyNode_Data/Original_Patient_Data/'
-    save_path_validation = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/NodebyNode_Data/Original_Patient_Data/'
+    # save_path_training = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/NodebyNode_Data/SMOTE_Augmented_Data/'
+    # save_path_testing = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/NodebyNode_Data/Original_Patient_Data/'
+    # save_path_validation = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/NodebyNode_Data/Original_Patient_Data/'
 
     # num_samples_nonEZ: Number of samples of non-EZ (class 0) to generate per node with SMOTE
     # num_samples_EZ: Number of samples of EZ (class 1) to generate per node with SMOTE
