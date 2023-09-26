@@ -16,7 +16,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
         cudnn.deterministic = True  
 
     # initialize dataset for whole brain
-    training_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, drop_last=False, mode=data.EZMode.TRAIN, fold_no=cfg.fold_no, shuffle=True)
+    training_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, drop_last=True, mode=data.EZMode.TRAIN, fold_no=cfg.fold_no, shuffle=True)
     validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
     
     # build model
