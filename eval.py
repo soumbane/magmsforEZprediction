@@ -86,6 +86,8 @@ def get_target_dict(num: int) -> dict[int, str]:
 def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
     # load whole brain dataset
     validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+
+    testing_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, fold_no=cfg.fold_no)
     
     # load checkpoint
     if cfg.model.endswith(".model"):
@@ -106,12 +108,20 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
 
     # print(manager.target_dict)
 
-    # print(f'The best accuracy on validation set occurs at {manager.current_epoch + 1} epoch number')
+    print(f'The best accuracy on validation set occurs at {manager.current_epoch + 1} epoch number')
 
     # test checkpoint with validation dataset
     summary: dict[str, Any] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
 
     # preds = manager.predict(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+
+    if conf_met_fn.results is not None:
+        summary.update({"conf_met": conf_met_fn.results})
+    view.logger.info(summary)
+
+
+    # test checkpoint with independent validation cohort dataset (final test dataset)
+    summary: dict[str, Any] = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
 
     if conf_met_fn.results is not None:
         summary.update({"conf_met": conf_met_fn.results})
