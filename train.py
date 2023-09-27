@@ -49,7 +49,8 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
         "CE_loss_all": main_losses[0],
         "accuracy": tm.metrics.SparseCategoricalAccuracy(),
         "bal_accuracy": ezpred.metrics.BalancedAccuracyScore(),
-        "sensitivity": ezpred.metrics.SensitivityScore()
+        "sensitivity": ezpred.metrics.SensitivityScore(),
+        "specificity": ezpred.metrics.SpecificityScore(),
     }
 
     # compile manager
