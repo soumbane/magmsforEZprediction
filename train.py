@@ -36,17 +36,27 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean') for _ in range(cfg.num_mod)]
     mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE() for _ in range(cfg.num_mod)]
     magms_loss = magnet.losses.MAGMSLoss(main_losses, distillation_loss=kldiv_losses, feature_losses=mse_losses)
+    
+    # if we want to track only the validation accuracy
+    # metric_fns: dict[str, tm.metrics.Metric] = {
+    #     "CE_loss_all": main_losses[0],
+    #     "val_accuracy": tm.metrics.SparseCategoricalAccuracy(),
+    #     "val_bal_accuracy": ezpred.metrics.BalancedAccuracyScore()
+    # }
+
+    # if we want to track both the training and validation accuracy
     metric_fns: dict[str, tm.metrics.Metric] = {
         "CE_loss_all": main_losses[0],
-        "val_accuracy": tm.metrics.SparseCategoricalAccuracy(),
-        "val_bal_accuracy": ezpred.metrics.BalancedAccuracyScore()
+        "accuracy": tm.metrics.SparseCategoricalAccuracy(),
+        "bal_accuracy": ezpred.metrics.BalancedAccuracyScore(),
+        "sensitivity": ezpred.metrics.SensitivityScore()
     }
 
     # compile manager
     manager = magnet.Manager(model, optimizer=optimizer, loss_fn=magms_loss, metrics=metric_fns)
 
     # initialize callbacks
-    experiment_callback = tm.callbacks.Experiment(cfg.experiment, manager, monitors=["accuracy", "bal_accuracy"])    
+    experiment_callback = tm.callbacks.Experiment(cfg.experiment, manager, monitors=["accuracy", "bal_accuracy", "sensitivity"])    
     
     lr_scheduler_callback = tm.callbacks.LrSchedueler(lr_scheduler, tf_board_writer=experiment_callback.tensorboard.writer) # type:ignore   
 
