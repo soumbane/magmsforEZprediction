@@ -119,7 +119,6 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
         summary.update({"conf_met": conf_met_fn.results})
     view.logger.info(summary)
 
-
     # test checkpoint with independent validation cohort dataset (final test dataset)
     summary: dict[str, Any] = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
 
