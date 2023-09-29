@@ -172,6 +172,8 @@ def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: in
 
     X_combined_train, Y_combined_train = augment_data(X_combined_test, Y_combined_test, k_neighbors=5, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
 
+    Y_combined_train = Y_combined_train.astype(int) # type:ignore
+
     X_combined_train = X_combined_train[4136:,:]
     Y_combined_train = Y_combined_train[4136:]    
 
