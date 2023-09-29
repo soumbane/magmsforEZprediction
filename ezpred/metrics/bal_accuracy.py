@@ -69,7 +69,7 @@ class SensitivityScore(BinaryConfusionMetric):
 
         # # Calculate balanced accuracy score
         # balanced_acc = 0.5 * (sensitivity + specificity).mean()
-        return sensitivity
+        return sensitivity.mean()
 
     def forward_metric(self, tp: torch.Tensor, tn: torch.Tensor, fp: torch.Tensor, fn: torch.Tensor) -> torch.Tensor:
         self.conf_met[0, 0] += tp
@@ -109,7 +109,7 @@ class SpecificityScore(BinaryConfusionMetric):
 
         # # Calculate balanced accuracy score
         # balanced_acc = 0.5 * (sensitivity + specificity).mean()
-        return specificity
+        return specificity.mean()
 
     def forward_metric(self, tp: torch.Tensor, tn: torch.Tensor, fp: torch.Tensor, fn: torch.Tensor) -> torch.Tensor:
         self.conf_met[0, 0] += tp
