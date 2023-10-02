@@ -29,7 +29,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
 
     # initialize learning rate scheduler 
-    lr_step = max(int(cfg.epochs / 10), 1)  # for 30 epochs
+    lr_step = max(int(cfg.epochs / 5), 1)  # for 50 epochs
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, lr_step, gamma=0.5) # reduce lr by half     
     
     main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)]
@@ -57,7 +57,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     manager = magnet.Manager(model, optimizer=optimizer, loss_fn=magms_loss, metrics=metric_fns)
 
     # initialize callbacks
-    experiment_callback = tm.callbacks.Experiment(cfg.experiment, manager, monitors=["accuracy", "val_bal_accuracy"])    
+    experiment_callback = tm.callbacks.Experiment(cfg.experiment, manager, monitors=["accuracy", "bal_accuracy"])    
     
     lr_scheduler_callback = tm.callbacks.LrSchedueler(lr_scheduler, tf_board_writer=experiment_callback.tensorboard.writer) # type:ignore   
 
