@@ -29,17 +29,28 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
 
     # initialize learning rate scheduler 
-    lr_step = max(int(cfg.epochs / 5), 1)  # for 25 epochs
+    lr_step = max(int(cfg.epochs / 5), 1)  # for 50 epochs
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, lr_step, gamma=0.5) # reduce lr by half     
     
     main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)]
     kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean') for _ in range(cfg.num_mod)]
     mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE() for _ in range(cfg.num_mod)]
     magms_loss = magnet.losses.MAGMSLoss(main_losses, distillation_loss=kldiv_losses, feature_losses=mse_losses)
+    
+    # if we want to track only the validation accuracy
+    # metric_fns: dict[str, tm.metrics.Metric] = {
+    #     "CE_loss_all": main_losses[0],
+    #     "val_accuracy": tm.metrics.SparseCategoricalAccuracy(),
+    #     "val_bal_accuracy": ezpred.metrics.BalancedAccuracyScore()
+    # }
+
+    # if we want to track both the training and validation accuracy
     metric_fns: dict[str, tm.metrics.Metric] = {
         "CE_loss_all": main_losses[0],
         "val_accuracy": tm.metrics.SparseCategoricalAccuracy(),
-        "val_bal_accuracy": ezpred.metrics.BalancedAccuracyScore()
+        "val_bal_accuracy": ezpred.metrics.BalancedAccuracyScore(),
+        # "sensitivity": ezpred.metrics.SensitivityScore(),
+        # "specificity": ezpred.metrics.SpecificityScore(),
     }
 
     # compile manager

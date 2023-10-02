@@ -190,6 +190,7 @@ Val_NonEZvsEZ_whole_brain_orig_fold1/*
 Val_NonEZvsEZ_WB_SubGroup_Analysis/*
 
 trained_models/*
+trained_models_lobe/*
 Control_Data_Results/*
 pretrained_models/*
 Node_Level_Data/*

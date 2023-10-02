@@ -33,7 +33,7 @@ class DatasetEZ_WB(Dataset):
 
         # initialize path
         if self.mode == EZMode.TRAIN:
-            self.path = os.path.join(self.root, 'SMOTE_Augmented_Data','Train_NonEZvsEZ_WB_smoteaug_fold'+fold_no)
+            self.path = os.path.join(self.root, 'SMOTE_Augmented_Data','Train_NonEZvsEZ_WB_smoteaug')
 
             self.x_file = f"X_train_aug_WB_node"
             self.y_file = f"Y_train_aug_WB_node"
@@ -41,7 +41,7 @@ class DatasetEZ_WB(Dataset):
             self.y_mat_name = "Y_aug_train_node"
             
         elif self.mode == EZMode.VALIDATE:
-            self.path = os.path.join(self.root, 'Original_Patient_Data', 'Test_NonEZvsEZ_WB_orig_fold'+fold_no)
+            self.path = os.path.join(self.root, 'Original_Patient_Data', 'Test_NonEZvsEZ_WB_orig')
             
             self.x_file = f"X_test_orig_WB_node"
             self.y_file = f"Y_test_orig_WB_node"
