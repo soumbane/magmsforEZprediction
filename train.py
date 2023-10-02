@@ -47,17 +47,19 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # if we want to track both the training and validation accuracy
     metric_fns: dict[str, tm.metrics.Metric] = {
         "CE_loss_all": main_losses[0],
-        "val_accuracy": tm.metrics.SparseCategoricalAccuracy(),
-        "val_bal_accuracy": ezpred.metrics.BalancedAccuracyScore(),
-        # "sensitivity": ezpred.metrics.SensitivityScore(),
-        # "specificity": ezpred.metrics.SpecificityScore(),
+        "accuracy": ezpred.metrics.AccuracyScore(),
+        "bal_accuracy": ezpred.metrics.BalancedAccuracyScore(),
+        "sensitivity": ezpred.metrics.SensitivityScore(),
+        "specificity": ezpred.metrics.SpecificityScore(),
     }
 
     # compile manager
     manager = magnet.Manager(model, optimizer=optimizer, loss_fn=magms_loss, metrics=metric_fns)
 
     # initialize callbacks
-    experiment_callback = tm.callbacks.Experiment(cfg.experiment, manager, monitors=["accuracy", "bal_accuracy"])    
+    experiment_callback = tm.callbacks.Experiment(cfg.experiment, manager, monitors=["accuracy", "bal_accuracy",
+                                                                                      "sensitivity", "specificity"
+                                                                                      ])    
     
     lr_scheduler_callback = tm.callbacks.LrSchedueler(lr_scheduler, tf_board_writer=experiment_callback.tensorboard.writer) # type:ignore   
 

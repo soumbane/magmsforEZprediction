@@ -1,9 +1,16 @@
-from torchmanager.metrics import BinaryConfusionMetric
+from torchmanager.metrics import BinaryConfusionMetric, SparseCategoricalAccuracy
 from torchmanager_core import torch
 from torchmanager_core.typing import Optional
 
+from .featured import FeaturedMetric
 
-class BalancedAccuracyScore(BinaryConfusionMetric):
+
+class AccuracyScore(SparseCategoricalAccuracy, FeaturedMetric):
+    def __init__(self, dim: int = -1, *, target: Optional[str] = None) -> None:
+        SparseCategoricalAccuracy.__init__(self, dim, target=target)
+
+
+class BalancedAccuracyScore(BinaryConfusionMetric, FeaturedMetric):
     conf_met: torch.Tensor
 
     @property
@@ -19,7 +26,7 @@ class BalancedAccuracyScore(BinaryConfusionMetric):
         return self.conf_met
 
     def __init__(self, dim: int = -1, *, eps: float = 1e-7, target: Optional[str] = None):
-        super().__init__(dim, eps=eps, target=target)
+        BinaryConfusionMetric.__init__(self, dim, eps=eps, target=target)
         self.conf_met = torch.nn.Parameter(torch.zeros((2,2)), requires_grad=False)
 
     def calculate_bal_acc(self, tp: torch.Tensor, tn: torch.Tensor, fp: torch.Tensor, fn: torch.Tensor) -> torch.Tensor:
@@ -43,7 +50,7 @@ class BalancedAccuracyScore(BinaryConfusionMetric):
         return super().reset()
     
 
-class SensitivityScore(BinaryConfusionMetric):
+class SensitivityScore(BinaryConfusionMetric, FeaturedMetric):
     conf_met: torch.Tensor
 
     @property
@@ -59,7 +66,7 @@ class SensitivityScore(BinaryConfusionMetric):
         return self.conf_met
 
     def __init__(self, dim: int = -1, *, eps: float = 1e-7, target: Optional[str] = None):
-        super().__init__(dim, eps=eps, target=target)
+        BinaryConfusionMetric.__init__(self, dim, eps=eps, target=target)
         self.conf_met = torch.nn.Parameter(torch.zeros((2,2)), requires_grad=False)
 
     def calculate_sensitivity(self, tp: torch.Tensor, tn: torch.Tensor, fp: torch.Tensor, fn: torch.Tensor) -> torch.Tensor:
@@ -83,7 +90,7 @@ class SensitivityScore(BinaryConfusionMetric):
         return super().reset()
     
 
-class SpecificityScore(BinaryConfusionMetric):
+class SpecificityScore(BinaryConfusionMetric, FeaturedMetric):
     conf_met: torch.Tensor
 
     @property
@@ -99,7 +106,7 @@ class SpecificityScore(BinaryConfusionMetric):
         return self.conf_met
 
     def __init__(self, dim: int = -1, *, eps: float = 1e-7, target: Optional[str] = None):
-        super().__init__(dim, eps=eps, target=target)
+        BinaryConfusionMetric.__init__(self, dim, eps=eps, target=target)
         self.conf_met = torch.nn.Parameter(torch.zeros((2,2)), requires_grad=False)
 
     def calculate_specificity(self, tp: torch.Tensor, tn: torch.Tensor, fp: torch.Tensor, fn: torch.Tensor) -> torch.Tensor:
