@@ -18,6 +18,8 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # initialize dataset for whole brain
     training_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, drop_last=True, mode=data.EZMode.TRAIN, fold_no=cfg.fold_no, shuffle=True)
     validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+
+    # testing_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, fold_no=cfg.fold_no)
     
     # build model
     model = ezpred.build(2, train_modality=cfg.train_mod)
@@ -66,11 +68,17 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # Final callbacks list
     callbacks_list: list[tm.callbacks.Callback] = [experiment_callback, lr_scheduler_callback]
 
-    # train
+    # # train and test on validation data
     model = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=validation_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=callbacks_list, show_verbose=configs.show_verbose)
+
+    # train and test on independent validation cohort data
+    # model = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=testing_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=callbacks_list, show_verbose=configs.show_verbose)
 
     # test
     summary = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+
+    # summary = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+
     view.logger.info(summary)
     torch.save(model, cfg.output_model)
     return model

@@ -82,7 +82,6 @@ def get_target_dict(num: int) -> dict[int, str]:
 
     return dict_mod
 
-
 def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
     # load whole brain dataset
     validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
@@ -111,16 +110,17 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
     print(f'The best accuracy on validation set occurs at {manager.current_epoch + 1} epoch number')
 
     # test checkpoint with validation dataset
-    summary: dict[str, Any] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    summary: dict[str, Any] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, empty_cache=False)
 
-    # preds = manager.predict(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    preds: list[torch.Tensor] = manager.predict(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    print(torch.cat([pred.argmax(-1) for pred in preds], -1).detach().cpu().numpy())
 
     if conf_met_fn.results is not None:
         summary.update({"conf_met": conf_met_fn.results})
     view.logger.info(summary)
 
     # test checkpoint with independent validation cohort dataset (final test dataset)
-    summary: dict[str, Any] = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    summary: dict[str, Any] = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, empty_cache=False)
 
     if conf_met_fn.results is not None:
         summary.update({"conf_met": conf_met_fn.results})

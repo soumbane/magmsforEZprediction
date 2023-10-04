@@ -22,4 +22,4 @@ class ConfusionMetrics(_ConfMet):
         return super().__call__(input, target)
 
     def forward(self, input: torch.Tensor, target: Any) -> torch.Tensor:
-        return input.softmax(1)
+        return input
