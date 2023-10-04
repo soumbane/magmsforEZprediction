@@ -59,9 +59,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     manager = magnet.Manager(model, optimizer=optimizer, loss_fn=magms_loss, metrics=metric_fns)
 
     # initialize callbacks
-    experiment_callback = tm.callbacks.Experiment(cfg.experiment, manager, monitors=["accuracy", "bal_accuracy",
-                                                                                      "sensitivity", "specificity"
-                                                                                      ])    
+    experiment_callback = tm.callbacks.Experiment(cfg.experiment, manager, monitors=["accuracy", "bal_accuracy", "sensitivity", "specificity"])    
     
     lr_scheduler_callback = tm.callbacks.LrSchedueler(lr_scheduler, tf_board_writer=experiment_callback.tensorboard.writer) # type:ignore   
 

@@ -68,16 +68,12 @@ def get_list_of_node_nums():
 # list of all 827 nodes for which SMOTE is possible (atleast 1 EZ)
 # node_numbers_with_smote = get_list_of_node_nums()
 
-node_number_temporal_lobe = [
-    "385","386","387","388","389","390","391","392","393","394","395","396","397","398","399","400",
-    "401","402","403","404","405","406","407","408","409","410","411","412","413","414","415","416","417",
-    "418","419","420","421","422","423","424","425","426","427","428","429","430","431","432",
-    "433","434","435","436","437","438","439","440","441","442","443","444","445","446","447","448",
-    "449","450","451","452","453","454","455","456","458","459","460","461","462","463","464","465",
-    "466","467","468","469","470","471","472","473","474","475","476","477","478","479"
+node_number_inferior_temp_ROI = [
+    "415","416","417",
+    "418","419","420","421","422","423","424","425","426","427","428","429","430"
     ]
 
-node_numbers_with_smote = node_number_temporal_lobe
+node_numbers_with_smote = node_number_inferior_temp_ROI
 
 # node_numbers_with_smote = ["134","1","14","3","948"]
 
@@ -175,8 +171,8 @@ def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: in
 
     Y_combined_train = Y_combined_train.astype(int) # type:ignore
 
-    X_combined_train = X_combined_train[4136:,:]
-    Y_combined_train = Y_combined_train[4136:]    
+    X_combined_train = X_combined_train[704:,:]
+    Y_combined_train = Y_combined_train[704:]    
 
     print('Y_combined_train: %s' % Counter(Y_combined_train))
 
@@ -330,13 +326,13 @@ if __name__ == "__main__":
     # save_path_testing = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data/Original_Patient_Data/'
     # save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data/Original_Patient_Data/'
 
-    save_path_training = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data/SMOTE_Augmented_Data/'
-    save_path_testing = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data/Original_Patient_Data/'
-    save_path_validation = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data/Original_Patient_Data/'
+    save_path_training = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/ROI_Data/SMOTE_Augmented_Data/'
+    save_path_testing = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/ROI_Data/Original_Patient_Data/'
+    save_path_validation = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/ROI_Data/Original_Patient_Data/'
 
     # num_samples_nonEZ: Number of samples of non-EZ (class 0) to generate per node with SMOTE
     # num_samples_EZ: Number of samples of EZ (class 1) to generate per node with SMOTE
     
-    main(root, save_path_training, save_path_testing, save_path_validation, num_samples_nonEZ=18000, num_samples_EZ=20000)
+    main(root, save_path_training, save_path_testing, save_path_validation, num_samples_nonEZ=5000, num_samples_EZ=5000)
 
 
