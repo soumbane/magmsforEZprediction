@@ -101,24 +101,24 @@ class DatasetEZ_WB(Dataset):
         assert isinstance(x, torch.Tensor) and isinstance(y, torch.Tensor), "Data should be valid `torch.Tensor`."
 
         # unpack data (b, 1899) -> [(b, m, f), ...] to include the modality dimension
-        x_t1 = x[:, :300].unsqueeze(dim=1) # t1 only
-        x_t2 = x[:, 300:500].unsqueeze(dim=1) # t2 only
-        x_flair = x[:, 500:700].unsqueeze(dim=1) # flair only
+        x_t1 = F.pad(x[:, :300].unsqueeze(dim=1), (200,200)) # t1 only
+        x_t2 = F.pad(x[:, 300:500].unsqueeze(dim=1), (250,250)) # t2 only
+        x_flair = F.pad(x[:, 500:700].unsqueeze(dim=1), (250,250)) # flair only
         x_dwi = x[:, 700:1400].unsqueeze(dim=1) # dwi only
-        x_dwic = x[:, 1400:].unsqueeze(dim=1) # dwic only
+        x_dwic = F.pad(x[:, 1400:].unsqueeze(dim=1), (100,101)) # dwic only
 
         return [x_t1, x_t2, x_flair, x_dwi, x_dwic], y
 
 
 if __name__ == "__main__":    
 
-    print("Whole Brain EZ Dataset ...")
-    ez_dataset = DatasetEZ_WB(batch_size=1, root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/', drop_last=False, mode=EZMode.VALIDATE, shuffle=False)
+    print("Lobe-level EZ Dataset ...")
+    ez_dataset = DatasetEZ_WB(batch_size=1, root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data/', drop_last=False, mode=EZMode.TRAIN, shuffle=False)
 
     print(ez_dataset.unbatched_len)
     # print((ez_dataset.__getitem__(0))[0][4].shape)
     # print((ez_dataset.__getitem__(0))[1])
 
-    X_combined, Y_label = ez_dataset.__getitem__(0)
+    X_combined, Y_label = ez_dataset[0]
     print(X_combined.shape)
     print(Y_label)
