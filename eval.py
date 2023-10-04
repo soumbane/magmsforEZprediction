@@ -3,7 +3,7 @@ from ezpred import metrics
 from magnet import Manager
 from ezpred.configs import TestingConfigs
 from sklearn.metrics import balanced_accuracy_score, confusion_matrix
-from torchmanager.metrics import metric
+from torchmanager.metrics import BinaryConfusionMetric, metric
 from torchmanager_core import view
 from typing import Any
 import numpy as np
@@ -99,9 +99,13 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
     bal_acc_fn = metrics.BalancedAccuracyScore()
     conf_met_fn = metrics.ConfusionMetrics(2)
     manager.metric_fns.update({
-        "val_bal_accuracy": bal_acc_fn,
+        "bal_accuracy": bal_acc_fn,
         "conf_met": conf_met_fn
         })
+    
+    for m in manager.metric_fns.values():
+        if isinstance(m, BinaryConfusionMetric):
+            m._class_index = 0
 
     manager.target_dict = target_dict
 
@@ -121,6 +125,11 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
 
     # test checkpoint with independent validation cohort dataset (final test dataset)
     summary: dict[str, Any] = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, empty_cache=False)
+    preds: list[torch.Tensor] = manager.predict(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    print(torch.cat([pred.argmax(-1) for pred in preds], -1).detach().cpu().numpy())
+
+    gt_vals: list[torch.Tensor] = [gt for _, gt in testing_dataset]
+    print(torch.cat([gt_val for gt_val in gt_vals]).detach().cpu().numpy())
 
     if conf_met_fn.results is not None:
         summary.update({"conf_met": conf_met_fn.results})
