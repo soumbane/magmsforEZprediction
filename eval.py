@@ -129,7 +129,7 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
     print(torch.cat([pred.argmax(-1) for pred in preds], -1).detach().cpu().numpy())
 
     gt_vals: list[torch.Tensor] = [gt for _, gt in testing_dataset]
-    print(torch.cat([gt_val for gt_val in gt_vals]).detach().cpu().numpy())
+    print(torch.cat([gt_val for gt_val in gt_vals], -1).detach().cpu().numpy())
 
     if conf_met_fn.results is not None:
         summary.update({"conf_met": conf_met_fn.results})
