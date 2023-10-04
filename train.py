@@ -22,7 +22,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # testing_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, fold_no=cfg.fold_no)
     
     # build model
-    model = ezpred.build(2, train_modality=cfg.train_mod)
+    model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=128)
 
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f'The total number of model parameter is: {total_params}')

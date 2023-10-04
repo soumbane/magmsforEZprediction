@@ -12,15 +12,15 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/baselines_all_hemispheres/",
-                "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsEZpred/trained_models/test_magms_ALL_mod_WB_deep.model",
-                "-b", "96",
+                "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data/",
+                "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/trained_models_lobe/magms_lobe_test.model",
+                "-b", "64",
                 "-e", "10",
                 "-lr", "1e-3",
                 "--num_mod", "5",
                 "--replace_experiment",
                 "--show_verbose",
-                "--device", "cuda:0",
+                "--device", "cuda:1",
             ]
         },
         {
