@@ -6,7 +6,7 @@ from .nn import MSFE, SHFE, SCH
 from .nn.fusion import FusionType
 
 
-def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool = False, *, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,128], fusion: FusionType = FusionType.MID_MEAN, train_modality: str = "ALL") -> MAGNET2[MSFE]:
+def build(num_classes: int = 2, /, out_main_ch: int = 64, main_downsample: bool = True, *, out_filters: int = 128, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,128], fusion: FusionType = FusionType.MID_MEAN, train_modality: str = "ALL") -> MAGNET2[MSFE]:
     r"""
     Build `magnet.MAGNET2` for EzPred
     Args:
@@ -31,17 +31,17 @@ def build(num_classes: int = 2, /, out_main_ch: int = 32, main_downsample: bool 
     # filters_msfe=[4,8] # shallower model
 
     # MSFE for each modalities
-    msfe_T1 = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_msfe, main_downsample=main_downsample, padding=400)
-    msfe_T2 = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_msfe, main_downsample=main_downsample, padding=500)
-    msfe_FLAIR = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_msfe, main_downsample=main_downsample, padding=500)
-    msfe_DWI = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_msfe, main_downsample=main_downsample)
-    msfe_DWIC = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_msfe, main_downsample=main_downsample, padding=201)
+    msfe_T1 = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_t1, out_filters=out_filters, main_downsample=main_downsample) # 1x300
+    msfe_T2 = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_t2, out_filters=out_filters,main_downsample=main_downsample) # 1x200
+    msfe_FLAIR = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_flair, out_filters=out_filters,main_downsample=main_downsample) # 1x200
+    msfe_DWI = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_dwi, out_filters=out_filters,main_downsample=main_downsample) # 1x700
+    msfe_DWIC = MSFE(in_ch=1, out_main_ch=out_main_ch, filters=filters_dwic, out_filters=out_filters,main_downsample=main_downsample) # 1x499
 
     # fusion module
     fuse = fusion.load()
 
     # filters_shfe=[filters_msfe[-1],512] # deep model (for WB and lobe level)
-    filters_shfe=[filters_msfe[-1],128] # deep model (for ROI level)
+    filters_shfe=[out_filters,256] # deep model (for ROI level)
     # filters_shfe=[filters_msfe[-1],32] # shallow model
     # filters_shfe=[filters_msfe[-1],16] # shallower model
 

@@ -6,6 +6,8 @@ from typing import Optional, Union
 
 from .pad import PaddingLast1D
 
+# from pad import PaddingLast1D
+
 
 class EZScale(Enum):
     COURSE = "course"
@@ -94,6 +96,7 @@ class MSFEScale(nn.Module):
         else:
             self.conv1 = nn.Conv1d(in_ch, out_main_ch, kernel_size=1, bias=False)
             self.bn1 = nn.BatchNorm1d(out_main_ch)
+            self.lrelu = nn.LeakyReLU(inplace=True)
 
         if self.scale == EZScale.COURSE:
             self.cs_layers = []
@@ -138,6 +141,7 @@ class MSFEScale(nn.Module):
         else:
             x_main = self.conv1(x_in)
             x_main = self.bn1(x_main)
+            x_main = self.lrelu(x_main)
 
         if self.scale == EZScale.COURSE:
             x_out = self.cs_layers_f(x_main)
@@ -167,13 +171,13 @@ class MSFE(torch.nn.Module):
     fs_conv: torch.nn.Conv1d
     fs_padding: Union[PaddingLast1D, torch.nn.Identity]
 
-    def __init__(self, in_ch: int = 1, out_main_ch: int = 32, filters: list[int] = [32,64,128], main_downsample: bool = False, *, padding: Optional[int] = None) -> None:
+    def __init__(self, in_ch: int = 1, out_main_ch: int = 32, filters: list[int] = [32,64,128], out_filters: int = 128,main_downsample: bool = False, *, padding: Optional[int] = None) -> None:
         super().__init__()
         self.cs = MSFEScale(in_ch, out_main_ch, filters=filters, main_downsample=main_downsample, scale=EZScale.COURSE)
-        self.cs_conv = torch.nn.Conv1d(filters[-1], filters[-1], kernel_size=1)
+        self.cs_conv = torch.nn.Conv1d(filters[-1], out_filters, kernel_size=1)
         self.cs_padding = PaddingLast1D(padding) if padding is not None else torch.nn.Identity()
         self.fs = MSFEScale(in_ch, out_main_ch, filters=filters, main_downsample=main_downsample, scale=EZScale.FINE)
-        self.fs_conv = torch.nn.Conv1d(filters[-1], filters[-1], kernel_size=1)
+        self.fs_conv = torch.nn.Conv1d(filters[-1], out_filters, kernel_size=1)
         self.fs_padding = PaddingLast1D(padding) if padding is not None else torch.nn.Identity()
 
     def forward(self, x: Union[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]) -> tuple[torch.Tensor, torch.Tensor]:
@@ -197,7 +201,7 @@ class MSFE(torch.nn.Module):
 if __name__ == "__main__":
 
     print("MSFE Module ...")
-    msfe_out = MSFEScale(in_ch=1, out_main_ch=32, filters=[32,64,128], main_downsample=False, scale=EZScale.FINE)
+    msfe_out = MSFEScale(in_ch=1, out_main_ch=32, filters=[32,64,128], main_downsample=False, scale=EZScale.COURSE)
 
     input_test = torch.randn(1, 1, 200)  # (b, 1, 200)
     out_test = msfe_out(input_test)
