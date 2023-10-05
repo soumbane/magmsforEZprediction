@@ -17,7 +17,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
 
     # initialize dataset for whole brain
     training_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, drop_last=True, mode=data.EZMode.TRAIN, fold_no=cfg.fold_no, shuffle=True)
-    validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.VALIDATE, fold_no=cfg.fold_no)
+    validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, fold_no=cfg.fold_no)
 
     # testing_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, fold_no=cfg.fold_no)
     
