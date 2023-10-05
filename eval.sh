@@ -1,1 +1,1 @@
-python eval.py /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/experiments/magms_lobe_smote_train_orig_val.exp/checkpoints/best_bal_accuracy.model -b 32 --replace_experiment --show_verbose --device cuda:1
+python eval.py /home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/ROI_Data/ /home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/experiments/magms_exp3.exp/checkpoints/best_bal_accuracy.model -b 32 --replace_experiment --show_verbose --device cuda:1
