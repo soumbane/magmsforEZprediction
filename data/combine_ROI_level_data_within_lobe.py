@@ -152,15 +152,36 @@ def z_score_norm(X: np.ndarray):
     return X_norm
 
 
-def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: int = 50, random_state: int = 100): 
+def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: int = 50, random_state: int = 100):
+    
+    X_fusiform_ROI = np.zeros((1,1899))  
+    Y_fusiform_ROI = []
 
-    X_combined_train_lobe = np.zeros((1,1899))
-    Y_combined_train_lobe = []    
+    X_parahipp_ROI = np.zeros((1,1899))
+    Y_parahipp_ROI = []
 
-    for i in fusiform_ROI:  
+    X_entor_ROI = np.zeros((1,1899))
+    Y_entor_ROI = []
 
-        X_ROI_combined = np.zeros((1,1899))
-        Y_ROI_combined = []
+    X_temppole_ROI = np.zeros((1,1899))
+    Y_temppole_ROI = []
+
+    X_inferiortemp_ROI = np.zeros((1,1899))
+    Y_inferiortemp_ROI = []
+
+    X_middletemp_ROI = np.zeros((1,1899))
+    Y_middletemp_ROI = []
+
+    X_bank_ROI = np.zeros((1,1899))
+    Y_bank_ROI = []
+
+    X_superiortemp_ROI = np.zeros((1,1899))
+    Y_superiortemp_ROI = []
+
+    X_transversetemp_ROI = np.zeros((1,1899))
+    Y_transversetemp_ROI = []
+
+    for i in node_numbers_with_smote:    
 
         ## Load ModelCohort
         print(f"Loading ModelCohort for Node num: {i}")
@@ -181,7 +202,7 @@ def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: in
         """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
         X_mat_l = loadmat(raw_path_RI)
         X_mat_RI = X_mat_l[RI_mat_name] # RI matrix: 1x1400
-    
+
         # check for NaN values and replace NaN values with 0
         if (np.isnan(X_mat_RI).any()):  
             X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
@@ -200,45 +221,117 @@ def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: in
         Y_mat_l = loadmat(raw_path_label)
         Y_mat_aug = Y_mat_l[label_mat_name]
         Y_mat_aug_1 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
-        Y_mat_aug_1 = Y_mat_aug_1.astype(int) # type:ignore
 
-        # Combine the original 44 patients data for node i of ROI (For Training)
-        X_ROI_combined = np.concatenate((X_ROI_combined, X_combined_1), axis=0)
-        if i == fusiform_ROI[0]:
-            X_ROI_combined = X_ROI_combined[1:,:]
+        if i in fusiform_ROI:
+            # Combine the original 44 patients data for node i of ROI (For Training)
+            X_fusiform_ROI = np.concatenate((X_fusiform_ROI, X_combined_1), axis=0)
+            if i == fusiform_ROI[0]:
+                X_fusiform_ROI = X_fusiform_ROI[1:,:]
 
-        Y_ROI_combined = np.concatenate((Y_ROI_combined, Y_mat_aug_1), axis=0)
+            Y_fusiform_ROI = np.concatenate((Y_fusiform_ROI, Y_mat_aug_1), axis=0)
+            Y_fusiform_ROI = Y_fusiform_ROI.astype(int) # type:ignore
 
-    # augment the ROI-level data using SMOTE
-    X_combined_ROI_1, Y_combined_ROI_1 = augment_data(X_ROI_combined, Y_ROI_combined, k_neighbors=5, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
+        elif i in parahipp_ROI:
+            X_parahipp_ROI = np.concatenate((X_parahipp_ROI, X_combined_1), axis=0)
+            if i == parahipp_ROI[0]:
+                X_parahipp_ROI = X_parahipp_ROI[1:,:]
+            
+            Y_parahipp_ROI = np.concatenate((Y_parahipp_ROI, Y_mat_aug_1), axis=0)
+            Y_parahipp_ROI = Y_parahipp_ROI.astype(int) # type:ignore
 
-        
-        
-        
-        # Combine the original 44 patients data for node i (For Testing)
-        X_combined_test = np.concatenate((X_combined_test, X_combined_1), axis=0)
-        if i == node_numbers_with_smote[0]:
-            X_combined_test = X_combined_test[1:,:]
+        elif i in entor_ROI:
+            X_entor_ROI = np.concatenate((X_entor_ROI, X_combined_1), axis=0)
+            if i == entor_ROI[0]:
+                X_entor_ROI = X_entor_ROI[1:,:]
 
-        Y_combined_test = np.concatenate((Y_combined_test, Y_mat_aug_1), axis=0)
-        Y_combined_test = Y_combined_test.astype(int) # type:ignore
+            Y_entor_ROI = np.concatenate((Y_entor_ROI, Y_mat_aug_1), axis=0)
+            Y_entor_ROI = Y_entor_ROI.astype(int) # type:ignore
 
-        print(f"Combined node {i} of 44 Model Cohort patients.")
+        elif i in temppole_ROI:
+            X_temppole_ROI = np.concatenate((X_temppole_ROI, X_combined_1), axis=0)
+            if i == temppole_ROI[0]:
+                X_temppole_ROI = X_temppole_ROI[1:,:]
 
-    print(f"Finished combining original 44 patients data of {len(node_numbers_with_smote)} nodes that will be used for testing")
+            Y_temppole_ROI = np.concatenate((Y_temppole_ROI, Y_mat_aug_1), axis=0)
+            Y_temppole_ROI = Y_temppole_ROI.astype(int) # type:ignore            
 
-    print('Y_combined_test: %s' % Counter(Y_combined_test))
+        elif i in inferiortemp_ROI:
+            X_inferiortemp_ROI = np.concatenate((X_inferiortemp_ROI, X_combined_1), axis=0)
+            if i == inferiortemp_ROI[0]:
+                X_inferiortemp_ROI = X_inferiortemp_ROI[1:,:]
 
-    X_combined_train, Y_combined_train = augment_data(X_combined_test, Y_combined_test, k_neighbors=5, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
+            Y_inferiortemp_ROI = np.concatenate((Y_inferiortemp_ROI, Y_mat_aug_1), axis=0)
+            Y_inferiortemp_ROI = Y_inferiortemp_ROI.astype(int) # type:ignore 
 
-    Y_combined_train = Y_combined_train.astype(int) # type:ignore
+        elif i in middletemp_ROI:
+            X_middletemp_ROI = np.concatenate((X_middletemp_ROI, X_combined_1), axis=0)
+            if i == middletemp_ROI[0]:
+                X_middletemp_ROI = X_middletemp_ROI[1:,:]
 
-    X_combined_train = X_combined_train[704:,:]
-    Y_combined_train = Y_combined_train[704:]    
+            Y_middletemp_ROI = np.concatenate((Y_middletemp_ROI, Y_mat_aug_1), axis=0)
+            Y_middletemp_ROI = Y_middletemp_ROI.astype(int) # type:ignore 
 
-    print('Y_combined_train: %s' % Counter(Y_combined_train))
+        elif i in bank_ROI:
+            X_bank_ROI = np.concatenate((X_bank_ROI, X_combined_1), axis=0)
+            if i == bank_ROI[0]:
+                X_bank_ROI = X_bank_ROI[1:,:]
 
-    return X_combined_train, Y_combined_train
+            Y_bank_ROI = np.concatenate((Y_bank_ROI, Y_mat_aug_1), axis=0)
+            Y_bank_ROI = Y_bank_ROI.astype(int) # type:ignore 
+
+        elif i in superiortemp_ROI:
+            X_superiortemp_ROI = np.concatenate((X_superiortemp_ROI, X_combined_1), axis=0)
+            if i == superiortemp_ROI[0]:
+                X_superiortemp_ROI = X_superiortemp_ROI[1:,:]
+
+            Y_superiortemp_ROI = np.concatenate((Y_superiortemp_ROI, Y_mat_aug_1), axis=0)
+            Y_superiortemp_ROI = Y_superiortemp_ROI.astype(int) # type:ignore             
+
+        elif i in transversetemp_ROI:
+            X_transversetemp_ROI = np.concatenate((X_transversetemp_ROI, X_combined_1), axis=0)
+            if i == transversetemp_ROI[0]:
+                X_transversetemp_ROI = X_transversetemp_ROI[1:,:]
+
+            Y_transversetemp_ROI = np.concatenate((Y_transversetemp_ROI, Y_mat_aug_1), axis=0)
+            Y_transversetemp_ROI = Y_transversetemp_ROI.astype(int) # type:ignore 
+
+        else:
+            raise NotImplementedError(f"Node {i} not found in any ROI.")
+
+            
+    print("All ROI Data Loaded for Temporal Lobe.")
+
+    # augment each ROI data using SMOTE
+    X_fusiform_ROI, Y_fusiform_ROI = augment_data(X_fusiform_ROI, Y_fusiform_ROI, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
+
+    X_parahipp_ROI, Y_parahipp_ROI = augment_data(X_parahipp_ROI, Y_parahipp_ROI, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
+
+    X_entor_ROI, Y_entor_ROI = augment_data(X_entor_ROI, Y_entor_ROI, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
+
+    X_temppole_ROI, Y_temppole_ROI = augment_data(X_temppole_ROI, Y_temppole_ROI, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
+
+    X_inferiortemp_ROI, Y_inferiortemp_ROI = augment_data(X_inferiortemp_ROI, Y_inferiortemp_ROI, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
+
+    X_middletemp_ROI, Y_middletemp_ROI = augment_data(X_middletemp_ROI, Y_middletemp_ROI, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
+
+    X_bank_ROI, Y_bank_ROI = augment_data(X_bank_ROI, Y_bank_ROI, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
+
+    X_superiortemp_ROI, Y_superiortemp_ROI = augment_data(X_superiortemp_ROI, Y_superiortemp_ROI, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
+
+    X_transversetemp_ROI, Y_transversetemp_ROI = augment_data(X_transversetemp_ROI, Y_transversetemp_ROI, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state) # type:ignore
+
+
+    # combine all ROI data into the bigger lobe-level matrix
+    X_combined_train_lobe = np.concatenate((X_fusiform_ROI, X_parahipp_ROI, X_entor_ROI, X_temppole_ROI, X_inferiortemp_ROI, X_middletemp_ROI, X_bank_ROI, X_superiortemp_ROI, X_transversetemp_ROI), axis=0)
+
+    Y_combined_train_lobe = np.concatenate((Y_fusiform_ROI, Y_parahipp_ROI, Y_entor_ROI, Y_temppole_ROI, Y_inferiortemp_ROI, Y_middletemp_ROI, Y_bank_ROI, Y_superiortemp_ROI, Y_transversetemp_ROI), axis=0)
+
+    Y_combined_train_lobe = Y_combined_train_lobe.astype(int) # type:ignore
+    
+    print('Y_combined_train_lobe: %s' % Counter(Y_combined_train_lobe))
+    
+
+    return X_combined_train_lobe, Y_combined_train_lobe
 
 
 def load_validation_cohort(root: str):    
@@ -367,9 +460,8 @@ if __name__ == "__main__":
     save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp6/SMOTE_Augmented_Data/'
     save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp6/Original_Patient_Data/'
 
-    # save_path_training = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/ROI_Data/SMOTE_Augmented_Data/'
-    # save_path_testing = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/ROI_Data/Original_Patient_Data/'
-    # save_path_validation = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/ROI_Data/Original_Patient_Data/'
+    # save_path_training = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp6/SMOTE_Augmented_Data/'
+    # save_path_validation = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp6/Original_Patient_Data/'
 
     # num_samples_nonEZ: Number of samples of non-EZ (class 0) to generate per node with SMOTE
     # num_samples_EZ: Number of samples of EZ (class 1) to generate per node with SMOTE
