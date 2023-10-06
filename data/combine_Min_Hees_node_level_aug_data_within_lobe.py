@@ -318,20 +318,20 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
     
     ## Load and save the Model cohort data (44 patients) divided into training (30 patients) and testing (14 patients)
     # Combining node by node (Pat 1 Node 1, Pat 2 Node 1, ...., Pat 44 Node 983): Node Level for Model Cohort
-    # X_combined_train, Y_combined_train = load_model_cohort(root, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=100)  # type:ignore   
+    X_combined_train, Y_combined_train = load_model_cohort(root, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=100)  # type:ignore   
 
-    # print('Y_combined_train: %s' % Counter(Y_combined_train))
+    print('Y_combined_train: %s' % Counter(Y_combined_train))
        
-    # # save the augmented training data
-    # save_path_training = save_path_training
+    # save the augmented training data
+    save_path_training = save_path_training
 
-    # save_dir_train_temp = 'Train_NonEZvsEZ_WB_smoteaug'
-    # save_dir_train = os.path.join(save_path_training, save_dir_train_temp)
+    save_dir_train_temp = 'Train_NonEZvsEZ_WB_smoteaug'
+    save_dir_train = os.path.join(save_path_training, save_dir_train_temp)
 
-    # if not os.path.exists(save_dir_train):
-    #     os.makedirs(save_dir_train)
+    if not os.path.exists(save_dir_train):
+        os.makedirs(save_dir_train)
     
-    # save_aug_data_as_separate_nodes(save_dir_train, X_combined_train, Y_combined_train, mode="train")  # type:ignore   
+    save_aug_data_as_separate_nodes(save_dir_train, X_combined_train, Y_combined_train, mode="train")  # type:ignore   
 
     ################################################################################################################
     ## Load and save the original independent (Hold-out) validation cohort data (24 patients)
@@ -357,14 +357,14 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
 if __name__ == "__main__":
 
     # Root Folder for the dataset
-    # root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
-    root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
+    root='/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
+    # root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
 
-    save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp8/SMOTE_Augmented_Data/'
-    save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp8/Original_Patient_Data/'
+    # save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp8/SMOTE_Augmented_Data/'
+    # save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp8/Original_Patient_Data/'
 
-    # save_path_training = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp8/SMOTE_Augmented_Data/'
-    # save_path_validation = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp8/Original_Patient_Data/'
+    save_path_training = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp8/SMOTE_Augmented_Data/'
+    save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp8/Original_Patient_Data/'
 
     # num_samples_nonEZ: Number of samples of non-EZ (class 0) to generate per node with SMOTE
     # num_samples_EZ: Number of samples of EZ (class 1) to generate per node with SMOTE
