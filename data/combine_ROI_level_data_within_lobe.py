@@ -454,18 +454,18 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
 if __name__ == "__main__":
 
     # Root Folder for the dataset
-    # root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
-    root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
+    root='/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
+    # root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
 
-    save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp6/SMOTE_Augmented_Data/'
-    save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp6/Original_Patient_Data/'
+    # save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp6/SMOTE_Augmented_Data/'
+    # save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp6/Original_Patient_Data/'
 
-    # save_path_training = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp6/SMOTE_Augmented_Data/'
-    # save_path_validation = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp6/Original_Patient_Data/'
+    save_path_training = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp6/SMOTE_Augmented_Data/'
+    save_path_validation = '/home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp6/Original_Patient_Data/'
 
     # num_samples_nonEZ: Number of samples of non-EZ (class 0) to generate per node with SMOTE
     # num_samples_EZ: Number of samples of EZ (class 1) to generate per node with SMOTE
     
-    main(root, save_path_training, save_path_validation, num_samples_nonEZ=5000, num_samples_EZ=5000)
+    main(root, save_path_training, save_path_validation, num_samples_nonEZ=20000, num_samples_EZ=20000)
 
 
