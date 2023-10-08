@@ -26,7 +26,7 @@ class BalancedAccuracyScore(BinaryConfusionMetric, FeaturedMetric):
         return self.conf_met
 
     def __init__(self, dim: int = -1, *, eps: float = 1e-7, target: Optional[str] = None):
-        BinaryConfusionMetric.__init__(self, dim, eps=eps, target=target)
+        BinaryConfusionMetric.__init__(self, dim, class_index=0, eps=eps, target=target)
         self.conf_met = torch.nn.Parameter(torch.zeros((2,2)), requires_grad=False)
 
     def calculate_bal_acc(self, tp: torch.Tensor, tn: torch.Tensor, fp: torch.Tensor, fn: torch.Tensor) -> torch.Tensor:
@@ -66,7 +66,7 @@ class SensitivityScore(BinaryConfusionMetric, FeaturedMetric):
         return self.conf_met
 
     def __init__(self, dim: int = -1, *, eps: float = 1e-7, target: Optional[str] = None):
-        BinaryConfusionMetric.__init__(self, dim, eps=eps, target=target)
+        BinaryConfusionMetric.__init__(self, dim, class_index=0, eps=eps, target=target)
         self.conf_met = torch.nn.Parameter(torch.zeros((2,2)), requires_grad=False)
 
     def calculate_sensitivity(self, tp: torch.Tensor, tn: torch.Tensor, fp: torch.Tensor, fn: torch.Tensor) -> torch.Tensor:
@@ -106,7 +106,7 @@ class SpecificityScore(BinaryConfusionMetric, FeaturedMetric):
         return self.conf_met
 
     def __init__(self, dim: int = -1, *, eps: float = 1e-7, target: Optional[str] = None):
-        BinaryConfusionMetric.__init__(self, dim, eps=eps, target=target)
+        BinaryConfusionMetric.__init__(self, dim, class_index=0, eps=eps, target=target)
         self.conf_met = torch.nn.Parameter(torch.zeros((2,2)), requires_grad=False)
 
     def calculate_specificity(self, tp: torch.Tensor, tn: torch.Tensor, fp: torch.Tensor, fn: torch.Tensor) -> torch.Tensor:
