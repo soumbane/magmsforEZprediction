@@ -1,9 +1,11 @@
 import magnet, torch, torchmanager as tm
 from torchmanager_core import view
+from torchmanager.metrics import BinaryConfusionMetric, metric
 from torch.backends import cudnn
 import os
 
 import data, ezpred
+from ezpred.nn.fusion import FusionType
 from ezpred.configs import TrainingConfigs
 
 
@@ -22,7 +24,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # testing_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, fold_no=cfg.fold_no)
     
     # build model
-    model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=128, filters_t1=[32,64,128], filters_t2=[32,64,128], filters_flair=[32,64,128], filters_dwi=[32,64,128], filters_dwic=[32,64,128], main_downsample=True)
+    model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=128, filters_t1=[32,64,128], filters_t2=[32,64,128], filters_flair=[32,64,128], filters_dwi=[32,64,128], filters_dwic=[32,64,128], main_downsample=True, filters_shfe = [128,256], fusion=FusionType.MID_MEAN)
 
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f'The total number of model parameter is: {total_params}')
@@ -54,6 +56,10 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
         "sensitivity": ezpred.metrics.SensitivityScore(),
         "specificity": ezpred.metrics.SpecificityScore(),
     }
+
+    for m in metric_fns.values():
+        if isinstance(m, BinaryConfusionMetric):
+            m._class_index = 0 # since we consider non-EZ (class 0) as positive class
 
     # compile manager
     manager = magnet.Manager(model, optimizer=optimizer, loss_fn=magms_loss, metrics=metric_fns)

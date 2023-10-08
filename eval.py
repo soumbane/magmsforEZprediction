@@ -105,7 +105,7 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
     
     for m in manager.metric_fns.values():
         if isinstance(m, BinaryConfusionMetric):
-            m._class_index = 0
+            m._class_index = 0 # since we consider non-EZ (class 0) as positive class
 
     manager.target_dict = target_dict
 
