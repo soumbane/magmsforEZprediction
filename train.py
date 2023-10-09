@@ -24,7 +24,18 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # testing_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, fold_no=cfg.fold_no)
     
     # build model
-    model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=128, filters_t1=[32,64,128], filters_t2=[32,64,128], filters_flair=[32,64,128], filters_dwi=[32,64,128], filters_dwic=[32,64,128], main_downsample=True, filters_shfe = [128,256], fusion=FusionType.MID_MEAN)
+    # model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=128, filters_t1=[32,64,128], filters_t2=[32,64,128], filters_flair=[32,64,128], filters_dwi=[32,64,128], filters_dwic=[32,64,128], main_downsample=True, filters_shfe = [128,256], fusion=FusionType.MID_MEAN)
+
+    # worked for node 948, 917 with the referenced seeds
+    # model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=32, filters_t1=[8,16], filters_t2=[8,16], filters_flair=[8,16], filters_dwi=[16,32], filters_dwic=[8,16], main_downsample=True, filters_shfe = [32,64], fusion=FusionType.MID_MEAN) # bal_acc of 70 (948) & 75 (917) (batch-size:256)
+
+    # try for node 917 & 948
+    model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=64, filters_t1=[16,32,64], filters_t2=[16,32,64], filters_flair=[16,32,64], filters_dwi=[32,64,128], filters_dwic=[16,32,64], main_downsample=True, filters_shfe = [64,128], fusion=FusionType.MID_MEAN) # bal_acc of 77.5 (948) & 69.44 (917) (batch-size:256)
+
+    # try for node 916
+    # model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=64, filters_t1=[16,32,64], filters_t2=[16,32,64], filters_flair=[16,32,64], filters_dwi=[32,64,128], filters_dwic=[16,32,64], main_downsample=True, filters_shfe = [64,128], fusion=FusionType.MID_MEAN) # bal_acc of 73.95 (batch-size:128)
+
+    # model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=32, filters_t1=[16,32], filters_t2=[16,32], filters_flair=[16,32], filters_dwi=[32,64], filters_dwic=[16,32], main_downsample=True, filters_shfe = [32,64], fusion=FusionType.MID_MEAN) # node 916:bal_acc of 64.2 (batch-size:128)
 
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f'The total number of model parameter is: {total_params}')
@@ -33,7 +44,8 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)
 
     # initialize learning rate scheduler 
-    lr_step = max(int(cfg.epochs / 5), 1)  # for 50 epochs
+    # lr_step = max(int(cfg.epochs / 5), 1)  # for 50 epochs
+    lr_step = max(int(cfg.epochs / 1), 1)  # for 20 epochs
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, lr_step, gamma=0.5) # reduce lr by half     
     
     main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)]
