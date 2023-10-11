@@ -38,7 +38,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=32, filters_t1=[16,32], filters_t2=[16,32], filters_flair=[16,32], filters_dwi=[32,64], filters_dwic=[16,32], main_downsample=True, filters_shfe = [32,64], fusion=FusionType.MID_MEAN) # node 916:bal_acc of 64.2 (batch-size:128)
 
     ##########################################################################################
-    ## Dong Approach
+    ## Dong Approach - Node level
 
     # model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=32, out_filters=32, filters_t1=[8,16], filters_t2=[8,16], filters_flair=[8,16], filters_dwi=[16,32], filters_dwic=[8,16], main_downsample=True, filters_shfe = [32,64], fusion=FusionType.MID_MEAN) # bal_acc of 71.43 (916) &  (917) (batch-size:4)
 
@@ -46,9 +46,29 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=16, out_filters=16, filters_t1=[4,8], filters_t2=[4,8], filters_flair=[4,8], filters_dwi=[8,16], filters_dwic=[4,8], main_downsample=True, filters_shfe = [16,32], fusion=FusionType.MID_MEAN) # bal_acc of 78.57 (916) &  (917) (batch-size:4)
 
     # try for node 916
-    model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=64, filters_t1=[8,16,32], filters_t2=[8,16,32], filters_flair=[8,16,32], filters_dwi=[16,32,64], filters_dwic=[8,16,32], main_downsample=True, filters_shfe = [64,128], fusion=FusionType.MID_MEAN) # bal_acc of 71.43 (916) &  (917) (batch-size:4)
+    # model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=64, filters_t1=[8,16,32], filters_t2=[8,16,32], filters_flair=[8,16,32], filters_dwi=[16,32,64], filters_dwic=[8,16,32], main_downsample=True, filters_shfe = [64,128], fusion=FusionType.MID_MEAN) # bal_acc of 71.43 (916) &  (917) (batch-size:4)
 
     ##########################################################################################
+    ## Dong Approach - ROI level
+
+    # try for Inferior Temporal ROI (Node 916-931) - 16 nodes
+    # model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=64, filters_t1=[16,32,64], filters_t2=[16,32,64], filters_flair=[16,32,64], filters_dwi=[16,32,64], filters_dwic=[16,32,64], main_downsample=True, filters_shfe = [64,128], fusion=FusionType.MID_MEAN) # bal_acc of 62.22 (batch-size:16)
+
+    # model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=64, filters_t1=[8,16,32], filters_t2=[8,16,32], filters_flair=[8,16,32], filters_dwi=[16,32,64], filters_dwic=[8,16,32], main_downsample=True, filters_shfe = [64,128], fusion=FusionType.MID_MEAN) # bal_acc of  (batch-size:16)
+
+    ##########################################################################################
+
+    ## Dong Approach - Lobe level
+
+    # try for Temporal Lobe (Node 888-983) - 94 nodes
+    # model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=64, filters_t1=[16,32,64], filters_t2=[16,32,64], filters_flair=[16,32,64], filters_dwi=[16,32,64], filters_dwic=[16,32,64], main_downsample=True, filters_shfe = [64,128], fusion=FusionType.MID_MEAN) # bal_acc of 61.61 (batch-size:32)
+
+    ##########################################################################################
+
+    ## Dong Approach - ROI level - per node aug
+
+    # try for Inferior Temporal ROI (Node 916-931) - 16 nodes
+    model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=64, filters_t1=[8,16,32], filters_t2=[8,16,32], filters_flair=[8,16,32], filters_dwi=[16,32,64], filters_dwic=[8,16,32], main_downsample=True, filters_shfe = [64,128], fusion=FusionType.MID_MEAN) # bal_acc of 62.22 (batch-size:16)
 
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f'The total number of model parameter is: {total_params}')
@@ -101,16 +121,24 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # # train and test on validation data
     model = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=validation_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=callbacks_list, show_verbose=configs.show_verbose)
 
-    # train and test on independent validation cohort data
-    # model = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=testing_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=callbacks_list, show_verbose=configs.show_verbose)
-
-    # test
+    # test with last model
     summary = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
-
-    # summary = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
 
     view.logger.info(summary)
     torch.save(model, cfg.output_model)
+
+    # test with best model on validation dataset  
+    manager = magnet.Manager.from_checkpoint("experiments/magms_exp13.exp/checkpoints/best_bal_accuracy.model")
+
+    if isinstance(manager.model, torch.nn.parallel.DataParallel): model = manager.model.module
+    else: model = manager.model
+
+    manager.model = model
+    print(f'The best Dice score on validation set occurs at {manager.current_epoch + 1} epoch number')
+
+    summary = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    view.logger.info(summary)
+
     return model
 
 
