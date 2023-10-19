@@ -18,7 +18,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
         cudnn.deterministic = True  
 
     # initialize dataset for whole brain
-    training_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, drop_last=True, mode=data.EZMode.TRAIN, fold_no=cfg.fold_no, shuffle=True)
+    training_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, drop_last=False, mode=data.EZMode.TRAIN, fold_no=cfg.fold_no, shuffle=True)
     validation_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, fold_no=cfg.fold_no)
 
     # testing_dataset = data.DatasetEZ_WB(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, fold_no=cfg.fold_no)
@@ -46,7 +46,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=16, out_filters=16, filters_t1=[4,8], filters_t2=[4,8], filters_flair=[4,8], filters_dwi=[8,16], filters_dwic=[4,8], main_downsample=True, filters_shfe = [16,32], fusion=FusionType.MID_MEAN) # bal_acc of 78.57 (916) &  (917) (batch-size:4)
 
     # try for node 916
-    # model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=64, filters_t1=[8,16,32], filters_t2=[8,16,32], filters_flair=[8,16,32], filters_dwi=[16,32,64], filters_dwic=[8,16,32], main_downsample=True, filters_shfe = [64,128], fusion=FusionType.MID_MEAN) # bal_acc of 71.43 (916) &  (917) (batch-size:4)
+    model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=64, filters_t1=[8,16,32], filters_t2=[8,16,32], filters_flair=[8,16,32], filters_dwi=[16,32,64], filters_dwic=[8,16,32], main_downsample=True, filters_shfe = [64,128], fusion=FusionType.MID_MEAN) # bal_acc of 71.43 (916) &  (917) (batch-size:4)
 
     ##########################################################################################
     ## Dong Approach - ROI level
@@ -68,7 +68,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     ## Dong Approach - ROI level - per node aug
 
     # try for Inferior Temporal ROI (Node 916-931) - 16 nodes
-    model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=64, filters_t1=[8,16,32], filters_t2=[8,16,32], filters_flair=[8,16,32], filters_dwi=[16,32,64], filters_dwic=[8,16,32], main_downsample=True, filters_shfe = [64,128], fusion=FusionType.MID_MEAN) # bal_acc of 62.22 (batch-size:16)
+    # model = ezpred.build(2, train_modality=cfg.train_mod, out_main_ch=64, out_filters=64, filters_t1=[8,16,32], filters_t2=[8,16,32], filters_flair=[8,16,32], filters_dwi=[16,32,64], filters_dwic=[8,16,32], main_downsample=True, filters_shfe = [64,128], fusion=FusionType.MID_MEAN) # bal_acc of 62.22 (batch-size:16)
 
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f'The total number of model parameter is: {total_params}')
@@ -78,7 +78,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
 
     # initialize learning rate scheduler 
     # lr_step = max(int(cfg.epochs / 5), 1)  # for 50 epochs
-    lr_step = max(int(cfg.epochs / 2), 1)  # for 30 epochs
+    lr_step = max(int(cfg.epochs / 3), 1)  # for 30 epochs
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, lr_step, gamma=0.5) # reduce lr by half     
     
     main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)]
@@ -128,7 +128,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     torch.save(model, cfg.output_model)
 
     # test with best model on validation dataset  
-    manager = magnet.Manager.from_checkpoint("experiments/magms_exp13.exp/checkpoints/best_bal_accuracy.model")
+    manager = magnet.Manager.from_checkpoint("experiments/magms_exp10.exp/checkpoints/best_bal_accuracy.model")
 
     if isinstance(manager.model, torch.nn.parallel.DataParallel): model = manager.model.module
     else: model = manager.model

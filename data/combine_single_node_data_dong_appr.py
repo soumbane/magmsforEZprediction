@@ -70,7 +70,7 @@ def get_list_of_node_nums():
 
 # temporal lobe of right hemisphere
 node_number_temporal_lobe = [
-    "917"
+    "416"
     ]
 
 node_numbers_with_smote = node_number_temporal_lobe
@@ -195,56 +195,56 @@ def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: in
         Y_mat_aug_1 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
 
 
-        # ## Load ValidCohort
-        # print(f"Loading ValidCohort for Node num: {i}")
+        ## Load ValidCohort
+        print(f"Loading ValidCohort for Node num: {i}")
 
-        # path = os.path.join(root,'ValidCohort_NonEZvsEZ_ALL')
+        path = os.path.join(root,'ValidCohort_NonEZvsEZ_ALL')
     
-        # RI_file = f"ValidCohort_NonEZvsEZ_RI_node{i}_ALL.mat"
-        # Conn_file = f"ValidCohort_NonEZvsEZ_Conn_node{i}_ALL.mat"
-        # label_file = f"ValidCohort_NonEZvsEZ_label_node{i}_ALL.mat"
-        # RI_mat_name = "ValidCohort_NonEZvsEZ_RI"
-        # Conn_mat_name = "ValidCohort_NonEZvsEZ_Conn"
-        # label_mat_name = "ValidCohort_NonEZvsEZ_label"
+        RI_file = f"ValidCohort_NonEZvsEZ_RI_node{i}_ALL.mat"
+        Conn_file = f"ValidCohort_NonEZvsEZ_Conn_node{i}_ALL.mat"
+        label_file = f"ValidCohort_NonEZvsEZ_label_node{i}_ALL.mat"
+        RI_mat_name = "ValidCohort_NonEZvsEZ_RI"
+        Conn_mat_name = "ValidCohort_NonEZvsEZ_Conn"
+        label_mat_name = "ValidCohort_NonEZvsEZ_label"
 
-        # raw_path_RI = os.path.join(path,RI_file)
-        # raw_path_Conn = os.path.join(path,Conn_file)
-        # raw_path_label = os.path.join(path,label_file)
+        raw_path_RI = os.path.join(path,RI_file)
+        raw_path_Conn = os.path.join(path,Conn_file)
+        raw_path_label = os.path.join(path,label_file)
 
-        # """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
-        # X_mat_l = loadmat(raw_path_RI)
-        # X_mat_RI = X_mat_l[RI_mat_name] # RI matrix: 1x1400
+        """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
+        X_mat_l = loadmat(raw_path_RI)
+        X_mat_RI = X_mat_l[RI_mat_name] # RI matrix: 1x1400
 
-        # # check for NaN values and replace NaN values with 0
-        # if (np.isnan(X_mat_RI).any()):  
-        #     X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
+        # check for NaN values and replace NaN values with 0
+        if (np.isnan(X_mat_RI).any()):  
+            X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
 
-        # """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
-        # X_mat_lconn = loadmat(raw_path_Conn)
-        # X_mat_DWIC = X_mat_lconn[Conn_mat_name]  # DWIC matrix: 1x499
+        """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
+        X_mat_lconn = loadmat(raw_path_Conn)
+        X_mat_DWIC = X_mat_lconn[Conn_mat_name]  # DWIC matrix: 1x499
                     
-        # # check for NaN values and replace NaN values with 0
-        # if (np.isnan(X_mat_DWIC).any()):
-        #     X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)
+        # check for NaN values and replace NaN values with 0
+        if (np.isnan(X_mat_DWIC).any()):
+            X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)
 
-        # X_combined_2 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
+        X_combined_2 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
 
-        # X_combined_2 = X_combined_2[:14,:] # first 14 patients of the validation cohort
+        X_combined_2 = X_combined_2[:14,:] # first 14 patients of the validation cohort
 
-        # """Load the Label Matrix from .mat files.""" 
-        # Y_mat_l = loadmat(raw_path_label)
-        # Y_mat_aug = Y_mat_l[label_mat_name]
-        # Y_mat_aug_2 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
+        """Load the Label Matrix from .mat files.""" 
+        Y_mat_l = loadmat(raw_path_label)
+        Y_mat_aug = Y_mat_l[label_mat_name]
+        Y_mat_aug_2 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
 
-        # Y_mat_aug_2 = Y_mat_aug_2[:14] # first 14 patients of the validation cohort
+        Y_mat_aug_2 = Y_mat_aug_2[:14] # first 14 patients of the validation cohort
 
                     
         # combine all node-level augmented data into the bigger lobe-level matrix
-        X_combined_train_lobe = np.concatenate((X_combined_train_lobe, X_combined_1), axis=0)
+        X_combined_train_lobe = np.concatenate((X_combined_train_lobe, X_combined_1, X_combined_2), axis=0)
         if i == node_numbers_with_smote[0]:
             X_combined_train_lobe = X_combined_train_lobe[1:,:] 
 
-        Y_combined_train_lobe = np.concatenate((Y_combined_train_lobe, Y_mat_aug_1), axis=0)
+        Y_combined_train_lobe = np.concatenate((Y_combined_train_lobe, Y_mat_aug_1, Y_mat_aug_2), axis=0)
 
 
     Y_combined_train_lobe = Y_combined_train_lobe.astype(int) # type:ignore
@@ -300,14 +300,14 @@ def load_validation_cohort(root: str):
 
         X_combined_2 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
 
-        # X_combined_2 = X_combined_2[14:,:] # last 14 patients of the validation cohort
+        X_combined_2 = X_combined_2[14:,:] # last 14 patients of the validation cohort
 
         """Load the Label Matrix from .mat files.""" 
         Y_mat_l = loadmat(raw_path_label)
         Y_mat_aug = Y_mat_l[label_mat_name]
         Y_mat_aug_2 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
 
-        # Y_mat_aug_2 = Y_mat_aug_2[14:] # last 14 patients of the validation cohort
+        Y_mat_aug_2 = Y_mat_aug_2[14:] # last 14 patients of the validation cohort
 
         X_combined_whole_brain = np.concatenate((X_combined_whole_brain, X_combined_2), axis=0) 
         if i == node_numbers_with_smote[0]:
@@ -396,6 +396,6 @@ if __name__ == "__main__":
     # num_samples_nonEZ: Number of samples of non-EZ (class 0) to generate per node with SMOTE
     # num_samples_EZ: Number of samples of EZ (class 1) to generate per node with SMOTE
     
-    main(root, save_path_training, save_path_validation, num_samples_nonEZ=150, num_samples_EZ=150, generate_syn_nonEZ=True)
+    main(root, save_path_training, save_path_validation, num_samples_nonEZ=60, num_samples_EZ=60, generate_syn_nonEZ=True)
 
 
