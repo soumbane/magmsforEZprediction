@@ -107,7 +107,7 @@ def augment_data(X: np.ndarray, Y: np.ndarray, num_samples_nonEZ: int = 50, num_
     elif np.sum(Y) == 2:
         # augment training data using SMOTE with KNN=1
         if generate_syn_nonEZ:
-            sm = SMOTE(k_neighbors=1, random_state=random_state, sampling_strategy={0:num_samples_nonEZ, 1:num_samples_EZ})
+            sm = SMOTE(k_neighbors=1, random_state=random_state, sampling_strategy={0:num_samples_nonEZ, 1:num_samples_EZ}) # type:ignore
         else: # do not generate synthetic non-EZ samples
             sm = SMOTE(k_neighbors=1, random_state=random_state) # type:ignore
         X_aug, Y_aug = sm.fit_resample(X, Y) # type:ignore
