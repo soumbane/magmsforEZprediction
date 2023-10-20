@@ -66,14 +66,16 @@ def get_list_of_node_nums():
     return node_numbers_with_smote
 
 # list of all 827 nodes for which SMOTE is possible (atleast 1 EZ)
-# node_numbers_with_smote = get_list_of_node_nums()
+node_numbers_with_smote = get_list_of_node_nums()
+
+print(f"Total number of nodes is: {len(node_numbers_with_smote)}")
 
 # temporal lobe of right hemisphere
-node_number_temporal_lobe = [
+node_number_right_temporal_lobe = [
     "416"
     ]
 
-node_numbers_with_smote = node_number_temporal_lobe
+node_numbers_with_smote = node_number_right_temporal_lobe
 
 print(len(node_numbers_with_smote))
 
