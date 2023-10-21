@@ -2,6 +2,7 @@
 # Combine all brain nodes node by node (Pat 1 Node 1, Pat 2 Node 1, ...., Pat 44 Node 983): Node Level for Model and Validation Cohort
 import os
 import numpy as np
+import pandas as pd
 from collections import Counter
 from scipy.io import loadmat, savemat
 from imblearn.over_sampling import SMOTE
@@ -70,14 +71,25 @@ node_numbers_with_smote = get_list_of_node_nums()
 
 print(f"Total number of nodes is: {len(node_numbers_with_smote)}")
 
+# # temporal lobe of right hemisphere
+# node_number_right_temporal_lobe = [
+#     "888","889","890","891","892","893","894","895",
+#     "896","897","898","899","900","901","902","903","904","905","906","907","908","909","910","911","912",
+#     "913","914","915","916","917","918","919","920","921","922","923","924","925","926","927","928","929",
+#     "930","931","932","933","934","935","936","937","938","939","940","941","942","943","944","945","946",
+#     "947","948","949","950","951","952","953","954","955","956","957","958","959","960","961",
+#     "962","963","964","965","966","968","969","970","971","973","974","975","976","977","978","979",
+#     "980","981","982","983"
+#     ]
+
 # temporal lobe of right hemisphere
 node_number_right_temporal_lobe = [
-    "416"
+    "888","889","890"
     ]
 
 node_numbers_with_smote = node_number_right_temporal_lobe
 
-print(len(node_numbers_with_smote))
+print(f"Number of nodes in right temporal lobe: {len(node_numbers_with_smote)}")
 
 fusiform_ROI = ["888","889","890","891","892","893","894","895","896","897","898","899","900","901","902","903","904"]
 
@@ -98,12 +110,13 @@ superiortemp_ROI = ["957","958","959","960","961","962","963","964","965","966",
 transversetemp_ROI = ["982","983"]
 
 
-# Combining all nodes node by node after performing SMOTE for each node
+# Augment node by node by performing SMOTE for each node
 
 # Perform SMOTE augmentation for each node
-def augment_data(X: np.ndarray, Y: np.ndarray, num_samples_nonEZ: int = 50, num_samples_EZ: int = 50, random_state: int = 100, generate_syn_nonEZ: bool = True):
+def augment_data(X: np.ndarray, Y: np.ndarray, num_samples_nonEZ: int = 50, num_samples_EZ: int = 50, random_state: int = 100, generate_syn_nonEZ: bool = True, node_num: str = "1"):
 
     if np.sum(Y) == 1:
+        print(f"Node-number that has only 1 EZ sample is: {node_num}, should be augmented with ROI-average data.")
         raise ValueError("Cannot augment data for a single EZ sample.")
 
     elif np.sum(Y) == 2:
@@ -150,235 +163,258 @@ def augment_data(X: np.ndarray, Y: np.ndarray, num_samples_nonEZ: int = 50, num_
     return X_aug, Y_aug
 
 
-def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: int = 50, random_state: int = 100, generate_syn_nonEZ: bool = True):
+def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: int = 50, random_state: int = 100, generate_syn_nonEZ: bool = True, node_num: str = "1"):   
+
+    X_train_node = np.zeros((1,1899)) 
+    Y_train_node = []
+
+    ## Load ModelCohort
+    print(f"Loading ModelCohort for Node num: {node_num}")
+
+    path = os.path.join(root,'Valid_NonEZvsEZ_ALL')
+
+    RI_file = f"Valid_NonEZvsEZ_RI_node{node_num}_ALL.mat"
+    Conn_file = f"Valid_NonEZvsEZ_Conn_node{node_num}_ALL.mat"
+    label_file = f"Valid_NonEZvsEZ_label_node{node_num}_ALL.mat"
+    RI_mat_name = "ModelCohort_NonEZvsEZ_RI"
+    Conn_mat_name = "ModelCohort_NonEZvsEZ_Conn"
+    label_mat_name = "ModelCohort_NonEZvsEZ_label"
+
+    raw_path_RI = os.path.join(path,RI_file)
+    raw_path_Conn = os.path.join(path,Conn_file)
+    raw_path_label = os.path.join(path,label_file)
+
+    """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
+    X_mat_l = loadmat(raw_path_RI)
+    X_mat_RI = X_mat_l[RI_mat_name] # RI matrix: 1x1400
+
+    # check for NaN values and replace NaN values with 0
+    if (np.isnan(X_mat_RI).any()):  
+        X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
+
+    """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
+    X_mat_lconn = loadmat(raw_path_Conn)
+    X_mat_DWIC = X_mat_lconn[Conn_mat_name]  # DWIC matrix: 1x499
+                
+    # check for NaN values and replace NaN values with 0
+    if (np.isnan(X_mat_DWIC).any()):
+        X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)
+
+    X_combined_1 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
+
+    """Load the Label Matrix from .mat files.""" 
+    Y_mat_l = loadmat(raw_path_label)
+    Y_mat_aug = Y_mat_l[label_mat_name]
+    Y_mat_aug_1 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
+
+
+    ## Load ValidCohort
+    print(f"Loading ValidCohort for Node num: {node_num}")
+
+    path = os.path.join(root,'ValidCohort_NonEZvsEZ_ALL')
+
+    RI_file = f"ValidCohort_NonEZvsEZ_RI_node{node_num}_ALL.mat"
+    Conn_file = f"ValidCohort_NonEZvsEZ_Conn_node{node_num}_ALL.mat"
+    label_file = f"ValidCohort_NonEZvsEZ_label_node{node_num}_ALL.mat"
+    RI_mat_name = "ValidCohort_NonEZvsEZ_RI"
+    Conn_mat_name = "ValidCohort_NonEZvsEZ_Conn"
+    label_mat_name = "ValidCohort_NonEZvsEZ_label"
+
+    raw_path_RI = os.path.join(path,RI_file)
+    raw_path_Conn = os.path.join(path,Conn_file)
+    raw_path_label = os.path.join(path,label_file)
+
+    """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
+    X_mat_l = loadmat(raw_path_RI)
+    X_mat_RI = X_mat_l[RI_mat_name] # RI matrix: 1x1400
+
+    # check for NaN values and replace NaN values with 0
+    if (np.isnan(X_mat_RI).any()):  
+        X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
+
+    """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
+    X_mat_lconn = loadmat(raw_path_Conn)
+    X_mat_DWIC = X_mat_lconn[Conn_mat_name]  # DWIC matrix: 1x499
+                
+    # check for NaN values and replace NaN values with 0
+    if (np.isnan(X_mat_DWIC).any()):
+        X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)
+
+    X_combined_2 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
+
+    X_combined_2 = X_combined_2[:14,:] # first 14 patients of the validation cohort
+
+    """Load the Label Matrix from .mat files.""" 
+    Y_mat_l = loadmat(raw_path_label)
+    Y_mat_aug = Y_mat_l[label_mat_name]
+    Y_mat_aug_2 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
+
+    Y_mat_aug_2 = Y_mat_aug_2[:14] # first 14 patients of the validation cohort
+
+                
+    # combine training node-level data
+    X_train_node = np.concatenate((X_train_node, X_combined_1, X_combined_2), axis=0)
     
-    X_combined_train_lobe = np.zeros((1,1899)) 
-    Y_combined_train_lobe = []
+    X_train_node = X_train_node[1:,:] 
 
-    for i in node_numbers_with_smote:    
-
-        ## Load ModelCohort
-        print(f"Loading ModelCohort for Node num: {i}")
-
-        path = os.path.join(root,'Valid_NonEZvsEZ_ALL')
-
-        RI_file = f"Valid_NonEZvsEZ_RI_node{i}_ALL.mat"
-        Conn_file = f"Valid_NonEZvsEZ_Conn_node{i}_ALL.mat"
-        label_file = f"Valid_NonEZvsEZ_label_node{i}_ALL.mat"
-        RI_mat_name = "ModelCohort_NonEZvsEZ_RI"
-        Conn_mat_name = "ModelCohort_NonEZvsEZ_Conn"
-        label_mat_name = "ModelCohort_NonEZvsEZ_label"
-
-        raw_path_RI = os.path.join(path,RI_file)
-        raw_path_Conn = os.path.join(path,Conn_file)
-        raw_path_label = os.path.join(path,label_file)
-
-        """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
-        X_mat_l = loadmat(raw_path_RI)
-        X_mat_RI = X_mat_l[RI_mat_name] # RI matrix: 1x1400
-
-        # check for NaN values and replace NaN values with 0
-        if (np.isnan(X_mat_RI).any()):  
-            X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
-
-        """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
-        X_mat_lconn = loadmat(raw_path_Conn)
-        X_mat_DWIC = X_mat_lconn[Conn_mat_name]  # DWIC matrix: 1x499
-                    
-        # check for NaN values and replace NaN values with 0
-        if (np.isnan(X_mat_DWIC).any()):
-            X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)
-
-        X_combined_1 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
-
-        """Load the Label Matrix from .mat files.""" 
-        Y_mat_l = loadmat(raw_path_label)
-        Y_mat_aug = Y_mat_l[label_mat_name]
-        Y_mat_aug_1 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
+    Y_train_node = np.concatenate((Y_train_node, Y_mat_aug_1, Y_mat_aug_2), axis=0)
 
 
-        ## Load ValidCohort
-        print(f"Loading ValidCohort for Node num: {i}")
-
-        path = os.path.join(root,'ValidCohort_NonEZvsEZ_ALL')
+    Y_train_node = Y_train_node.astype(int) # type:ignore
     
-        RI_file = f"ValidCohort_NonEZvsEZ_RI_node{i}_ALL.mat"
-        Conn_file = f"ValidCohort_NonEZvsEZ_Conn_node{i}_ALL.mat"
-        label_file = f"ValidCohort_NonEZvsEZ_label_node{i}_ALL.mat"
-        RI_mat_name = "ValidCohort_NonEZvsEZ_RI"
-        Conn_mat_name = "ValidCohort_NonEZvsEZ_Conn"
-        label_mat_name = "ValidCohort_NonEZvsEZ_label"
-
-        raw_path_RI = os.path.join(path,RI_file)
-        raw_path_Conn = os.path.join(path,Conn_file)
-        raw_path_label = os.path.join(path,label_file)
-
-        """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
-        X_mat_l = loadmat(raw_path_RI)
-        X_mat_RI = X_mat_l[RI_mat_name] # RI matrix: 1x1400
-
-        # check for NaN values and replace NaN values with 0
-        if (np.isnan(X_mat_RI).any()):  
-            X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
-
-        """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
-        X_mat_lconn = loadmat(raw_path_Conn)
-        X_mat_DWIC = X_mat_lconn[Conn_mat_name]  # DWIC matrix: 1x499
-                    
-        # check for NaN values and replace NaN values with 0
-        if (np.isnan(X_mat_DWIC).any()):
-            X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)
-
-        X_combined_2 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
-
-        X_combined_2 = X_combined_2[:14,:] # first 14 patients of the validation cohort
-
-        """Load the Label Matrix from .mat files.""" 
-        Y_mat_l = loadmat(raw_path_label)
-        Y_mat_aug = Y_mat_l[label_mat_name]
-        Y_mat_aug_2 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
-
-        Y_mat_aug_2 = Y_mat_aug_2[:14] # first 14 patients of the validation cohort
-
-                    
-        # combine all node-level augmented data into the bigger lobe-level matrix
-        X_combined_train_lobe = np.concatenate((X_combined_train_lobe, X_combined_1, X_combined_2), axis=0)
-        if i == node_numbers_with_smote[0]:
-            X_combined_train_lobe = X_combined_train_lobe[1:,:] 
-
-        Y_combined_train_lobe = np.concatenate((Y_combined_train_lobe, Y_mat_aug_1, Y_mat_aug_2), axis=0)
-
-
-    Y_combined_train_lobe = Y_combined_train_lobe.astype(int) # type:ignore
-    
-    print('Y_combined_train_lobe: %s' % Counter(Y_combined_train_lobe))
+    print('Y_train_node: %s' % Counter(Y_train_node))
 
     # augment training data using SMOTE
-    X_combined_train_lobe_aug, Y_combined_train_lobe_aug = augment_data(X_combined_train_lobe, Y_combined_train_lobe, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state, generate_syn_nonEZ=generate_syn_nonEZ)
+    X_train_node_aug, Y_train_node_aug = augment_data(X_train_node, Y_train_node, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state, generate_syn_nonEZ=generate_syn_nonEZ, node_num=node_num)
 
-    print('Y_combined_train_lobe_augmented: %s' % Counter(Y_combined_train_lobe_aug))
+    print('Y_train_node_augmented: %s' % Counter(Y_train_node_aug))
     
 
-    return X_combined_train_lobe_aug, Y_combined_train_lobe_aug
+    return X_train_node_aug, Y_train_node_aug
 
 
-def load_validation_cohort(root: str):    
+def load_validation_cohort(root: str, node_num: str = "1"):    
           
-    X_combined_whole_brain = np.zeros((1,1899))
-    Y_combined_whole_brain = []
+    X_val_node = np.zeros((1,1899))
+    Y_val_node = []
+      
+    ## Load ValidCohort
+    print(f"Loading ValidCohort for Node num: {node_num}")
 
-    for i in node_numbers_with_smote:      
-        ## Load ValidCohort
-        print(f"Loading ValidCohort for Node num: {i}")
+    path = os.path.join(root,'ValidCohort_NonEZvsEZ_ALL')
 
-        path = os.path.join(root,'ValidCohort_NonEZvsEZ_ALL')
+    RI_file = f"ValidCohort_NonEZvsEZ_RI_node{node_num}_ALL.mat"
+    Conn_file = f"ValidCohort_NonEZvsEZ_Conn_node{node_num}_ALL.mat"
+    label_file = f"ValidCohort_NonEZvsEZ_label_node{node_num}_ALL.mat"
+    RI_mat_name = "ValidCohort_NonEZvsEZ_RI"
+    Conn_mat_name = "ValidCohort_NonEZvsEZ_Conn"
+    label_mat_name = "ValidCohort_NonEZvsEZ_label"
+
+    raw_path_RI = os.path.join(path,RI_file)
+    raw_path_Conn = os.path.join(path,Conn_file)
+    raw_path_label = os.path.join(path,label_file)
+
+    """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
+    X_mat_l = loadmat(raw_path_RI)
+    X_mat_RI = X_mat_l[RI_mat_name] # RI matrix: 1x1400
+
+    # check for NaN values and replace NaN values with 0
+    if (np.isnan(X_mat_RI).any()):  
+        X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
+
+    """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
+    X_mat_lconn = loadmat(raw_path_Conn)
+    X_mat_DWIC = X_mat_lconn[Conn_mat_name]  # DWIC matrix: 1x499
+                
+    # check for NaN values and replace NaN values with 0
+    if (np.isnan(X_mat_DWIC).any()):
+        X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)
+
+    X_combined_2 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
+
+    X_combined_2 = X_combined_2[14:,:] # last 14 patients of the validation cohort
+
+    """Load the Label Matrix from .mat files.""" 
+    Y_mat_l = loadmat(raw_path_label)
+    Y_mat_aug = Y_mat_l[label_mat_name]
+    Y_mat_aug_2 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
+
+    Y_mat_aug_2 = Y_mat_aug_2[14:] # last 14 patients of the validation cohort
+
+    X_val_node = np.concatenate((X_val_node, X_combined_2), axis=0) 
     
-        RI_file = f"ValidCohort_NonEZvsEZ_RI_node{i}_ALL.mat"
-        Conn_file = f"ValidCohort_NonEZvsEZ_Conn_node{i}_ALL.mat"
-        label_file = f"ValidCohort_NonEZvsEZ_label_node{i}_ALL.mat"
-        RI_mat_name = "ValidCohort_NonEZvsEZ_RI"
-        Conn_mat_name = "ValidCohort_NonEZvsEZ_Conn"
-        label_mat_name = "ValidCohort_NonEZvsEZ_label"
-
-        raw_path_RI = os.path.join(path,RI_file)
-        raw_path_Conn = os.path.join(path,Conn_file)
-        raw_path_label = os.path.join(path,label_file)
-
-        """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
-        X_mat_l = loadmat(raw_path_RI)
-        X_mat_RI = X_mat_l[RI_mat_name] # RI matrix: 1x1400
-
-        # check for NaN values and replace NaN values with 0
-        if (np.isnan(X_mat_RI).any()):  
-            X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
-
-        """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
-        X_mat_lconn = loadmat(raw_path_Conn)
-        X_mat_DWIC = X_mat_lconn[Conn_mat_name]  # DWIC matrix: 1x499
+    X_val_node = X_val_node[1:,:]           
                     
-        # check for NaN values and replace NaN values with 0
-        if (np.isnan(X_mat_DWIC).any()):
-            X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)
+    Y_val_node = np.concatenate((Y_val_node, Y_mat_aug_2), axis=0)
+    Y_val_node = Y_val_node.astype(int) 
 
-        X_combined_2 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
+    print('Y_val_node_original: %s' % Counter(Y_val_node))
 
-        X_combined_2 = X_combined_2[14:,:] # last 14 patients of the validation cohort
-
-        """Load the Label Matrix from .mat files.""" 
-        Y_mat_l = loadmat(raw_path_label)
-        Y_mat_aug = Y_mat_l[label_mat_name]
-        Y_mat_aug_2 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
-
-        Y_mat_aug_2 = Y_mat_aug_2[14:] # last 14 patients of the validation cohort
-
-        X_combined_whole_brain = np.concatenate((X_combined_whole_brain, X_combined_2), axis=0) 
-        if i == node_numbers_with_smote[0]:
-            X_combined_whole_brain = X_combined_whole_brain[1:,:]           
-                        
-        Y_combined_whole_brain = np.concatenate((Y_combined_whole_brain, Y_mat_aug_2), axis=0)
-        Y_combined_whole_brain = Y_combined_whole_brain.astype(int) 
-        print(f"Combined node {i} of 24 Validation Cohort patients.")
-
-    print(f"Finished combining all {len(node_numbers_with_smote)} nodes of 24 patients of the independent Validation Cohort.")
-
-    return X_combined_whole_brain, Y_combined_whole_brain
+    return X_val_node, Y_val_node
 
 
 def save_aug_data_as_separate_nodes(save_dir: str, X: np.ndarray, Y: np.ndarray, mode: str = "train") -> None:
     
     for i in range(len(Y)):
         if mode == "train":
-            savemat(os.path.join(save_dir,'X_train_aug_WB_node' + str(i) + '.mat'), {"X_aug_train_node" + str(i):X[i,:]})
-            savemat(os.path.join(save_dir,'Y_train_aug_WB_node' + str(i) + '.mat'), {"Y_aug_train_node" + str(i):Y[i]})
-
-        elif mode == "test":
-            savemat(os.path.join(save_dir,'X_test_orig_WB_node' + str(i) + '.mat'), {"X_orig_test_node" + str(i):X[i,:]})
-            savemat(os.path.join(save_dir,'Y_test_orig_WB_node' + str(i) + '.mat'), {"Y_orig_test_node" + str(i):Y[i]})
+            savemat(os.path.join(save_dir,'X_train_aug_patient' + str(i) + '.mat'), {"X_aug_train_patient" + str(i):X[i,:]})
+            savemat(os.path.join(save_dir,'Y_train_aug_patient' + str(i) + '.mat'), {"Y_aug_train_patient" + str(i):Y[i]})
 
         elif mode == "validation":
-            savemat(os.path.join(save_dir,'X_valid_orig_WB_node' + str(i) + '.mat'), {"X_orig_valid_node" + str(i):X[i,:]})
-            savemat(os.path.join(save_dir,'Y_valid_orig_WB_node' + str(i) + '.mat'), {"Y_orig_valid_node" + str(i):Y[i]})
+            savemat(os.path.join(save_dir,'X_valid_orig_patient' + str(i) + '.mat'), {"X_orig_valid_patient" + str(i):X[i,:]})
+            savemat(os.path.join(save_dir,'Y_valid_orig_patient' + str(i) + '.mat'), {"Y_orig_valid_patient" + str(i):Y[i]})
 
         else:
-            raise KeyError(f"The mode must be either train, test or validation.")
+            raise KeyError(f"The mode must be either train or validation.")
 
 
-def main(root: str, save_path_training: str, save_path_validation: str, num_samples_nonEZ: int = 50, num_samples_EZ: int = 50, generate_syn_nonEZ: bool = True):    
-    
-    ## Load and save the Model cohort data (44 patients) divided into training (30 patients) and testing (14 patients)
-    # Combining node by node (Pat 1 Node 1, Pat 2 Node 1, ...., Pat 44 Node 983): Node Level for Model Cohort
-    X_combined_train, Y_combined_train = load_model_cohort(root, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=100, generate_syn_nonEZ=generate_syn_nonEZ)  # type:ignore   
+def main(root: str, save_path_training: str, save_path_validation: str, num_samples_nonEZ: int = 50, num_samples_EZ: int = 50, generate_syn_nonEZ: bool = True): 
 
-    print('Y_combined_train: %s' % Counter(Y_combined_train))
+    node_numbers = []   
+
+    num_nonEZs_train = []
+    num_EZs_train = []
+
+    num_nonEZs_val = []
+    num_EZs_val = []
+
+    for i in node_numbers_with_smote:
+
+        node_numbers.append(i)
+
+        ## Load and save the augmented training data per node
+        X_train_aug, Y_train_aug = load_model_cohort(root, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=100, generate_syn_nonEZ=generate_syn_nonEZ, node_num=i)  
+
+        # calculate number of non_EZs and EZs for a given node
+        num_nonEZs_train.append(len(Y_train_aug) - np.sum(Y_train_aug))
+        num_EZs_train.append(np.sum(Y_train_aug))
        
-    # save the augmented training data
-    save_path_training = save_path_training
+        # save the augmented training data
+        save_path_training = save_path_training
 
-    save_dir_train_temp = 'Train_NonEZvsEZ_WB_smoteaug'
-    save_dir_train = os.path.join(save_path_training, save_dir_train_temp)
+        save_dir_train_temp = 'Node_' + i
+        save_dir_train_temp1 = 'Aug_Train_Data'
+        save_dir_train = os.path.join(save_path_training, save_dir_train_temp, save_dir_train_temp1)
 
-    if not os.path.exists(save_dir_train):
-        os.makedirs(save_dir_train)
+        if not os.path.exists(save_dir_train):
+            os.makedirs(save_dir_train)
+        
+        save_aug_data_as_separate_nodes(save_dir_train, X_train_aug, Y_train_aug, mode="train")  # type:ignore   
+
+        ## Load and save the original unaugmented validation data        
+        X_val_orig, Y_val_orig = load_validation_cohort(root, node_num=i)  # type:ignore
+
+        num_nonEZs_val.append(len(Y_val_orig) - np.sum(Y_val_orig))
+        num_EZs_val.append(np.sum(Y_val_orig))
+
+        # save the original validation data
+        save_path_validation = save_path_validation
+
+        save_dir_val_temp = 'Node_' + i
+        save_dir_val_temp1 = 'Orig_Val_Data'        
+        
+        save_dir_val = os.path.join(save_path_validation, save_dir_val_temp, save_dir_val_temp1)
+        if not os.path.exists(save_dir_val):
+            os.makedirs(save_dir_val)
+
+        save_aug_data_as_separate_nodes(save_dir_val, X_val_orig, Y_val_orig, mode="validation")  # type:ignore
+
     
-    save_aug_data_as_separate_nodes(save_dir_train, X_combined_train, Y_combined_train, mode="train")  # type:ignore   
+    # dictionary of lists
+    info_dict = {'Node #': node_numbers, 'NonEZ-train': num_nonEZs_train, 'EZ-train': num_EZs_train, 'NonEZ-val': num_nonEZs_val, 'EZ-val': num_EZs_val}    
 
-    ################################################################################################################
-    ## Load and save the original independent (Hold-out) validation cohort data (24 patients)
+    df = pd.DataFrame(info_dict)  
+
+    # saving the dataframe
+    path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/"  
+    save_path = os.path.join(path, "Information")
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
     
-    # Combining node by node (Pat 1 Node 1, Pat 2 Node 1, ...., Pat 24 Node 983): Node Level for Validation Cohort
-    X_combined_validation, Y_combined_validation = load_validation_cohort(root)  # type:ignore
+    filename  = "info.csv"
+    save_filepath = os.path.join(save_path, filename)
 
-    # X_combined_validation = z_score_norm(X_combined_validation)  # type:ignore
-
-    print('Y_combined_validation: %s' % Counter(Y_combined_validation))
-
-    save_path_validation = save_path_validation
-    
-    save_dir_val = os.path.join(save_path_validation, 'ValidationCohort_NonEZvsEZ_WB_orig')
-    if not os.path.exists(save_dir_val):
-        os.makedirs(save_dir_val)
-
-    save_aug_data_as_separate_nodes(save_dir_val, X_combined_validation, Y_combined_validation, mode="validation")  # type:ignore
+    df.to_csv(save_filepath, header=True, index=False)
 
     ################################################################################################################
 
@@ -386,14 +422,14 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
 if __name__ == "__main__":
 
     # Root Folder for the dataset
-    root='/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
-    # root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
+    # root='/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
+    root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
 
-    # save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp9/SMOTE_Augmented_Data/'
-    # save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp9/Original_Patient_Data/'
+    save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/'
+    save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/'
 
-    save_path_training = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp10/SMOTE_Augmented_Data/'
-    save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp10/Original_Patient_Data/'
+    # save_path_training = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp10/SMOTE_Augmented_Data/'
+    # save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp10/Original_Patient_Data/'
 
     # num_samples_nonEZ: Number of samples of non-EZ (class 0) to generate per node with SMOTE
     # num_samples_EZ: Number of samples of EZ (class 1) to generate per node with SMOTE
