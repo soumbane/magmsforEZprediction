@@ -83,8 +83,12 @@ print(f"Total number of nodes is: {len(node_numbers_with_smote)}")
 #     ]
 
 # temporal lobe of right hemisphere
+# node_number_right_temporal_lobe = [
+#     "888","889","890","959"
+#     ]
+
 node_number_right_temporal_lobe = [
-    "888","889","890"
+    "959"
     ]
 
 node_numbers_with_smote = node_number_right_temporal_lobe
@@ -105,18 +109,189 @@ middletemp_ROI = ["932","933","934","935","936","937","938","939","940","941","9
 
 bank_ROI = ["951","952","953","954","955","956"]
 
-superiortemp_ROI = ["957","958","959","960","961","962","963","964","965","966","968","969","970","971","973","974","975","976","977","978","979","980","981"]
+# superiortemp_ROI = ["957","958","959","960","961","962","963","964","965","966","968","969","970","971","973","974","975","976","977","978","979","980","981"]
+superiortemp_ROI = ["959"]
 
 transversetemp_ROI = ["982","983"]
 
+def load_and_average_ROI_data(root: str, ROI_node_num_range: list[str]):
+
+    X_train_node = np.zeros((1,1899)) 
+    Y_train_node = []
+    
+    for i in ROI_node_num_range:
+
+        ## Load ModelCohort
+        print(f"Loading ModelCohort for Node num: {i}")
+
+        path = os.path.join(root,'Valid_NonEZvsEZ_ALL')
+
+        RI_file = f"Valid_NonEZvsEZ_RI_node{i}_ALL.mat"
+        Conn_file = f"Valid_NonEZvsEZ_Conn_node{i}_ALL.mat"
+        label_file = f"Valid_NonEZvsEZ_label_node{i}_ALL.mat"
+        RI_mat_name = "ModelCohort_NonEZvsEZ_RI"
+        Conn_mat_name = "ModelCohort_NonEZvsEZ_Conn"
+        label_mat_name = "ModelCohort_NonEZvsEZ_label"
+
+        raw_path_RI = os.path.join(path,RI_file)
+        raw_path_Conn = os.path.join(path,Conn_file)
+        raw_path_label = os.path.join(path,label_file)
+
+        """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
+        X_mat_l = loadmat(raw_path_RI)
+        X_mat_RI = X_mat_l[RI_mat_name] # RI matrix: 1x1400
+
+        # check for NaN values and replace NaN values with 0
+        if (np.isnan(X_mat_RI).any()):  
+            X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
+
+        """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
+        X_mat_lconn = loadmat(raw_path_Conn)
+        X_mat_DWIC = X_mat_lconn[Conn_mat_name]  # DWIC matrix: 1x499
+                    
+        # check for NaN values and replace NaN values with 0
+        if (np.isnan(X_mat_DWIC).any()):
+            X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)
+
+        X_combined_1 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
+
+        """Load the Label Matrix from .mat files.""" 
+        Y_mat_l = loadmat(raw_path_label)
+        Y_mat_aug = Y_mat_l[label_mat_name]
+        Y_mat_aug_1 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
+
+
+        ## Load ValidCohort
+        print(f"Loading ValidCohort for Node num: {i}")
+
+        path = os.path.join(root,'ValidCohort_NonEZvsEZ_ALL')
+
+        RI_file = f"ValidCohort_NonEZvsEZ_RI_node{i}_ALL.mat"
+        Conn_file = f"ValidCohort_NonEZvsEZ_Conn_node{i}_ALL.mat"
+        label_file = f"ValidCohort_NonEZvsEZ_label_node{i}_ALL.mat"
+        RI_mat_name = "ValidCohort_NonEZvsEZ_RI"
+        Conn_mat_name = "ValidCohort_NonEZvsEZ_Conn"
+        label_mat_name = "ValidCohort_NonEZvsEZ_label"
+
+        raw_path_RI = os.path.join(path,RI_file)
+        raw_path_Conn = os.path.join(path,Conn_file)
+        raw_path_label = os.path.join(path,label_file)
+
+        """Load the Relative Intensity (RI) Data Matrix from .mat files.""" 
+        X_mat_l = loadmat(raw_path_RI)
+        X_mat_RI = X_mat_l[RI_mat_name] # RI matrix: 1x1400
+
+        # check for NaN values and replace NaN values with 0
+        if (np.isnan(X_mat_RI).any()):  
+            X_mat_RI = np.nan_to_num(X_mat_RI, nan=0) 
+
+        """Load the Connectome Profile (DWIC) Matrix from .mat files.""" 
+        X_mat_lconn = loadmat(raw_path_Conn)
+        X_mat_DWIC = X_mat_lconn[Conn_mat_name]  # DWIC matrix: 1x499
+                    
+        # check for NaN values and replace NaN values with 0
+        if (np.isnan(X_mat_DWIC).any()):
+            X_mat_DWIC = np.nan_to_num(X_mat_DWIC, nan=0)
+
+        X_combined_2 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
+
+        X_combined_2 = X_combined_2[:14,:] # first 14 patients of the validation cohort
+
+        """Load the Label Matrix from .mat files.""" 
+        Y_mat_l = loadmat(raw_path_label)
+        Y_mat_aug = Y_mat_l[label_mat_name]
+        Y_mat_aug_2 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
+
+        Y_mat_aug_2 = Y_mat_aug_2[:14] # first 14 patients of the validation cohort
+
+                    
+        # combine training node-level data
+        X_train_node = np.concatenate((X_train_node, X_combined_1, X_combined_2), axis=0)
+        
+        if i == ROI_node_num_range[0]:
+            X_train_node = X_train_node[1:,:] 
+
+        Y_train_node = np.concatenate((Y_train_node, Y_mat_aug_1, Y_mat_aug_2), axis=0)
+
+    Y_train_node = Y_train_node.astype(int) # type:ignore
+        
+    print('Y_train_node: %s' % Counter(Y_train_node))
+
+    # find the index of Y_train_node where Y_train_node == 1 and Y_train_node == 0
+    index_EZ = np.where(Y_train_node == 1)[0]
+    index_nonEZ = np.where(Y_train_node == 0)[0]
+
+    # get the vector of X_train_node for EZ and non-EZ
+    X_train_node_EZ = X_train_node[index_EZ,:]
+    X_train_node_nonEZ = X_train_node[index_nonEZ,:]
+
+    # find the average of all EZ and non-EZ vectors
+    X_train_node_EZ_avg = np.mean(X_train_node_EZ, axis=0)
+    X_train_node_nonEZ_avg = np.mean(X_train_node_nonEZ, axis=0)
+
+    # generate Y_train_node_avg for EZ and nonEZ class
+    Y_train_node_EZ_avg = int(np.ones((1,)))
+    Y_train_node_nonEZ_avg = int(np.zeros((1,)))
+
+    return X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg    
+
 
 # Augment node by node by performing SMOTE for each node
+
+def augment_1EZ_data(root: str, X: np.ndarray, Y: np.ndarray, num_samples_nonEZ: int = 50, num_samples_EZ: int = 50, random_state: int = 100, generate_syn_nonEZ: bool = True, node_num: str = "1"):
+
+    if node_num in fusiform_ROI:
+        print(f"Node-number {node_num} with 1 EZ class is in fusiform ROI.")
+        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, fusiform_ROI)
+    elif node_num in parahipp_ROI:
+        print(f"Node-number {node_num} with 1 EZ class is in parahippocampal ROI.")
+        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, parahipp_ROI)
+    elif node_num in entor_ROI:
+        print(f"Node-number {node_num} with 1 EZ class is in entorhinal ROI.")
+        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, entor_ROI)
+    elif node_num in temppole_ROI:
+        print(f"Node-number {node_num} with 1 EZ class is in temppole ROI.")
+        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, temppole_ROI)
+    elif node_num in inferiortemp_ROI:
+        print(f"Node-number {node_num} with 1 EZ class is in inferiortemporal ROI.")
+        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, inferiortemp_ROI)
+    elif node_num in middletemp_ROI:
+        print(f"Node-number {node_num} with 1 EZ class is in middletemporal ROI.")
+        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, middletemp_ROI)
+    elif node_num in bank_ROI:
+        print(f"Node-number {node_num} with 1 EZ class is in bank ROI.")
+        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, bank_ROI)
+    elif node_num in superiortemp_ROI:
+        print(f"Node-number {node_num} with 1 EZ class is in superiortemporal ROI.")
+        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, superiortemp_ROI)
+    elif node_num in transversetemp_ROI:
+        print(f"Node-number {node_num} with 1 EZ class is in transversetemporal ROI.")
+        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, transversetemp_ROI)
+    else:
+        raise ValueError("Node number not found in any ROI.")
+
+    # stack the X and Y vectors with the average ROI vectors
+    X_train_node = np.vstack((X, X_train_node_nonEZ_avg, X_train_node_EZ_avg)) 
+    Y_train_node = np.append(Y,[0,1])
+    
+    Y_train_node = np.concatenate((Y, Y_train_node_nonEZ_avg, Y_train_node_EZ_avg), axis=0) 
+    
+    # augment training data using SMOTE with KNN=1 using the ROI average data
+    if generate_syn_nonEZ:
+        sm = SMOTE(k_neighbors=1, random_state=random_state, sampling_strategy={0:num_samples_nonEZ, 1:num_samples_EZ}) # type:ignore
+    else: # do not generate synthetic non-EZ samples
+        sm = SMOTE(k_neighbors=1, random_state=random_state) # type:ignore
+
+    X_aug, Y_aug = sm.fit_resample(X_train_node, Y_train_node) # type:ignore
+
+    return X_aug, Y_aug
+
 
 # Perform SMOTE augmentation for each node
 def augment_data(X: np.ndarray, Y: np.ndarray, num_samples_nonEZ: int = 50, num_samples_EZ: int = 50, random_state: int = 100, generate_syn_nonEZ: bool = True, node_num: str = "1"):
 
     if np.sum(Y) == 1:
-        print(f"Node-number that has only 1 EZ sample is: {node_num}, should be augmented with ROI-average data.")
+        print(f"Node-number {node_num} has only 1 EZ sample, hence it should be augmented with ROI-average data.")
         raise ValueError("Cannot augment data for a single EZ sample.")
 
     elif np.sum(Y) == 2:
@@ -265,7 +440,11 @@ def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: in
     print('Y_train_node: %s' % Counter(Y_train_node))
 
     # augment training data using SMOTE
-    X_train_node_aug, Y_train_node_aug = augment_data(X_train_node, Y_train_node, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state, generate_syn_nonEZ=generate_syn_nonEZ, node_num=node_num)
+    if np.sum(Y_train_node) == 1:
+        X_train_node_aug, Y_train_node_aug = augment_1EZ_data(root, X_train_node, Y_train_node, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state, generate_syn_nonEZ=generate_syn_nonEZ, node_num=node_num)
+
+    else:
+        X_train_node_aug, Y_train_node_aug = augment_data(X_train_node, Y_train_node, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state, generate_syn_nonEZ=generate_syn_nonEZ, node_num=node_num)
 
     print('Y_train_node_augmented: %s' % Counter(Y_train_node_aug))
     
