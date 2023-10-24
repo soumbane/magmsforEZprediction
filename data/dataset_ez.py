@@ -26,7 +26,7 @@ class DatasetEZ_WB(Dataset):
     root: str
     mode: EZMode
 
-    def __init__(self, batch_size: int, root: str, drop_last: bool = False, mode: EZMode = EZMode.TRAIN, fold_no: str = "1", shuffle: bool = False, device=torch.device("cuda:0")) -> None:
+    def __init__(self, batch_size: int, root: str, drop_last: bool = False, mode: EZMode = EZMode.TRAIN, shuffle: bool = False, device=torch.device("cuda:0")) -> None:
         super().__init__(batch_size, drop_last=drop_last, shuffle=shuffle, device=device)
         self.mode = mode
         self.root = root
@@ -40,14 +40,6 @@ class DatasetEZ_WB(Dataset):
             self.x_mat_name = "X_aug_train_node"
             self.y_mat_name = "Y_aug_train_node"
             
-        elif self.mode == EZMode.VALIDATE:
-            self.path = os.path.join(self.root, 'Original_Patient_Data', 'Test_NonEZvsEZ_WB_orig')
-            
-            self.x_file = f"X_test_orig_WB_node"
-            self.y_file = f"Y_test_orig_WB_node"
-            self.x_mat_name = "X_orig_test_node"
-            self.y_mat_name = "Y_orig_test_node"
-            
         elif self.mode == EZMode.TEST:
             self.path = os.path.join(self.root, 'Original_Patient_Data', 'ValidationCohort_NonEZvsEZ_WB_orig')
             
@@ -57,7 +49,7 @@ class DatasetEZ_WB(Dataset):
             self.y_mat_name = "Y_orig_valid_node"
 
         else:
-            raise NotImplementedError("Select either train, validate or test mode.")
+            raise NotImplementedError("Select either train or test mode.")
 
     @property
     def unbatched_len(self) -> int:
