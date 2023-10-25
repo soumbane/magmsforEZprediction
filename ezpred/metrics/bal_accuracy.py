@@ -32,7 +32,7 @@ class BalancedAccuracyScore(BinaryConfusionMetric, FeaturedMetric):
     def calculate_bal_acc(self, tp: torch.Tensor, tn: torch.Tensor, fp: torch.Tensor, fn: torch.Tensor) -> torch.Tensor:
         # Calculate sensitivity (true positive rate) and specificity (true negative rate)
         sensitivity = tp / (tp + fn + self._eps)
-        specificity = tn / (tn + fp + self._eps)
+        specificity = tn / (tn + fp + self._eps) if torch.sum(tn + fp) > 0 else sensitivity
 
         # Calculate balanced accuracy score
         balanced_acc = 0.5 * (sensitivity + specificity).mean()
