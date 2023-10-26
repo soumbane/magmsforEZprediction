@@ -130,7 +130,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     torch.save(model, cfg.output_model)
 
     # test with best model on validation dataset  
-    manager = magnet.Manager.from_checkpoint("experiments/magms_exp12.exp/checkpoints/best_bal_accuracy.model")
+    manager = magnet.Manager.from_checkpoint("experiments/magms_exp13.exp/checkpoints/best_bal_accuracy.model")
 
     if isinstance(manager.model, torch.nn.parallel.DataParallel): model = manager.model.module
     else: model = manager.model
