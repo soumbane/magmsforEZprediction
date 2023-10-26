@@ -3,6 +3,8 @@ from torchmanager_core import view
 from torchmanager.metrics import BinaryConfusionMetric, metric
 from torch.backends import cudnn
 import os
+from typing import Any
+import pandas as pd
 
 import data, ezpred
 from ezpred.nn.fusion import FusionType
@@ -122,13 +124,13 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     model = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=validation_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=callbacks_list, show_verbose=configs.show_verbose)
 
     # test with last model
-    summary = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    summary: dict[str, Any] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
 
     view.logger.info(summary)
     torch.save(model, cfg.output_model)
 
     # test with best model on validation dataset  
-    manager = magnet.Manager.from_checkpoint("experiments/magms_exp10.exp/checkpoints/best_bal_accuracy.model")
+    manager = magnet.Manager.from_checkpoint("experiments/magms_exp11.exp/checkpoints/best_bal_accuracy.model")
 
     if isinstance(manager.model, torch.nn.parallel.DataParallel): model = manager.model.module
     else: model = manager.model
@@ -136,10 +138,11 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     manager.model = model
     print(f'The best Dice score on validation set occurs at {manager.current_epoch + 1} epoch number')
 
-    summary = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    summary: dict[str, Any] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
     view.logger.info(summary)
 
-    return model
+    # return model
+    return summary['bal_accuracy']
 
 
 if __name__ == "__main__":
@@ -147,5 +150,29 @@ if __name__ == "__main__":
     configs = TrainingConfigs.from_arguments()
     assert isinstance(configs, TrainingConfigs)
 
+    balanced_acc = [] 
+
     # train
-    train(configs)
+    for i in range(100):
+        print(f'Iteration: {i}')
+        bal_acc = train(configs)
+        balanced_acc.append(bal_acc)
+
+    # dictionary of lists
+    balanced_acc_dict = {'Balanced_Accuracy': balanced_acc}    
+
+    df = pd.DataFrame(balanced_acc_dict)  
+
+    # saving the dataframe
+    path = "/home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/"  
+    save_path = os.path.join(path, "Histogram_Data")
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    
+    # filename  = "histogram_data_Node_917.csv"
+    filename  = "histogram_data_Node_938.csv"
+    save_filepath = os.path.join(save_path, filename)
+
+    df.to_csv(save_filepath, header=True, index=False)
+
+    

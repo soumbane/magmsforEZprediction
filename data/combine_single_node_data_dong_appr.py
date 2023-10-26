@@ -70,7 +70,7 @@ def get_list_of_node_nums():
 
 # temporal lobe of right hemisphere
 node_number_temporal_lobe = [
-    "416"
+    "938"
     ]
 
 node_numbers_with_smote = node_number_temporal_lobe
@@ -390,8 +390,8 @@ if __name__ == "__main__":
     # save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp9/SMOTE_Augmented_Data/'
     # save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp9/Original_Patient_Data/'
 
-    save_path_training = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp10/SMOTE_Augmented_Data/'
-    save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp10/Original_Patient_Data/'
+    save_path_training = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp11/SMOTE_Augmented_Data/'
+    save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp11/Original_Patient_Data/'
 
     # num_samples_nonEZ: Number of samples of non-EZ (class 0) to generate per node with SMOTE
     # num_samples_EZ: Number of samples of EZ (class 1) to generate per node with SMOTE
