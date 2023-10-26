@@ -70,7 +70,7 @@ def get_list_of_node_nums():
 
 # temporal lobe of right hemisphere
 node_number_temporal_lobe = [
-    "938"
+    "940"
     ]
 
 node_numbers_with_smote = node_number_temporal_lobe
