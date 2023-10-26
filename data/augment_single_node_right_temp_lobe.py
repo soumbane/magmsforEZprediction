@@ -607,8 +607,8 @@ if __name__ == "__main__":
     save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/'
     save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/'
 
-    # save_path_training = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp10/SMOTE_Augmented_Data/'
-    # save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp10/Original_Patient_Data/'
+    # save_path_training = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/'
+    # save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/'
 
     # num_samples_nonEZ: Number of samples of non-EZ (class 0) to generate per node with SMOTE
     # num_samples_EZ: Number of samples of EZ (class 1) to generate per node with SMOTE
