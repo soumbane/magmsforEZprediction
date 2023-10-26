@@ -70,7 +70,7 @@ def get_list_of_node_nums():
 
 # temporal lobe of right hemisphere
 node_number_temporal_lobe = [
-    "938"
+    "917"
     ]
 
 node_numbers_with_smote = node_number_temporal_lobe
@@ -251,11 +251,29 @@ def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: in
     
     print('Y_combined_train_lobe: %s' % Counter(Y_combined_train_lobe))
 
-    # augment training data using SMOTE
-    X_combined_train_lobe_aug, Y_combined_train_lobe_aug = augment_data(X_combined_train_lobe, Y_combined_train_lobe, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state, generate_syn_nonEZ=generate_syn_nonEZ)
+    X_combined_train_lobe_T1 = X_combined_train_lobe[:,:300]
+    X_combined_train_lobe_T2 = X_combined_train_lobe[:,300:500]
+    X_combined_train_lobe_FLAIR = X_combined_train_lobe[:,500:700]
+    X_combined_train_lobe_DWI = X_combined_train_lobe[:,700:1400]
+    X_combined_train_lobe_DWIC = X_combined_train_lobe[:,1400:]
 
-    print('Y_combined_train_lobe_augmented: %s' % Counter(Y_combined_train_lobe_aug))
-    
+    # augment training data per modality using SMOTE
+    X_combined_train_lobe_T1_aug, Y_combined_train_lobe_aug = augment_data(X_combined_train_lobe_T1, Y_combined_train_lobe, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state, generate_syn_nonEZ=generate_syn_nonEZ)
+
+    X_combined_train_lobe_T2_aug, Y_combined_train_lobe_aug = augment_data(X_combined_train_lobe_T2, Y_combined_train_lobe, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state, generate_syn_nonEZ=generate_syn_nonEZ)
+
+    X_combined_train_lobe_FLAIR_aug, Y_combined_train_lobe_aug = augment_data(X_combined_train_lobe_FLAIR, Y_combined_train_lobe, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state, generate_syn_nonEZ=generate_syn_nonEZ)
+
+    X_combined_train_lobe_DWI_aug, Y_combined_train_lobe_aug = augment_data(X_combined_train_lobe_DWI, Y_combined_train_lobe, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state, generate_syn_nonEZ=generate_syn_nonEZ)
+
+    X_combined_train_lobe_DWIC_aug, Y_combined_train_lobe_aug = augment_data(X_combined_train_lobe_DWIC, Y_combined_train_lobe, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state, generate_syn_nonEZ=generate_syn_nonEZ)
+
+    # combine all augmented data per modality
+    X_combined_train_lobe_aug = np.concatenate((X_combined_train_lobe_T1_aug, X_combined_train_lobe_T2_aug, X_combined_train_lobe_FLAIR_aug, X_combined_train_lobe_DWI_aug, X_combined_train_lobe_DWIC_aug), axis=1)
+
+    Y_combined_train_lobe_aug = Y_combined_train_lobe_aug.astype(int) # type:ignore
+
+    print('Y_combined_train_lobe_augmented: %s' % Counter(Y_combined_train_lobe_aug))    
 
     return X_combined_train_lobe_aug, Y_combined_train_lobe_aug
 
@@ -300,14 +318,14 @@ def load_validation_cohort(root: str):
 
         X_combined_2 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
 
-        X_combined_2 = X_combined_2[14:,:] # last 14 patients of the validation cohort
+        X_combined_2 = X_combined_2[14:,:] # last 10 patients of the validation cohort
 
         """Load the Label Matrix from .mat files.""" 
         Y_mat_l = loadmat(raw_path_label)
         Y_mat_aug = Y_mat_l[label_mat_name]
         Y_mat_aug_2 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
 
-        Y_mat_aug_2 = Y_mat_aug_2[14:] # last 14 patients of the validation cohort
+        Y_mat_aug_2 = Y_mat_aug_2[14:] # last 10 patients of the validation cohort
 
         X_combined_whole_brain = np.concatenate((X_combined_whole_brain, X_combined_2), axis=0) 
         if i == node_numbers_with_smote[0]:
@@ -384,14 +402,14 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
 if __name__ == "__main__":
 
     # Root Folder for the dataset
-    root='/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
-    # root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
+    # root='/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
+    root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
 
-    # save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp9/SMOTE_Augmented_Data/'
-    # save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp9/Original_Patient_Data/'
+    save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp12/SMOTE_Augmented_Data/'
+    save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp12/Original_Patient_Data/'
 
-    save_path_training = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp11/SMOTE_Augmented_Data/'
-    save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp11/Original_Patient_Data/'
+    # save_path_training = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp12/SMOTE_Augmented_Data/'
+    # save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp12/Original_Patient_Data/'
 
     # num_samples_nonEZ: Number of samples of non-EZ (class 0) to generate per node with SMOTE
     # num_samples_EZ: Number of samples of EZ (class 1) to generate per node with SMOTE
