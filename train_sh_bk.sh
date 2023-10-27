@@ -3,3 +3,7 @@
 # python train.py /home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/NodebyNode_Data/Normalized_Data/ /home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/trained_models/magms_norm_nodebynode_smote_train_orig_val_WB_fold1_deep_lr_0_003.model -b 42 -lr 3e-3 --num_mod 5 --fold_no 1 -e 30 -exp magms_norm_nodebynode_smote_train_orig_val_WB_fold1_deep_lr_0_003.exp --replace_experiment --show_verbose --device cuda:2
 
 # python eval.py /home/user1/Desktop/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/NodebyNode_Data/Normalized_Data/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/experiments/magms_norm_nodebynode_smote_train_orig_val_WB_fold1.exp/checkpoints/best_bal_accuracy.model -b 42 --fold_no 1 --replace_experiment --show_verbose --device cuda:0
+
+
+
+python train.py /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp12/ /home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/trained_models/magms_exp_test.model -b 4 -lr 1e-2 --num_mod 5 --train_mod ALL -e 2 -exp magms_exp_test.exp --replace_experiment --show_verbose --device cuda:1
