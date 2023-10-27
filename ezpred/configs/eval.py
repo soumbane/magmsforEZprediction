@@ -34,14 +34,13 @@ class Configs(_Configs):
 
         # check format
         assert self.batch_size > 0, f"Batch size must be a positive number, got {self.batch_size}."
-        # assert self.fold_no in range(1, 6), f"Fold number must be in range of [1,5], got {self.fold_no}."
 
     @staticmethod
     def get_arguments(parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup] = argparse.ArgumentParser()) -> Union[argparse.ArgumentParser, argparse._ArgumentGroup]:
         # main arguments
         parser.add_argument("data_dir", type=str, help="The root directory of the dataset.")
         parser.add_argument("model", type=str, help="The trained model path.")
-        parser.add_argument("-node", "--node_num", type=int, required=False, help="The node number for evaluation, must be specified.")
+        parser.add_argument("-node", "--node_num", type=str, required=True, help="The node number for evaluation, must be specified.")
 
         # testing arguments
         testing_args = parser.add_argument_group("Testing arguments")

@@ -56,7 +56,7 @@ class Configs(_Configs):
         # main arguments
         parser.add_argument("data_dir", type=str, help="The root directory of the dataset.")
         parser.add_argument("output_model", type=str, help="The output directory for the final trained (last) model.")
-        parser.add_argument("-node", "--node_num", type=int, required=False, help="The node number to train, must be specified.")
+        parser.add_argument("-node", "--node_num", type=str, required=True, help="The node number to train, must be specified.")
 
         # training arguments
         training_args = parser.add_argument_group("Training arguments")
@@ -64,7 +64,7 @@ class Configs(_Configs):
         training_args.add_argument("-b", "--batch_size", type=int, default=1, help="The number of batch size, default is 1.")
         training_args.add_argument("-lr", "--learning_rate", type=float, default=1e-5, help="Learning rate, default is 5e-5.")
         training_args.add_argument("-n_mod", "--num_mod", type=int, default=2, help="Number of available modalities during training, default is 2.")
-        training_args.add_argument("--fold_no", type=str, default="1", help="Fold number for training, default is 1.")
+        training_args.add_argument("--fold_no", type=str, required=False, default="1", help="Optional Fold number for training, default is 1.")
         training_args.add_argument("--train_mod", type=str, default="ALL", help="Training modality combination, default is using ALL modalities.")
         training_args.add_argument("--seed", type=int, default=None, help="The random seed for training (torchmanager 1.2 required if given), default is `None`.")
         training_args.add_argument("--show_verbose", action="store_true", default=False, help="The flag to show probress bar during training.")
