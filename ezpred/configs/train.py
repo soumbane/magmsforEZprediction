@@ -56,7 +56,7 @@ class Configs(_Configs):
         # main arguments
         parser.add_argument("data_dir", type=str, help="The root directory of the dataset.")
         parser.add_argument("output_model", type=str, help="The output directory for the final trained (last) model.")
-        parser.add_argument("-node", "--node_num", type=str, required=True, help="The node number to train, must be specified.")
+        parser.add_argument("-node", "--node_num", type=int, required=True, help="The node number to train, must be specified.")
 
         # training arguments
         training_args = parser.add_argument_group("Training arguments")

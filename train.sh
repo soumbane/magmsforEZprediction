@@ -1,4 +1,1 @@
-# python train.py /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data_exp9/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/trained_models_lobe/magms_exp9.model -b 8 -lr 1e-3 --num_mod 5 -e 1 -exp magms_exp9.exp --replace_experiment --show_verbose --device cuda:1
-
-
-python train.py /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp10/ /home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/trained_models/magms_exp10.model -b 32 -lr 1e-2 --num_mod 5 --train_mod ALL -e 30 -exp magms_exp10.exp --replace_experiment --show_verbose --device cuda:2
+python train.py /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/trained_models/magms_node_888_tr_1.model -b 4 -lr 1e-2 --num_mod 5 --node_num 888 --train_mod ALL -e 5 -exp magms_node_888_tr_1.exp --replace_experiment --show_verbose --device cuda:0

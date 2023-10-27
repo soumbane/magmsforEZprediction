@@ -40,7 +40,7 @@ class Configs(_Configs):
         # main arguments
         parser.add_argument("data_dir", type=str, help="The root directory of the dataset.")
         parser.add_argument("model", type=str, help="The trained model path.")
-        parser.add_argument("-node", "--node_num", type=str, required=True, help="The node number for evaluation, must be specified.")
+        parser.add_argument("-node", "--node_num", type=int, required=True, help="The node number for evaluation, must be specified.")
 
         # testing arguments
         testing_args = parser.add_argument_group("Testing arguments")
