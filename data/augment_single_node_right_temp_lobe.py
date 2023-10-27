@@ -71,24 +71,15 @@ node_numbers_with_smote = get_list_of_node_nums()
 
 print(f"Total number of nodes is: {len(node_numbers_with_smote)}")
 
-# # temporal lobe of right hemisphere
-# node_number_right_temporal_lobe = [
-#     "888","889","890","891","892","893","894","895",
-#     "896","897","898","899","900","901","902","903","904","905","906","907","908","909","910","911","912",
-#     "913","914","915","916","917","918","919","920","921","922","923","924","925","926","927","928","929",
-#     "930","931","932","933","934","935","936","937","938","939","940","941","942","943","944","945","946",
-#     "947","948","949","950","951","952","953","954","955","956","957","958","959","960","961",
-#     "962","963","964","965","966","968","969","970","971","973","974","975","976","977","978","979",
-#     "980","981","982","983"
-#     ]
-
 # temporal lobe of right hemisphere
-# node_number_right_temporal_lobe = [
-#     "888","889","890","959"
-#     ]
-
 node_number_right_temporal_lobe = [
-    "959"
+    "888","889","890","891","892","893","894","895",
+    "896","897","898","899","900","901","902","903","904","905","906","907","908","909","910","911","912",
+    "913","914","915","916","917","918","919","920","921","922","923","924","925","926","927","928","929",
+    "930","931","932","933","934","935","936","937","938","939","940","941","942","943","944","945","946",
+    "947","948","949","950","951","952","953","954","955","956","957","958","959","960","961",
+    "962","963","964","965","966","968","969","970","971","973","974","975","976","977","978","979",
+    "980","981","982","983"
     ]
 
 node_numbers_with_smote = node_number_right_temporal_lobe
@@ -110,7 +101,6 @@ middletemp_ROI = ["932","933","934","935","936","937","938","939","940","941","9
 bank_ROI = ["951","952","953","954","955","956"]
 
 superiortemp_ROI = ["957","958","959","960","961","962","963","964","965","966","968","969","970","971","973","974","975","976","977","978","979","980","981"]
-# superiortemp_ROI = ["959"]
 
 transversetemp_ROI = ["982","983"]
 
@@ -122,7 +112,7 @@ def load_and_average_ROI_data(root: str, ROI_node_num_range: list[str]):
     for i in ROI_node_num_range:
 
         ## Load ModelCohort
-        print(f"Loading ModelCohort for Node num: {i}")
+        # print(f"Loading ModelCohort for Node num: {i}")
 
         path = os.path.join(root,'Valid_NonEZvsEZ_ALL')
 
@@ -162,7 +152,7 @@ def load_and_average_ROI_data(root: str, ROI_node_num_range: list[str]):
 
 
         ## Load ValidCohort
-        print(f"Loading ValidCohort for Node num: {i}")
+        # print(f"Loading ValidCohort for Node num: {i}")
 
         path = os.path.join(root,'ValidCohort_NonEZvsEZ_ALL')
 
@@ -219,21 +209,14 @@ def load_and_average_ROI_data(root: str, ROI_node_num_range: list[str]):
 
     # find the index of Y_train_node where Y_train_node == 1 and Y_train_node == 0
     index_EZ = np.where(Y_train_node == 1)[0]
-    index_nonEZ = np.where(Y_train_node == 0)[0]
 
     # get the vector of X_train_node for EZ and non-EZ
     X_train_node_EZ = X_train_node[index_EZ,:]
-    X_train_node_nonEZ = X_train_node[index_nonEZ,:]
 
     # find the average of all EZ and non-EZ vectors
     X_train_node_EZ_avg = np.mean(X_train_node_EZ, axis=0)
-    X_train_node_nonEZ_avg = np.mean(X_train_node_nonEZ, axis=0)
 
-    # generate Y_train_node_avg for EZ and nonEZ class
-    Y_train_node_EZ_avg = int(np.ones((1,)))
-    Y_train_node_nonEZ_avg = int(np.zeros((1,)))
-
-    return X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg    
+    return X_train_node_EZ_avg 
 
 
 # Augment node by node by performing SMOTE for each node
@@ -242,39 +225,37 @@ def augment_1EZ_data(root: str, X: np.ndarray, Y: np.ndarray, num_samples_nonEZ:
 
     if node_num in fusiform_ROI:
         print(f"Node-number {node_num} with 1 EZ class is in fusiform ROI.")
-        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, fusiform_ROI)
+        X_train_node_EZ_avg = load_and_average_ROI_data(root, fusiform_ROI)
     elif node_num in parahipp_ROI:
         print(f"Node-number {node_num} with 1 EZ class is in parahippocampal ROI.")
-        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, parahipp_ROI)
+        X_train_node_EZ_avg = load_and_average_ROI_data(root, parahipp_ROI)
     elif node_num in entor_ROI:
         print(f"Node-number {node_num} with 1 EZ class is in entorhinal ROI.")
-        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, entor_ROI)
+        X_train_node_EZ_avg = load_and_average_ROI_data(root, entor_ROI)
     elif node_num in temppole_ROI:
         print(f"Node-number {node_num} with 1 EZ class is in temppole ROI.")
-        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, temppole_ROI)
+        X_train_node_EZ_avg = load_and_average_ROI_data(root, temppole_ROI)
     elif node_num in inferiortemp_ROI:
         print(f"Node-number {node_num} with 1 EZ class is in inferiortemporal ROI.")
-        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, inferiortemp_ROI)
+        X_train_node_EZ_avg = load_and_average_ROI_data(root, inferiortemp_ROI)
     elif node_num in middletemp_ROI:
         print(f"Node-number {node_num} with 1 EZ class is in middletemporal ROI.")
-        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, middletemp_ROI)
+        X_train_node_EZ_avg = load_and_average_ROI_data(root, middletemp_ROI)
     elif node_num in bank_ROI:
         print(f"Node-number {node_num} with 1 EZ class is in bank ROI.")
-        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, bank_ROI)
+        X_train_node_EZ_avg = load_and_average_ROI_data(root, bank_ROI)
     elif node_num in superiortemp_ROI:
         print(f"Node-number {node_num} with 1 EZ class is in superiortemporal ROI.")
-        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, superiortemp_ROI)
+        X_train_node_EZ_avg = load_and_average_ROI_data(root, superiortemp_ROI)
     elif node_num in transversetemp_ROI:
         print(f"Node-number {node_num} with 1 EZ class is in transversetemporal ROI.")
-        X_train_node_EZ_avg, Y_train_node_EZ_avg, X_train_node_nonEZ_avg, Y_train_node_nonEZ_avg = load_and_average_ROI_data(root, transversetemp_ROI)
+        X_train_node_EZ_avg = load_and_average_ROI_data(root, transversetemp_ROI)
     else:
         raise ValueError("Node number not found in any ROI.")
 
-    # stack the X and Y vectors with the average ROI vectors
-    X_train_node = np.vstack((X, X_train_node_nonEZ_avg, X_train_node_EZ_avg)) 
-    Y_train_node = np.append(Y,[0,1])
-    
-    Y_train_node = np.concatenate((Y, Y_train_node_nonEZ_avg, Y_train_node_EZ_avg), axis=0) 
+    # stack the X vectors with the average ROI vectors
+    X_train_node = np.vstack((X, X_train_node_EZ_avg)) 
+    Y_train_node = np.append(Y,[1]) 
     
     # augment training data using SMOTE with KNN=1 using the ROI average data
     if generate_syn_nonEZ:
@@ -338,10 +319,7 @@ def augment_data(X: np.ndarray, Y: np.ndarray, num_samples_nonEZ: int = 50, num_
     return X_aug, Y_aug
 
 
-def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: int = 50, random_state: int = 100, generate_syn_nonEZ: bool = True, node_num: str = "1"):   
-
-    X_train_node = np.zeros((1,1899)) 
-    Y_train_node = []
+def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: int = 50, random_state: int = 100, generate_syn_nonEZ: bool = True, node_num: str = "1"):  
 
     ## Load ModelCohort
     print(f"Loading ModelCohort for Node num: {node_num}")
@@ -381,7 +359,6 @@ def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: in
     Y_mat_l = loadmat(raw_path_label)
     Y_mat_aug = Y_mat_l[label_mat_name]
     Y_mat_aug_1 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
-
 
     ## Load ValidCohort
     print(f"Loading ValidCohort for Node num: {node_num}")
@@ -428,12 +405,9 @@ def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: in
 
                 
     # combine training node-level data
-    X_train_node = np.concatenate((X_train_node, X_combined_1, X_combined_2), axis=0)
-    
-    X_train_node = X_train_node[1:,:] 
+    X_train_node = np.concatenate((X_combined_1, X_combined_2), axis=0)
 
-    Y_train_node = np.concatenate((Y_train_node, Y_mat_aug_1, Y_mat_aug_2), axis=0)
-
+    Y_train_node = np.concatenate((Y_mat_aug_1, Y_mat_aug_2), axis=0)
 
     Y_train_node = Y_train_node.astype(int) # type:ignore
     
@@ -446,16 +420,14 @@ def load_model_cohort(root: str, num_samples_nonEZ: int = 50, num_samples_EZ: in
     else:
         X_train_node_aug, Y_train_node_aug = augment_data(X_train_node, Y_train_node, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=random_state, generate_syn_nonEZ=generate_syn_nonEZ, node_num=node_num)
 
-    print('Y_train_node_augmented: %s' % Counter(Y_train_node_aug))
-    
+    Y_train_node_aug = Y_train_node_aug.astype(int) # type:ignore
 
-    return X_train_node_aug, Y_train_node_aug
+    print('Y_train_node_augmented: %s' % Counter(Y_train_node_aug))    
+
+    return X_train_node_aug, Y_train_node_aug, X_train_node, Y_train_node
 
 
 def load_validation_cohort(root: str, node_num: str = "1"):    
-          
-    X_val_node = np.zeros((1,1899))
-    Y_val_node = []
       
     ## Load ValidCohort
     print(f"Loading ValidCohort for Node num: {node_num}")
@@ -491,25 +463,20 @@ def load_validation_cohort(root: str, node_num: str = "1"):
 
     X_combined_2 = np.concatenate((X_mat_RI, X_mat_DWIC), axis=1) # using both RI and Conn features
 
-    X_combined_2 = X_combined_2[14:,:] # last 14 patients of the validation cohort
+    X_combined_2 = X_combined_2[14:,:] # last 10 patients of the validation cohort
 
     """Load the Label Matrix from .mat files.""" 
     Y_mat_l = loadmat(raw_path_label)
     Y_mat_aug = Y_mat_l[label_mat_name]
     Y_mat_aug_2 = Y_mat_aug.reshape(Y_mat_aug.shape[0],)
 
-    Y_mat_aug_2 = Y_mat_aug_2[14:] # last 14 patients of the validation cohort
+    Y_mat_aug_2 = Y_mat_aug_2[14:] # last 10 patients of the validation cohort
 
-    X_val_node = np.concatenate((X_val_node, X_combined_2), axis=0) 
-    
-    X_val_node = X_val_node[1:,:]           
-                    
-    Y_val_node = np.concatenate((Y_val_node, Y_mat_aug_2), axis=0)
-    Y_val_node = Y_val_node.astype(int) 
+    Y_mat_aug_2 = Y_mat_aug_2.astype(int) 
 
-    print('Y_val_node_original: %s' % Counter(Y_val_node))
+    print('Y_val_node_original: %s' % Counter(Y_mat_aug_2))
 
-    return X_val_node, Y_val_node
+    return X_combined_2, Y_mat_aug_2
 
 
 def save_aug_data_as_separate_nodes(save_dir: str, X: np.ndarray, Y: np.ndarray, mode: str = "train") -> None:
@@ -534,6 +501,9 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
     num_nonEZs_train = []
     num_EZs_train = []
 
+    num_nonEZs_train_orig = []
+    num_EZs_train_orig = []
+
     num_nonEZs_val = []
     num_EZs_val = []
 
@@ -542,11 +512,15 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
         node_numbers.append(i)
 
         ## Load and save the augmented training data per node
-        X_train_aug, Y_train_aug = load_model_cohort(root, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=100, generate_syn_nonEZ=generate_syn_nonEZ, node_num=i)  
+        X_train_aug, Y_train_aug, X_train_orig, Y_train_orig = load_model_cohort(root, num_samples_nonEZ=num_samples_nonEZ, num_samples_EZ=num_samples_EZ, random_state=100, generate_syn_nonEZ=generate_syn_nonEZ, node_num=i)  
 
-        # calculate number of non_EZs and EZs for a given node
+        # calculate number of non_EZs and EZs for a given augmented training node
         num_nonEZs_train.append(len(Y_train_aug) - np.sum(Y_train_aug))
         num_EZs_train.append(np.sum(Y_train_aug))
+
+        # calculate number of non_EZs and EZs for a given original training node
+        num_nonEZs_train_orig.append(len(Y_train_orig) - np.sum(Y_train_orig))
+        num_EZs_train_orig.append(np.sum(Y_train_orig))
        
         # save the augmented training data
         save_path_training = save_path_training
@@ -563,6 +537,7 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
         ## Load and save the original unaugmented validation data        
         X_val_orig, Y_val_orig = load_validation_cohort(root, node_num=i)  # type:ignore
 
+        # calculate number of non_EZs and EZs for a given original validation node
         num_nonEZs_val.append(len(Y_val_orig) - np.sum(Y_val_orig))
         num_EZs_val.append(np.sum(Y_val_orig))
 
@@ -580,7 +555,7 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
 
     
     # dictionary of lists
-    info_dict = {'Node #': node_numbers, 'NonEZ-train': num_nonEZs_train, 'EZ-train': num_EZs_train, 'NonEZ-val': num_nonEZs_val, 'EZ-val': num_EZs_val}    
+    info_dict = {'Node #': node_numbers, 'NonEZ-train-orig': num_nonEZs_train_orig, 'EZ-train-orig': num_EZs_train_orig, 'NonEZ-train-aug': num_nonEZs_train, 'EZ-train-aug': num_EZs_train, 'NonEZ-val-orig': num_nonEZs_val, 'EZ-val-orig': num_EZs_val}    
 
     df = pd.DataFrame(info_dict)  
 
@@ -590,10 +565,10 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     
-    filename  = "info.csv"
+    filename  = "info.xlsx"
     save_filepath = os.path.join(save_path, filename)
 
-    df.to_csv(save_filepath, header=True, index=False)
+    df.to_excel(save_filepath, sheet_name='Sheet1', header=True, index=False)
 
     ################################################################################################################
 
