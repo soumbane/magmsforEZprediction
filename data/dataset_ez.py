@@ -91,7 +91,7 @@ class DatasetEZ_WB(Dataset):
         x, y = Dataset.unpack_data(data)
         assert isinstance(x, torch.Tensor) and isinstance(y, torch.Tensor), "Data should be valid `torch.Tensor`."
 
-        # unpack data (b, 1899) -> [(b, m, f), ...] to include the modality dimension
+        # unpack data (b, 1899) -> [(b, m, f), ...] to include the modality dimension and then pad zeros to have same tensor shape
         x_t1 = F.pad(x[:, :300].unsqueeze(dim=1), (200,200)) # t1 only
         x_t2 = F.pad(x[:, 300:500].unsqueeze(dim=1), (250,250)) # t2 only
         x_flair = F.pad(x[:, 500:700].unsqueeze(dim=1), (250,250)) # flair only
@@ -104,7 +104,7 @@ class DatasetEZ_WB(Dataset):
 if __name__ == "__main__":    
 
     print("Node-level EZ Dataset ...")
-    ez_dataset = DatasetEZ_WB(batch_size=1, root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/', drop_last=False, mode=EZMode.TRAIN, shuffle=False)
+    ez_dataset = DatasetEZ_WB(batch_size=1, root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/', drop_last=False, mode=EZMode.TEST, shuffle=False, node_num="888")
 
     print(ez_dataset.unbatched_len)
     # print((ez_dataset.__getitem__(0))[0][4].shape)
