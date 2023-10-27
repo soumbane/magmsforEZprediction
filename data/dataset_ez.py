@@ -11,42 +11,41 @@ from torchmanager.data import Dataset
 
 class EZMode(Enum):
     TRAIN = "train"
-    VALIDATE = "validate"
     TEST = "test"
 
 
 class DatasetEZ_WB(Dataset):
     r"""
     Args:
-        root (string): Root directory where the dataset should be saved.
-        mode (EZMode): The training/validation/testing mode to load the data
+        root (string): Root directory where the dataset is saved.
+        mode (EZMode): The training/testing mode to load the data
         For each node number, there are several patients with either EZ (class 1) or non-EZ (class 0)
     """
     size: int
     root: str
     mode: EZMode
 
-    def __init__(self, batch_size: int, root: str, drop_last: bool = False, mode: EZMode = EZMode.TRAIN, shuffle: bool = False, device=torch.device("cuda:0")) -> None:
+    def __init__(self, batch_size: int, root: str, drop_last: bool = False, mode: EZMode = EZMode.TRAIN, shuffle: bool = False, node_num: str = "1", device=torch.device("cuda:0")) -> None:
         super().__init__(batch_size, drop_last=drop_last, shuffle=shuffle, device=device)
         self.mode = mode
         self.root = root
 
         # initialize path
         if self.mode == EZMode.TRAIN:
-            self.path = os.path.join(self.root, 'SMOTE_Augmented_Data','Train_NonEZvsEZ_WB_smoteaug')
+            self.path = os.path.join(self.root, 'Node_'+node_num, 'Aug_Train_Data')
 
-            self.x_file = f"X_train_aug_WB_node"
-            self.y_file = f"Y_train_aug_WB_node"
-            self.x_mat_name = "X_aug_train_node"
-            self.y_mat_name = "Y_aug_train_node"
+            self.x_file = f"X_train_aug_patient"
+            self.y_file = f"Y_train_aug_patient"
+            self.x_mat_name = "X_aug_train_patient"
+            self.y_mat_name = "Y_aug_train_patient"
             
         elif self.mode == EZMode.TEST:
-            self.path = os.path.join(self.root, 'Original_Patient_Data', 'ValidationCohort_NonEZvsEZ_WB_orig')
+            self.path = os.path.join(self.root, 'Node_'+node_num, 'Orig_Val_Data')
             
-            self.x_file = f"X_valid_orig_WB_node"
-            self.y_file = f"Y_valid_orig_WB_node"
-            self.x_mat_name = "X_orig_valid_node"
-            self.y_mat_name = "Y_orig_valid_node"
+            self.x_file = f"X_valid_orig_patient"
+            self.y_file = f"Y_valid_orig_patient"
+            self.x_mat_name = "X_orig_valid_patient"
+            self.y_mat_name = "Y_orig_valid_patient"
 
         else:
             raise NotImplementedError("Select either train or test mode.")
@@ -104,8 +103,8 @@ class DatasetEZ_WB(Dataset):
 
 if __name__ == "__main__":    
 
-    print("Lobe-level EZ Dataset ...")
-    ez_dataset = DatasetEZ_WB(batch_size=1, root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Lobe_Data/', drop_last=False, mode=EZMode.TRAIN, shuffle=False)
+    print("Node-level EZ Dataset ...")
+    ez_dataset = DatasetEZ_WB(batch_size=1, root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/', drop_last=False, mode=EZMode.TRAIN, shuffle=False)
 
     print(ez_dataset.unbatched_len)
     # print((ez_dataset.__getitem__(0))[0][4].shape)
