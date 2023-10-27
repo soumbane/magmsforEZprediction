@@ -1,4 +1,4 @@
-# Load the dataset with different modalities for EZ prediction
+# Load the dataset with different modalities for EZ prediction for each node number
 import os
 import numpy as np
 from scipy.io import loadmat  # type: ignore
@@ -14,7 +14,7 @@ class EZMode(Enum):
     TEST = "test"
 
 
-class DatasetEZ_WB(Dataset):
+class DatasetEZ_Node(Dataset):
     r"""
     Args:
         root (string): Root directory where the dataset is saved.
@@ -104,7 +104,7 @@ class DatasetEZ_WB(Dataset):
 if __name__ == "__main__":    
 
     print("Node-level EZ Dataset ...")
-    ez_dataset = DatasetEZ_WB(batch_size=1, root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/', drop_last=False, mode=EZMode.TEST, shuffle=False, node_num="888")
+    ez_dataset = DatasetEZ_Node(batch_size=1, root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/', drop_last=False, mode=EZMode.TEST, shuffle=False, node_num="888")
 
     print(ez_dataset.unbatched_len)
     # print((ez_dataset.__getitem__(0))[0][4].shape)

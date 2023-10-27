@@ -1,1 +1,1 @@
-from .dataset_ez import DatasetEZ_WB, EZMode
+from .dataset_ez import DatasetEZ_Node, EZMode
