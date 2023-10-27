@@ -121,16 +121,16 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     # callbacks_list: list[tm.callbacks.Callback] = [experiment_callback, lr_scheduler_callback]
 
     # # train and test on validation data
-    model = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=validation_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=callbacks_list, show_verbose=configs.show_verbose)
+    model, train_summary = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=validation_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=callbacks_list, show_verbose=configs.show_verbose, return_summary=True)
 
     # test with last model
-    summary: dict[str, Any] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    val_summary: dict[str, Any] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
 
-    view.logger.info(summary)
+    view.logger.info(val_summary)
     torch.save(model, cfg.output_model)
 
     # test with best model on validation dataset  
-    manager = magnet.Manager.from_checkpoint("experiments/magms_exp13.exp/checkpoints/best_bal_accuracy.model")
+    manager = magnet.Manager.from_checkpoint("experiments/magms_exp_test.exp/checkpoints/best_bal_accuracy.model")
 
     if isinstance(manager.model, torch.nn.parallel.DataParallel): model = manager.model.module
     else: model = manager.model
@@ -138,11 +138,11 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     manager.model = model
     print(f'The best Dice score on validation set occurs at {manager.current_epoch + 1} epoch number')
 
-    summary: dict[str, Any] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
-    view.logger.info(summary)
+    val_summary: dict[str, Any] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    view.logger.info(val_summary)
 
-    return model
-    # return summary['bal_accuracy']
+    # return model
+    return val_summary['bal_accuracy'], val_summary['sensitivity'], val_summary['specificity'], train_summary['bal_accuracy'], train_summary['sensitivity'], train_summary['specificity'] 
 
 
 if __name__ == "__main__":
@@ -151,31 +151,44 @@ if __name__ == "__main__":
     assert isinstance(configs, TrainingConfigs)
 
     # train
-    train(configs)
+    # train(configs)
 
-    # balanced_acc = [] 
+    val_balanced_acc = [] 
+    train_balanced_acc = []
 
-    # # train
-    # for i in range(100):
-    #     print(f'Iteration: {i}')
-    #     bal_acc = train(configs)
-    #     balanced_acc.append(bal_acc)
+    val_sensitivity = []
+    train_sensitivity = []
 
-    # # dictionary of lists
-    # balanced_acc_dict = {'Balanced_Accuracy': balanced_acc}    
+    val_specificity = []
+    train_specificity = []
 
-    # df = pd.DataFrame(balanced_acc_dict)  
+    # train
+    for i in range(2):
+        print(f'Iteration: {i}')
+        val_bal_acc, val_sen, val_spec, train_bal_acc, train_sen, train_spec = train(configs)
+        val_balanced_acc.append(val_bal_acc)
+        val_sensitivity.append(val_sen)
+        val_specificity.append(val_spec)
 
-    # # saving the dataframe
-    # path = "/home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/"  
-    # save_path = os.path.join(path, "Histogram_Data")
-    # if not os.path.exists(save_path):
-    #     os.makedirs(save_path)
+        train_balanced_acc.append(train_bal_acc)
+        train_sensitivity.append(train_sen)
+        train_specificity.append(train_spec)
+
+    # dictionary of lists
+    balanced_acc_dict = {'Val_Balanced_Accuracy': balanced_acc, 'Train_Bal_Acc.': train_balanced_acc}    
+
+    df = pd.DataFrame(balanced_acc_dict)  
+
+    # saving the dataframe
+    path = "/home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/"  
+    save_path = os.path.join(path, "Histogram_Data_test")
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
     
-    # # filename  = "histogram_data_Node_917.csv"
-    # filename  = "histogram_data_Node_938.csv"
-    # save_filepath = os.path.join(save_path, filename)
+    # filename  = "histogram_data_Node_917.csv"
+    filename  = "histogram_data_Node_938_test.csv"
+    save_filepath = os.path.join(save_path, filename)
 
-    # df.to_csv(save_filepath, header=True, index=False)
+    df.to_csv(save_filepath, header=True, index=False)
 
     
