@@ -136,7 +136,7 @@ def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
     else: model = manager.model
 
     manager.model = model
-    print(f'The best Dice score on validation set occurs at {manager.current_epoch + 1} epoch number')
+    print(f'The best Dice score on validation set occurs at {manager.current_epoch + 1} epoch number') # type:ignore
 
     val_summary: dict[str, Any] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
     view.logger.info(val_summary)
