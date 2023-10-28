@@ -20,7 +20,7 @@
                 "--num_mod", "5",
                 "--node_num", "888",
                 "--train_mod", "ALL",
-                "-exp", "exp_node888/trial1/magms_node_888_tr_1.exp",
+                "-exp", "exp_node888/magms",
                 "--replace_experiment",
                 "--show_verbose",
                 "--device", "cuda:1",

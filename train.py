@@ -90,6 +90,8 @@ if __name__ == "__main__":
     configs = TrainingConfigs.from_arguments()
     assert isinstance(configs, TrainingConfigs)
 
+    base_exp_name = configs.experiment
+
     num_trials = 3
     
     # Create empty lists to store results for each type (bal_accuracy, sensitivity, specificity)
@@ -104,6 +106,8 @@ if __name__ == "__main__":
     # train
     for i in range(num_trials):
         print(f'\n\nStarting Trial {i+1} of Node number {configs.node_num}\n')
+
+        configs.experiment = base_exp_name + "_trial" + str(i+1) + ".exp"
 
         val_bal_acc, val_sen, val_spec, train_bal_acc, train_sen, train_spec = train(configs) # type:ignore
 

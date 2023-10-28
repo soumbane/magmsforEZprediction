@@ -35,7 +35,8 @@ class Configs(argparse.Namespace, abc.ABC):
         self.experiment = experiment
 
     def format_arguments(self) -> None:
-        self.experiment = self.experiment if self.experiment.endswith(".exp") else f"{self.experiment}.exp"
+        # self.experiment = self.experiment if self.experiment.endswith(".exp") else f"{self.experiment}.exp"
+        self.experiment = self.experiment if self.experiment.endswith(".exp") else f"{self.experiment}"
 
     @classmethod
     def from_arguments(cls, *arguments: str):
