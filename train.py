@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     base_exp_name = configs.experiment
 
-    num_trials = 3
+    num_trials = 5
     
     # Create empty lists to store results for each type (bal_accuracy, sensitivity, specificity)
     val_bal_acc_list = [[] for _ in range(num_trials)]
@@ -125,13 +125,9 @@ if __name__ == "__main__":
     row_data_train = [configs.node_num] + [train_bal_acc_list[j][0] for j in range(num_trials)] + [train_sen_list[j][0] for j in range(num_trials)] + [train_spec_list[j][0] for j in range(num_trials)]
 
     # Create a DataFrame
-    headers_val = ['Node #', 'Val_Balanced_Accuracy_1', 'Val_Balanced_Accuracy_2', 'Val_Balanced_Accuracy_3',
-            'Val_sensitivity_1', 'Val_sensitivity_2', 'Val_sensitivity_3',
-            'Val_specificity_1', 'Val_specificity_2', 'Val_specificity_3']
+    headers_val = ['Node #', 'Val_Balanced_Accuracy_1', 'Val_Balanced_Accuracy_2', 'Val_Balanced_Accuracy_3', 'Val_Balanced_Accuracy_4', 'Val_Balanced_Accuracy_5', 'Val_sensitivity_1', 'Val_sensitivity_2', 'Val_sensitivity_3', 'Val_sensitivity_4', 'Val_sensitivity_5', 'Val_specificity_1', 'Val_specificity_2', 'Val_specificity_3', 'Val_specificity_4', 'Val_specificity_5']
     
-    headers_train = ['Node #', 'Train_Balanced_Accuracy_1', 'Train_Balanced_Accuracy_2', 'Train_Balanced_Accuracy_3',
-            'Train_sensitivity_1', 'Train_sensitivity_2', 'Train_sensitivity_3',
-            'Train_specificity_1', 'Train_specificity_2', 'Train_specificity_3']
+    headers_train = ['Node #', 'Train_Balanced_Accuracy_1', 'Train_Balanced_Accuracy_2', 'Train_Balanced_Accuracy_3', 'Train_Balanced_Accuracy_4', 'Train_Balanced_Accuracy_5', 'Train_sensitivity_1', 'Train_sensitivity_2', 'Train_sensitivity_3', 'Train_sensitivity_4', 'Train_sensitivity_5', 'Train_specificity_1', 'Train_specificity_2', 'Train_specificity_3', 'Train_specificity_4', 'Train_specificity_5']
 
     df_val = pd.DataFrame([row_data_val], columns=headers_val)
 
