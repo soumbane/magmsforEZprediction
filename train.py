@@ -11,7 +11,6 @@ from typing import Any, Union, Tuple
 import pandas as pd
 
 
-# def train(cfg: TrainingConfigs, /) -> magnet.MAGNET2:
 def train(cfg: TrainingConfigs, /) -> Union[magnet.MAGNET2, Tuple[float, float, float, float, float, float]]:
     # initialize seed for reproducibility
     if cfg.seed is not None:
@@ -62,14 +61,15 @@ def train(cfg: TrainingConfigs, /) -> Union[magnet.MAGNET2, Tuple[float, float, 
     # train and test on validation data
     model, train_summary = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=validation_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=callbacks_list, show_verbose=configs.show_verbose, return_summary=True) # type:ignore
 
-    # test with last model
-    val_summary: dict[str, float] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    # # test with last model
+    # val_summary: dict[str, float] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
 
-    view.logger.info(val_summary)
+    # view.logger.info(val_summary)
     torch.save(model, cfg.output_model)
 
-    # test with best model on validation dataset  
-    manager = magnet.Manager.from_checkpoint("experiments/magms_node_888_tr_1.exp/checkpoints/best_bal_accuracy.model")
+    # test with best model on validation dataset
+    ckpt_path = os.path.join("experiments", cfg.experiment, "checkpoints", "best_bal_accuracy.model")
+    manager = magnet.Manager.from_checkpoint(ckpt_path)
 
     if isinstance(manager.model, torch.nn.parallel.DataParallel): model = manager.model.module
     else: model = manager.model
@@ -77,6 +77,7 @@ def train(cfg: TrainingConfigs, /) -> Union[magnet.MAGNET2, Tuple[float, float, 
     manager.model = model
     print(f'The best Dice score on validation set occurs at {manager.current_epoch + 1} epoch number') # type:ignore
 
+    # test with best model on validation dataset
     val_summary: dict[str, float] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus) # type:ignore
     view.logger.info(val_summary)
 
@@ -89,52 +90,65 @@ if __name__ == "__main__":
     configs = TrainingConfigs.from_arguments()
     assert isinstance(configs, TrainingConfigs)
 
+    num_trials = 3
+    
+    # Create empty lists to store results for each type (bal_accuracy, sensitivity, specificity)
+    val_bal_acc_list = [[] for _ in range(num_trials)]
+    val_sen_list = [[] for _ in range(num_trials)]
+    val_spec_list = [[] for _ in range(num_trials)]
+
+    train_bal_acc_list = [[] for _ in range(num_trials)]
+    train_sen_list = [[] for _ in range(num_trials)]
+    train_spec_list = [[] for _ in range(num_trials)]
+
     # train
-    # train(configs)
+    for i in range(num_trials):
+        print(f'\n\nStarting Trial {i+1} of Node number {configs.node_num}\n')
 
-    val_balanced_acc = [] 
-    train_balanced_acc = []
-
-    val_sensitivity = []
-    train_sensitivity = []
-
-    val_specificity = []
-    train_specificity = []
-
-    # train
-    for i in range(5):
-        print(f'Trial: {i}')
         val_bal_acc, val_sen, val_spec, train_bal_acc, train_sen, train_spec = train(configs) # type:ignore
-        val_balanced_acc.append(val_bal_acc)
-        val_sensitivity.append(val_sen)
-        val_specificity.append(val_spec)
 
-        train_balanced_acc.append(train_bal_acc)
-        train_sensitivity.append(train_sen)
-        train_specificity.append(train_spec)
+        val_bal_acc_list[i].append(val_bal_acc) 
+        val_sen_list[i].append(val_sen)         
+        val_spec_list[i].append(val_spec) 
 
-    # dictionary of lists for validation results
-    val_balanced_acc_dict = {'Val_Balanced_Accuracy': val_balanced_acc, 'Val_sensitivity': val_sensitivity, 'Val_specificity': val_specificity}    
+        train_bal_acc_list[i].append(train_bal_acc) 
+        train_sen_list[i].append(train_sen) 
+        train_spec_list[i].append(train_spec) 
 
-    df_val = pd.DataFrame(val_balanced_acc_dict) # dataframe for validation results
+    # Combine data
+    row_data_val = [configs.node_num] + [val_bal_acc_list[j][0] for j in range(num_trials)] + [val_sen_list[j][0] for j in range(num_trials)] + [val_spec_list[j][0] for j in range(num_trials)] 
 
-    # dictionary of lists for training results
-    train_balanced_acc_dict = {'Train_Balanced_Accuracy': train_balanced_acc, 'Train_sensitivity': train_sensitivity, 'Train_specificity': train_specificity}    
+    row_data_train = [configs.node_num] + [train_bal_acc_list[j][0] for j in range(num_trials)] + [train_sen_list[j][0] for j in range(num_trials)] + [train_spec_list[j][0] for j in range(num_trials)]
 
-    df_train = pd.DataFrame(train_balanced_acc_dict) # dataframe for training results  
+    # Create a DataFrame
+    headers_val = ['Node #', 'Val_Balanced_Accuracy_1', 'Val_Balanced_Accuracy_2', 'Val_Balanced_Accuracy_3',
+            'Val_sensitivity_1', 'Val_sensitivity_2', 'Val_sensitivity_3',
+            'Val_specificity_1', 'Val_specificity_2', 'Val_specificity_3']
+    
+    headers_train = ['Node #', 'Train_Balanced_Accuracy_1', 'Train_Balanced_Accuracy_2', 'Train_Balanced_Accuracy_3',
+            'Train_sensitivity_1', 'Train_sensitivity_2', 'Train_sensitivity_3',
+            'Train_specificity_1', 'Train_specificity_2', 'Train_specificity_3']
 
-    # saving the dataframes
-    # path = "/home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/"  
+    df_val = pd.DataFrame([row_data_val], columns=headers_val)
+
+    df_train = pd.DataFrame([row_data_train], columns=headers_train)
+
+    # Saving to Excel
     path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/"  
     save_path = os.path.join(path, "Node_"+str(configs.node_num), "Results")
+
     if not os.path.exists(save_path):
         os.makedirs(save_path)
-    
-    filename  = "Accuracy_results.xlsx"
-    save_filepath = os.path.join(save_path, filename)
 
-    df_val.to_excel(save_filepath, sheet_name='Sheet1', header=True, index=False)
+    filename_val = "results_val.xlsx"
+    save_filepath_val = os.path.join(save_path, filename_val)
 
-    df_train.to_excel(save_filepath, sheet_name='Sheet2', header=True, index=False)
+    df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
 
-    print("Done!")
+    filename_train = "results_train.xlsx"
+    save_filepath_train = os.path.join(save_path, filename_train)
+
+    df_train.to_excel(save_filepath_train, index=False, sheet_name='Sheet1')
+
+    print("\nDone!")
+
