@@ -2,16 +2,10 @@ import pandas as pd
 import os
 
 # Define the paths of your Excel files
-# base_path = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/'
-base_path = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/'
+# base_path = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Temporal_Lobe/'
+base_path = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Temporal_Lobe/'
 
-node_nums = ["888","889","890","891","892","893","894","895",
-    "896","897","898","899","900","901","902","903","904","905","906","907","908","909","910","911","912",
-    "913","914","915","916","917","918","919","920","921","922","923","924","925","926","927","928","929",
-    "930","931","932","933","934","935","936","937","938","939","940","941","942","943","944","945","946",
-    "947","948","949","950","951","952","953","954","955","956","957","958","959","960","961",
-    "962","963","964","965","966","968","969","970","971","973","974","975","976","977","978","979",
-    "980","981","982","983"]
+node_nums = ["385","386","387","388","389","390","391","392","393","394","395","396","397","398","399","400","401","402","403","404","405","406","407","408","409","410","411","412","413","414","415","416","417","418","419","420","421","422","423","424","425","426","427","428","429","430","431","432","433","434","435","436","437","438","439","440","441","442","443","444","445","446","447","448","449","450","451","452","453","454","455","456","458","459","460","461","462","463","464","465","466","467","468","469","470","471","472","473","474","475","476","477","478","479"]
 
 file_paths_val = []
 file_paths_train = []
@@ -39,7 +33,7 @@ for path in file_paths_val:
 combined_df_val = combined_df_val.reset_index(drop=True)
 
 # Save the combined DataFrame to a new Excel file
-combined_df_val.to_excel('combined_val_right.xlsx', index=False)
+combined_df_val.to_excel('combined_val_left.xlsx', index=False)
 
 # Do the same thing for train also
 combined_df_train = pd.DataFrame()
@@ -55,4 +49,4 @@ for path in file_paths_train:
 combined_df_train = combined_df_train.reset_index(drop=True)
 
 # Save the combined DataFrame to a new Excel file
-combined_df_train.to_excel('combined_train_right.xlsx', index=False)
+combined_df_train.to_excel('combined_train_left.xlsx', index=False)
