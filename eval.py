@@ -191,8 +191,8 @@ if __name__ == "__main__":
     df_val = pd.DataFrame([row_data_val], columns=headers_val)
 
     # Saving to Excel
-    path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/"  
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/"
+    # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/"  
+    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/"
     save_path = os.path.join(path, "Node_"+str(configs.node_num)+"_Results", "Eval_Results")
 
     if not os.path.exists(save_path):
