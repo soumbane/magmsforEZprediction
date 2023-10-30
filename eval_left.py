@@ -149,12 +149,12 @@ if __name__ == "__main__":
     # df = pd.DataFrame(predicted_acc_dict)  
 
     # # saving the dataframe
-    # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/"  
-    # save_path = os.path.join(path, "Node_948_Results")
+    # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Temporal_Lobe/"  
+    # save_path = os.path.join(path, "Node_385_Results")
     # if not os.path.exists(save_path):
     #     os.makedirs(save_path)
     
-    # filename  = "Node_948_ALL_modality_combinations_trial5.xlsx"
+    # filename  = "Node_385_ALL_modality_combinations_trial5.xlsx"
     # save_filepath = os.path.join(save_path, filename)    
 
     # df.to_excel(save_filepath, index=False, sheet_name='Sheet1')
@@ -191,8 +191,8 @@ if __name__ == "__main__":
     df_val = pd.DataFrame([row_data_val], columns=headers_val)
 
     # Saving to Excel
-    path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/"  
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/"
+    path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Temporal_Lobe/"  
+    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Temporal_Lobe/"
     save_path = os.path.join(path, "Node_"+str(configs.node_num)+"_Results", "Eval_Results")
 
     if not os.path.exists(save_path):
