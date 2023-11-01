@@ -10,7 +10,8 @@ node_nums = ["385","386","387","388","389","390","391","392","393","394","395","
 file_paths_val = []
 
 for node_num in node_nums:
-    file_path_val = os.path.join(base_path, "Node_"+node_num+"_Results", "Eval_Results", "results_val_ALL_modalities.xlsx")
+    # file_path_val = os.path.join(base_path, "Node_"+node_num+"_Results", "Eval_Results", "results_val_ALL_modalities.xlsx") # For ALL modality combinations
+    file_path_val = os.path.join(base_path, "Node_"+node_num+"_Results", "Eval_Results", "results_LeftTemp_val_FULL_Modality_Only.xlsx") # For FULL modality Only
     file_paths_val.append(file_path_val)
 
 # Initialize an empty DataFrame
@@ -21,12 +22,13 @@ for path in file_paths_val:
     # Load the Excel file
     df = pd.read_excel(path)  
 
-    # Stack the rows vertically
-    combined_df_val = pd.concat([combined_df_val, df], axis=1)
+    # Stack the rows
+    # combined_df_val = pd.concat([combined_df_val, df], axis=1) # For ALL modality combinations
+    combined_df_val = pd.concat([combined_df_val, df], axis=0) # For FULL modality Only
 
 # Reset the index to avoid duplicate row indices
 combined_df_val = combined_df_val.reset_index(drop=True)
 
 # Save the combined DataFrame to a new Excel file
-combined_df_val.to_excel('combined_evaluation_left_ALL_modalities.xlsx', index=False)
+combined_df_val.to_excel('LeftTemp_val_FULL_modality_Only.xlsx', index=False)
 
