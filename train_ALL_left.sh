@@ -7,7 +7,7 @@ node_nums=(385 386 387 388 389 390 391 392 393 394 395 396 397 398 399 400 401 4
 for node_num in "${node_nums[@]}"
 do
     # Define experiment file path
-    exp_file="exp_node${node_num}/magms"
+    exp_file="exp_node${node_num}/NO_Distillation/magms"
 
     # Run the training script with specified arguments
     python train_left.py /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Temporal_Lobe/ /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/trained_models/magms_trained_last_lefttemp.model -b 4 -lr 1e-2 --num_mod 5 --node_num ${node_num} --train_mod ALL -e 30 -exp ${exp_file} --replace_experiment --show_verbose --device cuda:1
