@@ -536,7 +536,15 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
         if not os.path.exists(save_dir_train):
             os.makedirs(save_dir_train)
         
-        save_aug_data_as_separate_nodes(save_dir_train, X_train_aug, Y_train_aug, mode="train")  # type:ignore   
+        # to save the patients separately
+        # save_aug_data_as_separate_nodes(save_dir_train, X_train_aug, Y_train_aug, mode="train")  # type:ignore 
+
+        # to have a single file for all the patients
+        save_dir_train_ALL = os.path.join(save_dir_train, 'ALL_Patients')
+        if not os.path.exists(save_dir_train_ALL):
+            os.makedirs(save_dir_train_ALL)
+        savemat(os.path.join(save_dir_train_ALL, 'X_train_aug.mat'), {"X_aug_train":X_train_aug})
+        savemat(os.path.join(save_dir_train_ALL, 'Y_train_aug.mat'), {"Y_aug_train":Y_train_aug})  
 
         ## Load and save the original unaugmented validation data        
         X_val_orig, Y_val_orig = load_validation_cohort(root, node_num=i)  # type:ignore
@@ -555,7 +563,15 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
         if not os.path.exists(save_dir_val):
             os.makedirs(save_dir_val)
 
-        save_aug_data_as_separate_nodes(save_dir_val, X_val_orig, Y_val_orig, mode="validation")  # type:ignore
+        # to save the patients separately
+        # save_aug_data_as_separate_nodes(save_dir_val, X_val_orig, Y_val_orig, mode="validation")  # type:ignore
+
+        # to have a single file for all the patients
+        save_dir_val_ALL = os.path.join(save_dir_val, 'ALL_Patients')
+        if not os.path.exists(save_dir_val_ALL):
+            os.makedirs(save_dir_val_ALL)
+        savemat(os.path.join(save_dir_val_ALL, 'X_valid_orig.mat'), {"X_orig_valid":X_val_orig})
+        savemat(os.path.join(save_dir_val_ALL, 'Y_valid_orig.mat'), {"Y_orig_valid":Y_val_orig})
 
     
     # dictionary of lists
