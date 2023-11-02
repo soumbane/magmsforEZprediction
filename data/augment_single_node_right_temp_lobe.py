@@ -72,18 +72,14 @@ node_numbers_with_smote = get_list_of_node_nums()
 print(f"Total number of nodes is: {len(node_numbers_with_smote)}")
 
 # temporal lobe of right hemisphere
-# node_number_right_temporal_lobe = [
-#     "888","889","890","891","892","893","894","895",
-#     "896","897","898","899","900","901","902","903","904","905","906","907","908","909","910","911","912",
-#     "913","914","915","916","917","918","919","920","921","922","923","924","925","926","927","928","929",
-#     "930","931","932","933","934","935","936","937","938","939","940","941","942","943","944","945","946",
-#     "947","948","949","950","951","952","953","954","955","956","957","958","959","960","961",
-#     "962","963","964","965","966","968","969","970","971","973","974","975","976","977","978","979",
-#     "980","981","982","983"
-#     ]
-
 node_number_right_temporal_lobe = [
-    "888","948"
+    "888","889","890","891","892","893","894","895",
+    "896","897","898","899","900","901","902","903","904","905","906","907","908","909","910","911","912",
+    "913","914","915","916","917","918","919","920","921","922","923","924","925","926","927","928","929",
+    "930","931","932","933","934","935","936","937","938","939","940","941","942","943","944","945","946",
+    "947","948","949","950","951","952","953","954","955","956","957","958","959","960","961",
+    "962","963","964","965","966","968","969","970","971","973","974","975","976","977","978","979",
+    "980","981","982","983"
     ]
 
 node_numbers_with_smote = node_number_right_temporal_lobe
@@ -574,22 +570,22 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
         savemat(os.path.join(save_dir_val_ALL, 'Y_valid_orig.mat'), {"Y_orig_valid":Y_val_orig})
 
     
-    # dictionary of lists
-    info_dict = {'Node #': node_numbers, 'NonEZ-train-orig': num_nonEZs_train_orig, 'EZ-train-orig': num_EZs_train_orig, 'NonEZ-train-aug': num_nonEZs_train, 'EZ-train-aug': num_EZs_train, 'NonEZ-val-orig': num_nonEZs_val, 'EZ-val-orig': num_EZs_val}    
+    # # dictionary of lists
+    # info_dict = {'Node #': node_numbers, 'NonEZ-train-orig': num_nonEZs_train_orig, 'EZ-train-orig': num_EZs_train_orig, 'NonEZ-train-aug': num_nonEZs_train, 'EZ-train-aug': num_EZs_train, 'NonEZ-val-orig': num_nonEZs_val, 'EZ-val-orig': num_EZs_val}    
 
-    df = pd.DataFrame(info_dict)  
+    # df = pd.DataFrame(info_dict)  
 
-    # saving the dataframe
-    path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/"
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/"   
-    save_path = os.path.join(path, "Information")
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
+    # # saving the dataframe
+    # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/"
+    # # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/"   
+    # save_path = os.path.join(path, "Information")
+    # if not os.path.exists(save_path):
+    #     os.makedirs(save_path)
     
-    filename  = "info.xlsx"
-    save_filepath = os.path.join(save_path, filename)
+    # filename  = "info.xlsx"
+    # save_filepath = os.path.join(save_path, filename)
 
-    df.to_excel(save_filepath, sheet_name='Sheet1', header=True, index=False)
+    # df.to_excel(save_filepath, sheet_name='Sheet1', header=True, index=False)
 
     ################################################################################################################
 
