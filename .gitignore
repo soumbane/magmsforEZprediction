@@ -195,6 +195,7 @@ Control_Data_Results/*
 pretrained_models/*
 Node_Level_Data/*
 finetuned_node_level_models/*
+baselines_node_level/checkpoints/*
 
 pretrained_models_orig_val_data/*
 
