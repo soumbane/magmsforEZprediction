@@ -659,8 +659,8 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
 if __name__ == "__main__":
 
     # Root Folder for the dataset
-    # root='/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
-    root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
+    root='/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
+    # root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
 
     # save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/Part_2/'
     # save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/Part_2/'
