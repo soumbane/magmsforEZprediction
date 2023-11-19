@@ -149,20 +149,20 @@ if __name__ == "__main__":
 
     # Saving to Excel
     # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/"  
-    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/"
+    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/Part_2/"
     save_path = os.path.join(path, "Node_"+str(configs.node_num), "Results")
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    # filename_val = "results_val.xlsx"
-    filename_val = "results_val_NO_Distillation.xlsx"
+    filename_val = "results_val.xlsx"
+    # filename_val = "results_val_NO_Distillation.xlsx"
     save_filepath_val = os.path.join(save_path, filename_val)
 
     df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
 
-    # filename_train = "results_train.xlsx"
-    filename_train = "results_train_NO_Distillation.xlsx"
+    filename_train = "results_train.xlsx"
+    # filename_train = "results_train_NO_Distillation.xlsx"
     save_filepath_train = os.path.join(save_path, filename_train)
 
     df_train.to_excel(save_filepath_train, index=False, sheet_name='Sheet1')
