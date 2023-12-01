@@ -1,5 +1,5 @@
 # Use SMOTE to augment EZ dataset to balance both classes and create more samples for training
-# Combine all brain nodes node by node (Pat 1 Node 1, Pat 2 Node 1, ...., Pat 44 Node 983): Node Level for Model and Validation Cohort
+# Use this to generate augmented data for all nodes in right temporal lobe
 import os
 import numpy as np
 import pandas as pd

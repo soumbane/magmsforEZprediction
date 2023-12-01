@@ -1,5 +1,5 @@
 # Use SMOTE to augment EZ dataset to balance both classes and create more samples for training
-# Use this to generate augmented data for all nodes in left temporal lobe
+# Use this to generate augmented data for all nodes in right hemisphere except right temporal lobe nodes
 import os
 import numpy as np
 import pandas as pd
@@ -71,32 +71,38 @@ node_numbers_with_smote = get_list_of_node_nums()
 
 print(f"Total number of nodes is: {len(node_numbers_with_smote)}")
 
-# temporal lobe of left hemisphere
-node_number_left_temporal_lobe = [
-    "385","386","387","388","389","390","391","392","393","394","395","396","397","398","399","400","401","402","403","404","405","406","407","408","409","410","411","412","413","414","415","416","417","418","419","420","421","422","423","424","425","426","427","428","429","430","431","432","433","434","435","436","437","438","439","440","441","442","443","444","445","446","447","448","449","450","451","452","453","454","455","456","458","459","460","461","462","463","464","465","466","467","468","469","470","471","472","473","474","475","476","477","478","479"
+# temporal lobe of right hemisphere
+node_number_right_temporal_lobe = [
+    "888","889","890","891","892","893","894","895",
+    "896","897","898","899","900","901","902","903","904","905","906","907","908","909","910","911","912",
+    "913","914","915","916","917","918","919","920","921","922","923","924","925","926","927","928","929",
+    "930","931","932","933","934","935","936","937","938","939","940","941","942","943","944","945","946",
+    "947","948","949","950","951","952","953","954","955","956","957","958","959","960","961",
+    "962","963","964","965","966","968","969","970","971","973","974","975","976","977","978","979",
+    "980","981","982","983"
     ]
 
-node_numbers_with_smote = node_number_left_temporal_lobe
+node_numbers_with_smote = node_number_right_temporal_lobe
 
-print(f"Number of nodes in left temporal lobe: {len(node_numbers_with_smote)}")
+print(f"Number of nodes in right temporal lobe: {len(node_numbers_with_smote)}")
 
-fusiform_ROI = ["385","386","387","388","389","390","391","392","393","394","395","396","397","398","399","400","401","402"]
+fusiform_ROI = ["888","889","890","891","892","893","894","895","896","897","898","899","900","901","902","903","904"]
 
-parahipp_ROI = ["403","404","405","406","407","408"]
+parahipp_ROI = ["905","906","907","908","909","910"]
 
-entor_ROI = ["409","410","411"]
+entor_ROI = ["911","912"]
 
-temppole_ROI = ["412","413","414"]
+temppole_ROI = ["913","914","915"]
 
-inferiortemp_ROI = ["415","416","417","418","419","420","421","422","423","424","425","426","427","428","429","430"]
+inferiortemp_ROI = ["916","917","918","919","920","921","922","923","924","925","926","927","928","929","930","931"]
 
-middletemp_ROI = ["431","432","433","434","435","436","437","438","439","440","441","442","443","444","445","446"]
+middletemp_ROI = ["932","933","934","935","936","937","938","939","940","941","942","943","944","945","946","947","948","949","950"]
 
-bank_ROI = ["447","448","449","450","451","452"]
+bank_ROI = ["951","952","953","954","955","956"]
 
-superiortemp_ROI = ["453","454","455","456","458","459","460","461","462","463","464","465","466","467","468","469","470","471","472","473","474","475","476","477","478"]
+superiortemp_ROI = ["957","958","959","960","961","962","963","964","965","966","968","969","970","971","973","974","975","976","977","978","979","980","981"]
 
-transversetemp_ROI = ["479"]
+transversetemp_ROI = ["982","983"]
 
 def load_and_average_ROI_data(root: str, ROI_node_num_range: list[str]):
 
@@ -636,13 +642,13 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
     df = pd.DataFrame(info_dict)  
 
     # saving the dataframe
-    # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Temporal_Lobe/Part_2/"
-    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Temporal_Lobe/Part_2/"   
+    # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/Part_2/"
+    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/Part_2/"   
     save_path = os.path.join(path, "Information")
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     
-    filename  = "info_left.xlsx"
+    filename  = "info_right.xlsx"
     save_filepath = os.path.join(save_path, filename)
 
     df.to_excel(save_filepath, sheet_name='Sheet1', header=True, index=False)
@@ -656,13 +662,15 @@ if __name__ == "__main__":
     root='/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
     # root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
 
-    # save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Temporal_Lobe/Part_2/'
-    # save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Temporal_Lobe/Part_2/'
+    # save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/Part_2/'
+    # save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/Part_2/'
 
-    save_path_training = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Temporal_Lobe/Part_2/'
-    save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Temporal_Lobe/Part_2/'
+    save_path_training = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/Part_2/'
+    save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/Part_2/'
 
     # num_samples_nonEZ: Number of samples of non-EZ (class 0) to generate per node with SMOTE
     # num_samples_EZ: Number of samples of EZ (class 1) to generate per node with SMOTE
     
     main(root, save_path_training, save_path_validation, num_samples_nonEZ=60, num_samples_EZ=60, generate_syn_nonEZ=True)
+
+

@@ -1,5 +1,5 @@
 # Use SMOTE to augment EZ dataset to balance both classes and create more samples for training
-# Use this to generate augmented data for all nodes in left temporal lobe
+# Use this to generate augmented data for all nodes in left hemisphere except left temporal lobe nodes
 import os
 import numpy as np
 import pandas as pd
