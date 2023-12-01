@@ -232,53 +232,6 @@ def load_and_average_ROI_data(root: str, ROI_node_num_range: list[str]):
 
 
 # Augment node by node by performing SMOTE for each node
-# Frontal lobe ROIs
-# lat_orbito_ROI
-# pars_orbit_ROI
-# frontal_pole_ROI
-# med_orbito_ROI
-# pars_triang_ROI
-# pars_oper_ROI
-# rostral_mid_ROI
-# superior_front_ROI
-# caudal_mid_ROI
-
-# Precentral lobe ROIs
-# precentral_ROI
-# paracentral_ROI
-
-# Cingulate lobe ROIs
-# rostral_ant_ROI
-# caudal_ant_ROI
-# post_cingulate_ROI
-# isthmus_cingulate_ROI
-
-# Postcentral lobe ROIs
-# postcentral_ROI
-
-# Parietal lobe ROIs
-# supramarginal_ROI
-# superior_par_ROI
-# inferior_par_ROI
-# precuneus_ROI
-
-# Occipital Lobe ROIs
-# cuneus_ROI
-# perical_ROI
-# lat_occ_ROI
-# lingual_ROI
-
-# Temporal lobe ROIs
-# fusiform_ROI
-# parahipp_ROI
-# entor_ROI
-# temppole_ROI
-# inferiortemp_ROI
-# middletemp_ROI 
-# bank_ROI
-# superiortemp_ROI
-# transversetemp_ROI
-
 def augment_1EZ_data(root: str, X: np.ndarray, Y: np.ndarray, num_samples_nonEZ: int = 50, num_samples_EZ: int = 50, random_state: int = 100, generate_syn_nonEZ: bool = True, node_num: str = "1"):
 
     # for Frontal Lobe ROIs
@@ -763,8 +716,8 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
     df = pd.DataFrame(info_dict)  
 
     # saving the dataframe
-    path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Hemis/Part_2/"
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/Part_2/"   
+    # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Hemis/Part_2/"
+    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/"   
     save_path = os.path.join(path, "Information")
     if not os.path.exists(save_path):
         os.makedirs(save_path)
@@ -780,14 +733,14 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
 if __name__ == "__main__":
 
     # Root Folder for the dataset
-    # root='/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
-    root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
+    root='/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
+    # root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
 
-    save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Hemis/Part_2/'
-    save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Hemis/Part_2/'
+    # save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Hemis/Part_2/'
+    # save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Hemis/Part_2/'
 
-    # save_path_training = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/Part_2/'
-    # save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/Part_2/'
+    save_path_training = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/'
+    save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/'
 
     # num_samples_nonEZ: Number of samples of non-EZ (class 0) to generate per node with SMOTE
     # num_samples_EZ: Number of samples of EZ (class 1) to generate per node with SMOTE
