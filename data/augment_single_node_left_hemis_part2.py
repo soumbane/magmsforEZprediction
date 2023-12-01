@@ -709,7 +709,7 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
             # to save the patients separately
             save_aug_data_as_separate_nodes(save_dir_train, X_train_aug, Y_train_aug, mode="train")  # type:ignore 
 
-            # to have a single file for all the patients
+            ## to have a single file for all the patients (for the baseline models) - if using this code, then comment out the above line
             # save_dir_train_ALL = os.path.join(save_dir_train, 'ALL_Patients')
             # if not os.path.exists(save_dir_train_ALL):
             #     os.makedirs(save_dir_train_ALL)
@@ -736,7 +736,7 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
             # to save the patients separately
             save_aug_data_as_separate_nodes(save_dir_val, X_val_orig, Y_val_orig, mode="validation")  # type:ignore
 
-            # to have a single file for all the patients
+            ## to have a single file for all the patients (for the baseline models) - if using this code, then comment out the above line
             # save_dir_val_ALL = os.path.join(save_dir_val, 'ALL_Patients')
             # if not os.path.exists(save_dir_val_ALL):
             #     os.makedirs(save_dir_val_ALL)
@@ -756,7 +756,7 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     
-    filename  = "info_left.xlsx"
+    filename  = "info_left_hemis.xlsx"
     save_filepath = os.path.join(save_path, filename)
 
     df.to_excel(save_filepath, sheet_name='Sheet1', header=True, index=False)
