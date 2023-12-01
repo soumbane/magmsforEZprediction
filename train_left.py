@@ -150,7 +150,8 @@ if __name__ == "__main__":
 
     # Saving to Excel
     # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Temporal_Lobe/"  
-    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Temporal_Lobe/Part_2/"
+    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Temporal_Lobe/Part_2/"
+    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/"
     save_path = os.path.join(path, "Node_"+str(configs.node_num), "Results")
 
     if not os.path.exists(save_path):
