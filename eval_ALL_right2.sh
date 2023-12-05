@@ -7,7 +7,7 @@ node_nums=(821 822 823 824 825 826 827 828 829 830 831 832 834 835 836 837 838 8
 for node_num in "${node_nums[@]}"
 do    
     # Run the evaluation script with specified arguments
-    python eval_right.py /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/ /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/experiments/ -b 4 --node_num ${node_num} --replace_experiment --show_verbose --device cuda:1
+    python eval_right.py /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/ /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/experiments/ -b 4 --node_num ${node_num} --replace_experiment --show_verbose --device cuda:3
 
     # Record the experiment file
     echo "Done Evaluating ALL modalities for node_num ${node_num}"
