@@ -673,14 +673,14 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
                 os.makedirs(save_dir_train)
             
             # to save the patients separately
-            save_aug_data_as_separate_nodes(save_dir_train, X_train_aug, Y_train_aug, mode="train")  # type:ignore 
+            # save_aug_data_as_separate_nodes(save_dir_train, X_train_aug, Y_train_aug, mode="train")  # type:ignore 
 
             ## to have a single file for all the patients (for the baseline models) - if using this code, then comment out the above line
-            # save_dir_train_ALL = os.path.join(save_dir_train, 'ALL_Patients')
-            # if not os.path.exists(save_dir_train_ALL):
-            #     os.makedirs(save_dir_train_ALL)
-            # savemat(os.path.join(save_dir_train_ALL, 'X_train_aug.mat'), {"X_aug_train":X_train_aug})
-            # savemat(os.path.join(save_dir_train_ALL, 'Y_train_aug.mat'), {"Y_aug_train":Y_train_aug})  
+            save_dir_train_ALL = os.path.join(save_dir_train, 'ALL_Patients')
+            if not os.path.exists(save_dir_train_ALL):
+                os.makedirs(save_dir_train_ALL)
+            savemat(os.path.join(save_dir_train_ALL, 'X_train_aug.mat'), {"X_aug_train":X_train_aug})
+            savemat(os.path.join(save_dir_train_ALL, 'Y_train_aug.mat'), {"Y_aug_train":Y_train_aug})  
 
             ## Load and save the original unaugmented validation data        
             X_val_orig, Y_val_orig = load_validation_cohort(root, node_num=i)  # type:ignore
@@ -700,14 +700,14 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
                 os.makedirs(save_dir_val)
 
             # to save the patients separately
-            save_aug_data_as_separate_nodes(save_dir_val, X_val_orig, Y_val_orig, mode="validation")  # type:ignore
+            # save_aug_data_as_separate_nodes(save_dir_val, X_val_orig, Y_val_orig, mode="validation")  # type:ignore
 
             ## to have a single file for all the patients (for the baseline models) - if using this code, then comment out the above line
-            # save_dir_val_ALL = os.path.join(save_dir_val, 'ALL_Patients')
-            # if not os.path.exists(save_dir_val_ALL):
-            #     os.makedirs(save_dir_val_ALL)
-            # savemat(os.path.join(save_dir_val_ALL, 'X_valid_orig.mat'), {"X_orig_valid":X_val_orig})
-            # savemat(os.path.join(save_dir_val_ALL, 'Y_valid_orig.mat'), {"Y_orig_valid":Y_val_orig})
+            save_dir_val_ALL = os.path.join(save_dir_val, 'ALL_Patients')
+            if not os.path.exists(save_dir_val_ALL):
+                os.makedirs(save_dir_val_ALL)
+            savemat(os.path.join(save_dir_val_ALL, 'X_valid_orig.mat'), {"X_orig_valid":X_val_orig})
+            savemat(os.path.join(save_dir_val_ALL, 'Y_valid_orig.mat'), {"Y_orig_valid":Y_val_orig})
 
     
     # dictionary of lists
@@ -716,8 +716,8 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
     df = pd.DataFrame(info_dict)  
 
     # saving the dataframe
-    # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Hemis/Part_2/"
-    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/"   
+    path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Hemis/Part_2/"
+    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/"   
     save_path = os.path.join(path, "Information")
     if not os.path.exists(save_path):
         os.makedirs(save_path)
@@ -733,14 +733,14 @@ def main(root: str, save_path_training: str, save_path_validation: str, num_samp
 if __name__ == "__main__":
 
     # Root Folder for the dataset
-    root='/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
-    # root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
+    # root='/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
+    root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
 
-    # save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Hemis/Part_2/'
-    # save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Hemis/Part_2/'
+    save_path_training = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Hemis/Part_2/'
+    save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Hemis/Part_2/'
 
-    save_path_training = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/'
-    save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/'
+    # save_path_training = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/'
+    # save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/'
 
     # num_samples_nonEZ: Number of samples of non-EZ (class 0) to generate per node with SMOTE
     # num_samples_EZ: Number of samples of EZ (class 1) to generate per node with SMOTE
