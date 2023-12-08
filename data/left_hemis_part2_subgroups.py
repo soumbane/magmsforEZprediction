@@ -1,4 +1,4 @@
-# Use this to generate MR0(MR-: MR=0) and MR1(MR+: MR=1) validation patients for all nodes in left hemisphere
+# Use this to generate subgroups: MR0(MR-: MR=0)/MR1(MR+: MR=1)/SF(SF=1)/SR(SF=0) for validation patients for all nodes in left hemisphere
 import os
 import numpy as np
 import pandas as pd
@@ -15,8 +15,8 @@ def get_list_of_node_nums():
     return node_numbers_with_smote
 
 # list of all 827 nodes for which SMOTE is possible (atleast 1 EZ)
-# node_numbers_with_smote = get_list_of_node_nums()
-node_numbers_with_smote = ["14", "18", "19"]
+node_numbers_with_smote = get_list_of_node_nums()
+# node_numbers_with_smote = ["14", "18", "19"]
 
 print(f"Total Number of nodes in left Hemisphere: {len(node_numbers_with_smote)}")
 
@@ -73,13 +73,16 @@ def load_validation_cohort(root: str, node_num: str = "1"):
     print('Y_val_node_original: %s' % Counter(Y_mat_aug_2))
 
     ###################################################################################################
-    ## Perform Sub-Group Analysis into MR0 and MR1
+    ## Perform Sub-Group Analysis
 
     # Load the sub-group analysis file
     sub_group_analysis_file = "Sub_group_analysis.xlsx"
     load_filepath_val = os.path.join(root, sub_group_analysis_file)
     subgroup_file = openpyxl.load_workbook(load_filepath_val)
     subgroup_sheet = subgroup_file['Sheet1']
+
+    ###################################################################
+    ## MR subgroups [MR0(MR-: MR=0)/MR1(MR+: MR=1)]
 
     MR_group = [subgroup_sheet['D60'].value, subgroup_sheet['D61'].value, subgroup_sheet['D62'].value, subgroup_sheet['D63'].value, subgroup_sheet['D64'].value, subgroup_sheet['D65'].value, subgroup_sheet['D66'].value, subgroup_sheet['D67'].value, subgroup_sheet['D68'].value, subgroup_sheet['D69'].value]
 
@@ -99,11 +102,36 @@ def load_validation_cohort(root: str, node_num: str = "1"):
         groups_MR_Y[group].append(row)
 
     Y_MR0 = np.array(groups_MR_Y[0]) 
-    Y_MR1 = np.array(groups_MR_Y[1])    
+    Y_MR1 = np.array(groups_MR_Y[1])  
+
+    ###################################################################
+
+    ## SF subgroups [SF(SF=1)/SR(SF=0)]
+
+    SF_group = [subgroup_sheet['C60'].value, subgroup_sheet['C61'].value, subgroup_sheet['C62'].value, subgroup_sheet['C63'].value, subgroup_sheet['C64'].value, subgroup_sheet['C65'].value, subgroup_sheet['C66'].value, subgroup_sheet['C67'].value, subgroup_sheet['C68'].value, subgroup_sheet['C69'].value]
+
+    print(f"SF_group: {SF_group}")
+
+    groups_SF_X = {0: [], 1: []}
+
+    for group, row in zip(SF_group, X_combined_2):   
+        groups_SF_X[group].append(row)
+
+    X_SR = np.array(groups_SF_X[0]) 
+    X_SF = np.array(groups_SF_X[1])
+
+    groups_SF_Y = {0: [], 1: []}
+
+    for group, row in zip(SF_group, Y_mat_aug_2):   
+        groups_SF_Y[group].append(row)
+
+    Y_SR = np.array(groups_SF_Y[0]) 
+    Y_SF = np.array(groups_SF_Y[1])
 
     subgroup_file.close() 
 
-    ###################################################################################################   
+    ################################################################################################### 
+    # For MR subgroups  
     
     ## Exclude the patients for which label=1, i.e. remove IZ patients for MR0(MR-: MR=0) 
     # find the index of Y_MR0 where Y_MR0 == 1 (IZ patient)
@@ -142,10 +170,51 @@ def load_validation_cohort(root: str, node_num: str = "1"):
     Y_valid_MR1 = Y_MR1.astype(int) # type:ignore
 
     print('Y_valid_MR1: %s' % Counter(Y_valid_MR1))
+  
+    ################################################################################################### 
+    # For SF subgroups  
+    
+    ## Exclude the patients for which label=1, i.e. remove IZ patients for SR(SF=0) 
+    # find the index of Y_SR where Y_SR == 1 (IZ patient)
+    index_IZ_SR = np.where(Y_SR == 1)[0]
 
-    ###################################################################################################    
+    # remove the vector of X_SR and value of Y_SR for IZ
+    X_SR = np.delete(X_SR, index_IZ_SR, axis=0)
+    Y_SR = np.delete(Y_SR, index_IZ_SR, axis=0)
 
-    return X_MR0, Y_MR0, X_MR1, Y_MR1 
+    ## Exclude the patients for which label=1, i.e. remove IZ patients for SF(SF=1)
+    # find the index of Y_SF where Y_SF == 1 (IZ patient)
+    index_IZ_SF = np.where(Y_SF == 1)[0]
+
+    # remove the vector of X_SF and value of Y_SF for IZ
+    X_SF = np.delete(X_SF, index_IZ_SF, axis=0)
+    Y_SF = np.delete(Y_SF, index_IZ_SF, axis=0)
+
+    ###################################################################################################
+
+    # find the index of Y_SR where Y_SR == 2 or Y_SR == 3
+    index_SOZ_SR = np.where((Y_SR == 2) | (Y_SR == 3))[0]
+
+    # replace the value of Y_SR for index_SOZ with 1
+    Y_SR[index_SOZ_SR] = 1
+
+    Y_valid_SR = Y_SR.astype(int) # type:ignore
+
+    print('Y_valid_SR: %s' % Counter(Y_valid_SR))
+
+    # find the index of Y_SF where Y_SF == 2 or Y_SF == 3
+    index_SOZ_SF = np.where((Y_SF == 2) | (Y_SF == 3))[0]
+
+    # replace the value of Y_SF for index_SOZ with 1
+    Y_SF[index_SOZ_SF] = 1
+
+    Y_valid_SF = Y_SF.astype(int) # type:ignore
+
+    print('Y_valid_SF: %s' % Counter(Y_valid_SF))
+
+    ###################################################################################################  
+
+    return X_MR0, Y_valid_MR0, X_MR1, Y_valid_MR1, X_SR, Y_valid_SR, X_SF, Y_valid_SF   
 
 
 def save_aug_data_as_separate_nodes(save_dir: str, X: np.ndarray, Y: np.ndarray, mode: str = "validation") -> None:
@@ -169,11 +238,17 @@ def main(root: str, save_path_validation: str):
     num_nonEZs_val_MR1 = []
     num_EZs_val_MR1 = []
 
+    num_nonEZs_val_SR = []
+    num_EZs_val_SR = []
+
+    num_nonEZs_val_SF = []
+    num_EZs_val_SF = []
+
     for i in node_numbers_with_smote: 
         node_numbers.append(i)
 
         ## Load and save the original unaugmented validation data        
-        X_MR0, Y_MR0, X_MR1, Y_MR1 = load_validation_cohort(root, node_num=i)  # type:ignore
+        X_MR0, Y_MR0, X_MR1, Y_MR1, X_SR, Y_SR, X_SF, Y_SF = load_validation_cohort(root, node_num=i)  # type:ignore
 
         #####################################################################################
         ## MR0 subgroup (MR-: MR=0)
@@ -215,18 +290,58 @@ def main(root: str, save_path_validation: str):
         # to save the patients separately
         save_aug_data_as_separate_nodes(save_dir_val, X_MR1, Y_MR1, mode="validation")  # type:ignore
 
+        #####################################################################################
+        ## SR subgroup (SF=0)
+
+        # calculate number of non_EZs and EZs for a given original validation node - SR
+        num_nonEZs_val_SR.append(len(Y_SR) - np.sum(Y_SR))
+        num_EZs_val_SR.append(np.sum(Y_SR))
+
+        # save the original validation data
+        save_path_validation = save_path_validation
+
+        save_dir_val_temp = 'Node_' + i
+        save_dir_val_temp1 = 'SR'        
+        
+        save_dir_val = os.path.join(save_path_validation, save_dir_val_temp, save_dir_val_temp1)
+        if not os.path.exists(save_dir_val):
+            os.makedirs(save_dir_val)
+
+        # to save the patients separately
+        save_aug_data_as_separate_nodes(save_dir_val, X_SR, Y_SR, mode="validation")  # type:ignore
+
+        #####################################################################################
+        ## SF subgroup (SF=1)
+
+        # calculate number of non_EZs and EZs for a given original validation node - SF
+        num_nonEZs_val_SF.append(len(Y_SF) - np.sum(Y_SF))
+        num_EZs_val_SF.append(np.sum(Y_SF))
+
+        # save the original validation data
+        save_path_validation = save_path_validation
+
+        save_dir_val_temp = 'Node_' + i
+        save_dir_val_temp1 = 'SF'        
+        
+        save_dir_val = os.path.join(save_path_validation, save_dir_val_temp, save_dir_val_temp1)
+        if not os.path.exists(save_dir_val):
+            os.makedirs(save_dir_val)
+
+        # to save the patients separately
+        save_aug_data_as_separate_nodes(save_dir_val, X_SF, Y_SF, mode="validation")  # type:ignore
+
+    
+    # saving the dataframe
+    path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Hemis/SubGroups/"
+    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/SubGroups/"   
+    save_path = os.path.join(path, "Information")
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
     
     # dictionary of lists - MR0
     info_dict_MR0 = {'Node #': node_numbers, 'NonEZ-val-orig': num_nonEZs_val_MR0, 'EZ-val-orig': num_EZs_val_MR0}    
 
     df = pd.DataFrame(info_dict_MR0)  
-
-    # saving the dataframe
-    path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Hemis/SubGroups/"
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/"   
-    save_path = os.path.join(path, "Information")
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
     
     filename  = "info_left_hemis_MR0.xlsx"
     save_filepath = os.path.join(save_path, filename)
@@ -246,7 +361,31 @@ def main(root: str, save_path_validation: str):
 
     df.to_excel(save_filepath, sheet_name='Sheet1', header=True, index=False)
 
+    #########################################################################################################
+
+    # dictionary of lists - SR
+    info_dict_SR = {'Node #': node_numbers, 'NonEZ-val-orig': num_nonEZs_val_SR, 'EZ-val-orig': num_EZs_val_SR}    
+
+    df = pd.DataFrame(info_dict_SR)  
+
+    # saving the dataframe    
+    filename  = "info_left_hemis_SR.xlsx"
+    save_filepath = os.path.join(save_path, filename)
+
+    df.to_excel(save_filepath, sheet_name='Sheet1', header=True, index=False)
+
     ################################################################################################################
+
+    # dictionary of lists - SF
+    info_dict_SF = {'Node #': node_numbers, 'NonEZ-val-orig': num_nonEZs_val_SF, 'EZ-val-orig': num_EZs_val_SF}    
+
+    df = pd.DataFrame(info_dict_SF)  
+
+    # saving the dataframe    
+    filename  = "info_left_hemis_SF.xlsx"
+    save_filepath = os.path.join(save_path, filename)
+
+    df.to_excel(save_filepath, sheet_name='Sheet1', header=True, index=False)
 
 
 if __name__ == "__main__":
@@ -257,6 +396,6 @@ if __name__ == "__main__":
 
     save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Hemis/SubGroups/'
 
-    # save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/'
+    # save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/SubGroups/'
     
     main(root, save_path_validation)
