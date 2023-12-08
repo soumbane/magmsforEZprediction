@@ -2,7 +2,7 @@
 
 # Define the list of node_num values
 node_nums=(478)  # part 2 - test nodes
-trial_nums=(0 3 4)  # part 2 - test trials for each node
+trial_nums=(0)  # part 2 - test trials for each node
 
 # node_nums=(476)  # part 2 - test nodes
 # trial_nums=(4)  # part 2 - test trials for each node

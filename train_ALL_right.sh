@@ -1,11 +1,20 @@
 #!/bin/bash
 
 # Define the list of node_num values
-# node_nums=(733)  # part 2 - test nodes
-# trial_nums=(0 1 2 4)  # part 2 - test trials for each node
+# node_nums=(983)  # part 2 - test nodes
+# trial_nums=(2 4)  # part 2 - test trials for each node
 
-node_nums=(737)  # part 2 - test nodes
-trial_nums=(2)  # part 2 - test trials for each node
+# node_nums=(965)  # part 2 - test nodes
+# trial_nums=(4)  # part 2 - test trials for each node
+
+node_nums=(979)  # part 2 - test nodes
+trial_nums=(3)  # part 2 - test trials for each node
+
+# node_nums=(982)  # part 2 - test nodes
+# trial_nums=(4)  # part 2 - test trials for each node
+
+# node_nums=(981)  # part 2 - test nodes
+# trial_nums=(1)  # part 2 - test trials for each node
 
 # node_nums=(504 506 508 509 510 511 512 513 514 515 516 517 518 519 520 521 522 524 525 526 529 530 534 535 536 537 538 539 540 541 542 543 546 547 548 549 551 552 553 554 555 556 557 558 559 560 561 562 563 564 565 566 567 568 569 570 571 572 573 574 575 576 581 582 584 585 586 587 588 589 590 591 592 593 594 595 596 598 599 600 601 602 603 604 605 606 607 608 609 610 612 613 614 615 616 617 618 619 620 621 622 623 624 625 627 628 629 630 632 633 634 635 636 637 638 639 640 641 642 643 644 645 646 647 648 649 650 651 652 655 656 657 658 659 660 661 662 663 664 665 666 668 669 670 671 672 673 674 675 676 677 678)  # part 2 - right hemis except temporal lobe
 
