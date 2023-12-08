@@ -1,14 +1,17 @@
 #!/bin/bash
 
 # Define the list of node_num values
-# node_nums=(983)  # part 2 - test nodes
-# trial_nums=(2 4)  # part 2 - test trials for each node
+# node_nums=(541)  # part 2 - test nodes
+# trial_nums=(0)  # part 2 - test trials for each node
 
-# node_nums=(965)  # part 2 - test nodes
-# trial_nums=(4)  # part 2 - test trials for each node
-
-node_nums=(979)  # part 2 - test nodes
+node_nums=(542)  # part 2 - test nodes
 trial_nums=(3)  # part 2 - test trials for each node
+
+# node_nums=(542)  # part 2 - test nodes
+# trial_nums=(0)  # part 2 - test trials for each node
+
+# node_nums=(566)  # part 2 - test nodes
+# trial_nums=(0 1)  # part 2 - test trials for each node
 
 # node_nums=(982)  # part 2 - test nodes
 # trial_nums=(4)  # part 2 - test trials for each node
