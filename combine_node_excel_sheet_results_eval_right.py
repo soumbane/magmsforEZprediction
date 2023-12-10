@@ -13,7 +13,7 @@ file_paths_val = []
 
 for node_num in node_nums:
     # file_path_val = os.path.join(base_path, "Node_"+node_num+"_Results", "Eval_Results", "results_val_ALL_modalities_Part_2.xlsx") # For ALL modality combinations
-    file_path_val = os.path.join(base_path, "Node_"+node_num+"_Results", "Eval_Results", "results_val_ALL_modalities_MR0.xlsx") # For ALL modality combinations - subgroup analysis
+    file_path_val = os.path.join(base_path, "Node_"+node_num+"_Results", "Eval_Results", "results_val_ALL_modalities_SR.xlsx") # For ALL modality combinations - subgroup analysis
     # file_path_val = os.path.join(base_path, "Node_"+node_num+"_Results", "Eval_Results", "results_RightHemis_val_FULL_Modality_Only_Part_2.xlsx") # For FULL modality Only
     file_paths_val.append(file_path_val)
 
@@ -35,5 +35,5 @@ combined_df_val = combined_df_val.reset_index(drop=True)
 # Save the combined DataFrame to a new Excel file
 # combined_df_val.to_excel('RightHemis_val_FULL_modality_Only_Part_2.xlsx', index=False)
 # combined_df_val.to_excel('RightHemis_val_ALL_modality_Comb_Part_2.xlsx', index=False)
-combined_df_val.to_excel('RightHemis_val_ALL_modality_Comb_MR0.xlsx', index=False)
+combined_df_val.to_excel('RightHemis_val_ALL_modality_Comb_SR.xlsx', index=False)
 
