@@ -195,13 +195,15 @@ if __name__ == "__main__":
     # Saving to Excel
     # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/Part_2/"  
     # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/Part_2/"
-    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/"
+    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/" # for orig val dataset
+    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/SubGroups/" # for subgroup analysis
     save_path = os.path.join(path, "Node_"+str(configs.node_num)+"_Results", "Eval_Results")
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    filename_val = "results_val_ALL_modalities_Part_2.xlsx"
+    # filename_val = "results_val_ALL_modalities_Part_2.xlsx" # for orig val dataset
+    filename_val = "results_val_ALL_modalities_MR0.xlsx" # for subgroup analysis
     save_filepath_val = os.path.join(save_path, filename_val)
 
     df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
