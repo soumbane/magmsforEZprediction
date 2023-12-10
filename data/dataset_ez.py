@@ -40,7 +40,11 @@ class DatasetEZ_Node(Dataset):
             self.y_mat_name = "Y_aug_train_patient"
             
         elif self.mode == EZMode.TEST:
-            self.path = os.path.join(self.root, 'Node_'+node_num, 'Orig_Val_Data')
+            self.path = os.path.join(self.root, 'Node_'+node_num, 'Orig_Val_Data') # ALL Val Patients
+            # self.path = os.path.join(self.root, 'Node_'+node_num, 'MR0') # MR0 Val Patients
+            # self.path = os.path.join(self.root, 'Node_'+node_num, 'MR1') # MR1 Val Patients
+            # self.path = os.path.join(self.root, 'Node_'+node_num, 'SR') # SR Val Patients
+            # self.path = os.path.join(self.root, 'Node_'+node_num, 'SF') # SF Val Patients
             
             self.x_file = f"X_valid_orig_patient"
             self.y_file = f"Y_valid_orig_patient"
