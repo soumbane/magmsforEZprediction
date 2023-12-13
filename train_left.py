@@ -32,25 +32,25 @@ def train(cfg: TrainingConfigs, /) -> Union[magnet.MAGNET2, Tuple[float, float, 
     # load optimizer, loss, and metrics
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)  
     
-    # The actual MAG-MS losses
-    main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)]
-    kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean') for _ in range(cfg.num_mod)]
-    mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE() for _ in range(cfg.num_mod)]
-
-    magms_loss = magnet.losses.MAGMSLoss(main_losses, distillation_loss=kldiv_losses, feature_losses=mse_losses)
-
-    # # The MAG-MS losses without any self-distillation
+    # # The actual MAG-MS losses
     # main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)]
-    # main_losses[1] = magnet.losses.CrossEntropy(weight=0) 
-    # main_losses[2] = magnet.losses.CrossEntropy(weight=0)
-    # main_losses[3] = magnet.losses.CrossEntropy(weight=0)
-    # main_losses[4] = magnet.losses.CrossEntropy(weight=0)
-    # main_losses[5] = magnet.losses.CrossEntropy(weight=0)
-
-    # kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean', weight=0) for _ in range(cfg.num_mod)]
-    # mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE(weight=0) for _ in range(cfg.num_mod)]
+    # kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean') for _ in range(cfg.num_mod)]
+    # mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE() for _ in range(cfg.num_mod)]
 
     # magms_loss = magnet.losses.MAGMSLoss(main_losses, distillation_loss=kldiv_losses, feature_losses=mse_losses)
+
+    # The MAG-MS losses without any self-distillation
+    main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)]
+    main_losses[1] = magnet.losses.CrossEntropy(weight=0) 
+    main_losses[2] = magnet.losses.CrossEntropy(weight=0)
+    main_losses[3] = magnet.losses.CrossEntropy(weight=0)
+    main_losses[4] = magnet.losses.CrossEntropy(weight=0)
+    main_losses[5] = magnet.losses.CrossEntropy(weight=0)
+
+    kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean', weight=0) for _ in range(cfg.num_mod)]
+    mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE(weight=0) for _ in range(cfg.num_mod)]
+
+    magms_loss = magnet.losses.MAGMSLoss(main_losses, distillation_loss=kldiv_losses, feature_losses=mse_losses)
 
     # if we want to track both the training and validation accuracy
     metric_fns: dict[str, tm.metrics.Metric] = {
@@ -150,22 +150,20 @@ if __name__ == "__main__":
     df_train = pd.DataFrame([row_data_train], columns=headers_train)
 
     # Saving to Excel
-    # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Temporal_Lobe/"  
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Temporal_Lobe/Part_2/"
     path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/"
     save_path = os.path.join(path, "Node_"+str(configs.node_num), "Results")
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    filename_val = "results_val.xlsx"
-    # filename_val = "results_val_NO_Distillation.xlsx"
+    # filename_val = "results_val.xlsx"
+    filename_val = "results_val_NO_Distillation.xlsx"
     save_filepath_val = os.path.join(save_path, filename_val)
 
     df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
 
-    filename_train = "results_train.xlsx"
-    # filename_train = "results_train_NO_Distillation.xlsx"
+    # filename_train = "results_train.xlsx"
+    filename_train = "results_train_NO_Distillation.xlsx"
     save_filepath_train = os.path.join(save_path, filename_train)
 
     df_train.to_excel(save_filepath_train, index=False, sheet_name='Sheet1')
