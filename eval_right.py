@@ -203,7 +203,7 @@ if __name__ == "__main__":
         os.makedirs(save_path)
 
     # filename_val = "results_val_ALL_modalities_Part_2.xlsx" # for orig val dataset
-    filename_val = "results_val_ALL_modalities_MR0.xlsx" # for subgroup analysis
+    filename_val = "results_val_ALL_modalities_MR1.xlsx" # for subgroup analysis
     save_filepath_val = os.path.join(save_path, filename_val)
 
     df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
