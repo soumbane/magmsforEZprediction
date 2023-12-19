@@ -7,7 +7,7 @@ node_nums=(374 375 376 377 378 381 382 383 384 386 387 388 389 390 391 394 395 3
 for node_num in "${node_nums[@]}"
 do    
     # Run the evaluation script with specified arguments
-    python eval_left.py /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/SubGroups/ /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/experiments/ -b 4 --node_num ${node_num} --replace_experiment --show_verbose --device cuda:1
+    python eval_left.py /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/ /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/experiments/ -b 4 --node_num ${node_num} --replace_experiment --show_verbose --device cuda:1
 
     # Record the experiment file
     echo "Done Evaluating ALL modalities for node_num ${node_num}"

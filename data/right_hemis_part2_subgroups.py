@@ -394,8 +394,6 @@ if __name__ == "__main__":
     root='/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/'
     # root='/home/share/Data/EZ_Pred_Dataset/All_Hemispheres/'
 
-    # save_path_validation = '/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Hemis/SubGroups/'
-
     save_path_validation = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/SubGroups/'
     
     main(root, save_path_validation)

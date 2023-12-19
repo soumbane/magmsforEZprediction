@@ -38,7 +38,7 @@ def train(cfg: TrainingConfigs, /) -> Union[magnet.MAGNET2, Tuple[float, float, 
     mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE() for _ in range(cfg.num_mod)]
 
 
-    # # The MAG-MS losses without any self-distillation
+    # The MAG-MS losses without any self-distillation
     # main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)]
     # main_losses[1] = magnet.losses.CrossEntropy(weight=0) 
     # main_losses[2] = magnet.losses.CrossEntropy(weight=0)
