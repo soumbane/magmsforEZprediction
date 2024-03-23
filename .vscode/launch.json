@@ -1,0 +1,47 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Train",
+            "type": "python",
+            "request": "launch",
+            "program": "train.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/",
+                "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/trained_models/magms_node_888_tr_1.model",
+                "-b", "4",
+                "-e", "3",
+                "-lr", "1e-2",
+                "--num_mod", "5",
+                "--node_num", "888",
+                "--train_mod", "ALL",
+                "-exp", "exp_node888/magms",
+                "--replace_experiment",
+                "--show_verbose",
+                "--device", "cuda:1",
+            ]
+        },
+        {
+            "name": "Python: Eval",
+            "type": "python",
+            "request": "launch",
+            "program": "eval.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/",
+                "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/experiments/",
+                "-b", "4",
+                "--node_num", "948",
+                "--replace_experiment",
+                "--show_verbose",
+                "--device", "cuda:1",
+            ]
+        }
+    ]
+}

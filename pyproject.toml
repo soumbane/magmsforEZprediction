@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "magms-ezpred"
+version = "0.1a4"
+description = "MAG-MS for EZ Prediction (Alpha 4)"
+authors = ["Qisheng He <Qisheng.He@wayne.edu>","Soumyanil Banerjee <s.banerjee@wayne.edu>"]
+packages = [
+    { include = "ezpred" }
+]
+
+[tool.poetry.dependencies]
+magnet = "^2.1"
+python = "^3.8"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
