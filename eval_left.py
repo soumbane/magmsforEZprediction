@@ -165,101 +165,109 @@ if __name__ == "__main__":
 
     ## For ALL nodes with ALL 31 modality combination {0:"T1", 1:"T2", 2:"FLAIR", 3:"DWI", 4:"DWIC"} for ALL 5 trials
        
+    # base_exp_model = configs.model
+
+    # num_trials = 5
+
+    # val_bal_acc_per_modality_list = []
+
+    # # Test ALL modalities for ALL trials
+    # for j in range(1,32): 
+    #     dict_mod, list_mod = get_target_dict(j) 
+
+    #     val_bal_acc_list = []
+
+    #     for i in range(num_trials):  
+    #         print(f'\n\nStarting Trial {i+1} of Node number {configs.node_num} with Testing modality combination: {dict_mod}\n')
+
+    #         configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/Part_2" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model" # for part 2
+
+    #         # configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/NO_Distillation" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model" # for NO Distillation
+
+    #         bal_acc, _ = test(configs, target_dict=dict_mod)
+
+    #         val_bal_acc_list.append(bal_acc) 
+
+    #     val_bal_acc_per_modality_list.append(np.mean(val_bal_acc_list))
+
+    # # Create a DataFrame
+    # headers_val = ['Node_'+str(configs.node_num)]
+
+    # df_val = pd.DataFrame(val_bal_acc_per_modality_list, columns=headers_val)
+
+    # # Saving to Excel
+    # # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/" # for original validation dataset
+
+    # # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/NO_Distillation/" # for original validation dataset - NO Distillation
+
+    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/SubGroups/" # for subgroup analysis
+
+    # save_path = os.path.join(path, "Node_"+str(configs.node_num)+"_Results", "Eval_Results")
+
+    # if not os.path.exists(save_path):
+    #     os.makedirs(save_path)
+
+    # # filename_val = "results_val_ALL_modalities_Part_2.xlsx" # for orig val dataset
+    # # filename_val = "results_val_ALL_modalities_NO_Distillation.xlsx" # for subgroup analysis
+    # filename_val = "results_val_ALL_modalities_MR1.xlsx" # for subgroup analysis
+    # save_filepath_val = os.path.join(save_path, filename_val)
+
+    # df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
+
+    # print("\nDone!")
+
+    ############################################################################################################
+
+    ## For ALL nodes with FULL modality Only (num=31) {0:"T1", 1:"T2", 2:"FLAIR", 3:"DWI", 4:"DWIC"} for ALL 5 trials
+       
     base_exp_model = configs.model
+
+    # dict_mod, list_mod = get_target_dict(31)  # FULL modalities (T1-T2-FLAIR-DWI-DWIC)
+    # dict_mod, list_mod = get_target_dict(30)  # FULL modalities (T1-T2-FLAIR-DWI)
+    # dict_mod, list_mod = get_target_dict(28)  # FULL modalities (T1-T2-FLAIR)
+    dict_mod, list_mod = get_target_dict(29)  # FULL modalities (T1-T2-FLAIR-DWIC)
 
     num_trials = 5
 
-    val_bal_acc_per_modality_list = []
+    # Create empty lists to store results for each type (bal_accuracy)
+    val_bal_acc_list = [[] for _ in range(num_trials)]
 
-    # Test ALL modalities for ALL trials
-    for j in range(1,32): 
-        dict_mod, list_mod = get_target_dict(j) 
+    # train
+    for i in range(num_trials):
+        print(f'\n\nStarting Trial {i+1} of Node number {configs.node_num} with Testing modality combination: {dict_mod}\n')
 
-        val_bal_acc_list = []
+        # configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/Part_2" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model" # for part 2
 
-        for i in range(num_trials):  
-            print(f'\n\nStarting Trial {i+1} of Node number {configs.node_num} with Testing modality combination: {dict_mod}\n')
+        configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/NO_Distillation" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model" # for NO Distillation
 
-            configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/Part_2" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model" # for part 2
+        bal_acc, _ = test(configs, target_dict=dict_mod)
 
-            # configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/NO_Distillation" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model" # for NO Distillation
+        val_bal_acc_list[i].append(bal_acc) 
 
-            bal_acc, _ = test(configs, target_dict=dict_mod)
 
-            val_bal_acc_list.append(bal_acc) 
-
-        val_bal_acc_per_modality_list.append(np.mean(val_bal_acc_list))
+    # Combine data
+    row_data_val = [configs.node_num] + [val_bal_acc_list[j][0] for j in range(num_trials)]
 
     # Create a DataFrame
-    headers_val = ['Node_'+str(configs.node_num)]
+    headers_val = ['Node #', 'Val_Bal_Acc_1', 'Val_Bal_Acc_2', 'Val_Bal_Acc_3', 'Val_Bal_Acc_4', 'Val_Bal_Acc_5']
 
-    df_val = pd.DataFrame(val_bal_acc_per_modality_list, columns=headers_val)
+    df_val = pd.DataFrame([row_data_val], columns=headers_val)
 
     # Saving to Excel
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/" # for original validation dataset
-
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/NO_Distillation/" # for original validation dataset - NO Distillation
-
-    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/SubGroups/" # for subgroup analysis
+    # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Temporal_Lobe/"  
+    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Temporal_Lobe/"
+    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/"
+    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/NO_Distillation/" # for original validation dataset - NO Distillation
 
     save_path = os.path.join(path, "Node_"+str(configs.node_num)+"_Results", "Eval_Results")
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    # filename_val = "results_val_ALL_modalities_Part_2.xlsx" # for orig val dataset
-    # filename_val = "results_val_ALL_modalities_NO_Distillation.xlsx" # for subgroup analysis
-    filename_val = "results_val_ALL_modalities_MR0.xlsx" # for subgroup analysis
+    filename_val = "results_LeftHemis_val_T1_T2_FLAIR_DWIC_NO_Dist.xlsx" # T1-T2-FLAIR-DWI-DWIC
+    # filename_val = "results_LeftHemis_val_T1_T2_FLAIR_DWIC.xlsx" # T1-T2-FLAIR
     save_filepath_val = os.path.join(save_path, filename_val)
 
     df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
 
     print("\nDone!")
-
-    ############################################################################################################
-
-    ## For ALL nodes with FULL modality Only (num=31) {0:"T1", 1:"T2", 2:"FLAIR", 3:"DWI", 4:"DWIC"} for ALL 5 trials
-       
-    # base_exp_model = configs.model
-
-    # dict_mod, list_mod = get_target_dict(31)  # FULL modalities
-
-    # num_trials = 5
-
-    # # Create empty lists to store results for each type (bal_accuracy)
-    # val_bal_acc_list = [[] for _ in range(num_trials)]
-
-    # # train
-    # for i in range(num_trials):
-    #     print(f'\n\nStarting Trial {i+1} of Node number {configs.node_num} with Testing modality combination: {dict_mod}\n')
-
-    #     configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/Part_2" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model" # for part 2
-
-    #     bal_acc, _ = test(configs, target_dict=dict_mod)
-
-    #     val_bal_acc_list[i].append(bal_acc) 
-
-
-    # # Combine data
-    # row_data_val = [configs.node_num] + [val_bal_acc_list[j][0] for j in range(num_trials)]
-
-    # # Create a DataFrame
-    # headers_val = ['Node #', 'Val_Bal_Acc_1', 'Val_Bal_Acc_2', 'Val_Bal_Acc_3', 'Val_Bal_Acc_4', 'Val_Bal_Acc_5']
-
-    # df_val = pd.DataFrame([row_data_val], columns=headers_val)
-
-    # # Saving to Excel
-    # # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Temporal_Lobe/"  
-    # # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Temporal_Lobe/"
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/"
-    # save_path = os.path.join(path, "Node_"+str(configs.node_num)+"_Results", "Eval_Results")
-
-    # if not os.path.exists(save_path):
-    #     os.makedirs(save_path)
-
-    # filename_val = "results_LeftHemis_val_FULL_Modality_Only_Part_2.xlsx"
-    # save_filepath_val = os.path.join(save_path, filename_val)
-
-    # df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
-
-    # print("\nDone!")
