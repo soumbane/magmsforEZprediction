@@ -1,6 +1,7 @@
 # Shared Classification Head (SCH)
 import torch
 import torch.nn as nn
+from typing import Union
 
 
 class SCH(nn.Module):
@@ -21,7 +22,7 @@ class SCH(nn.Module):
         self.softmax = nn.Softmax(dim=1)
 
 
-    def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
+    def forward(self, x: tuple[torch.Tensor, torch.Tensor]) -> Union[torch.Tensor, tuple[torch.Tensor,torch.Tensor]]:
         r"""
         Args:
             x_cs: course scale input
@@ -38,7 +39,11 @@ class SCH(nn.Module):
         x_final = self.mlp(x_combined)
 
         # return self.softmax(x_final)
-        return x_final
+        # return x_final
+        if self.training:
+            return x_final
+        else:
+            return x_final, x_combined
 
 
 if __name__ == "__main__":
