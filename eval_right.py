@@ -112,7 +112,6 @@ def get_target_dict(num: int) -> Any:
         raise ValueError(f"num should be betwen 1 and 31, got {num}")
 
     return dict_mod, list_mod
-    
 
 def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
     
@@ -145,14 +144,11 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
 
     # test checkpoint with validation cohort dataset (Last 10 patients)
     summary: dict[str, Any] = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, empty_cache=False)
+    # preds: list[torch.Tensor] = manager.predict(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    # print("Predictions: ", torch.cat([pred.argmax(-1) for pred in preds], -1).detach().cpu().numpy())
 
-    preds: list[torch.Tensor] = manager.predict(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
-    print("Predictions: ", torch.cat([pred.argmax(-1) for pred in preds], -1).detach().cpu().numpy())
-
-    gt_vals: list[torch.Tensor] = [gt for _, gt in testing_dataset]
-    print("Ground-Truth: ", torch.cat([gt_val for gt_val in gt_vals], -1).detach().cpu().numpy())
-
-    # raise ValueError("Stop here to see predictions and ground-truth values")
+    # gt_vals: list[torch.Tensor] = [gt for _, gt in testing_dataset]
+    # print("Ground-Truth: ", torch.cat([gt_val for gt_val in gt_vals], -1).detach().cpu().numpy())
 
     if conf_met_fn.results is not None:
         summary.update({"conf_met": conf_met_fn.results})
@@ -199,11 +195,11 @@ if __name__ == "__main__":
     # df_val = pd.DataFrame(val_bal_acc_per_modality_list, columns=headers_val)
 
     # # Saving to Excel
-    # # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/" # for original validation dataset
+    # # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/" # for orig val dataset
 
-    # # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/NO_Distillation/" # for original validation dataset - NO Distillation
-
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/SubGroups/" # for subgroup analysis
+    # # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/NO_Distillation/" # for orig val dataset - NO_Distillation
+    
+    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/SubGroups/" # for subgroup analysis
 
     # save_path = os.path.join(path, "Node_"+str(configs.node_num)+"_Results", "Eval_Results")
 
@@ -225,10 +221,10 @@ if __name__ == "__main__":
        
     base_exp_model = configs.model
 
-    dict_mod, list_mod = get_target_dict(31)  # FULL modalities (T1-T2-FLAIR-DWI-DWIC)
+    # dict_mod, list_mod = get_target_dict(31)  # FULL modalities (T1-T2-FLAIR-DWI-DWIC)
     # dict_mod, list_mod = get_target_dict(30)  # FULL modalities (T1-T2-FLAIR-DWI)
     # dict_mod, list_mod = get_target_dict(28)  # FULL modalities (T1-T2-FLAIR)
-    # dict_mod, list_mod = get_target_dict(29)  # FULL modalities (T1-T2-FLAIR-DWIC)
+    dict_mod, list_mod = get_target_dict(29)  # FULL modalities (T1-T2-FLAIR-DWIC)
 
     num_trials = 5
 
@@ -239,9 +235,9 @@ if __name__ == "__main__":
     for i in range(num_trials):
         print(f'\n\nStarting Trial {i+1} of Node number {configs.node_num} with Testing modality combination: {dict_mod}\n')
 
-        configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/Part_2" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model" # for part 2
+        # configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/Part_2" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model" # for part 2
 
-        # configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/NO_Distillation" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model" # for NO Distillation
+        configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/NO_Distillation" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model" # for NO Distillation
 
         bal_acc, _ = test(configs, target_dict=dict_mod)
 
@@ -257,21 +253,21 @@ if __name__ == "__main__":
     df_val = pd.DataFrame([row_data_val], columns=headers_val)
 
     # Saving to Excel
-    # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Temporal_Lobe/"  
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Temporal_Lobe/"
-    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/"
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/NO_Distillation/" # for original validation dataset - NO Distillation
+    # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/"  
+    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Temporal_Lobe/"
+    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/"
+    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/NO_Distillation/" # for orig val dataset - NO_Distillation
 
     save_path = os.path.join(path, "Node_"+str(configs.node_num)+"_Results", "Eval_Results")
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    # filename_val = "results_LeftHemis_val_T1_T2_FLAIR_DWIC_NO_Dist.xlsx" # T1-T2-FLAIR-DWI-DWIC
-    # filename_val = "results_LeftHemis_val_T1_T2_FLAIR_DWIC.xlsx" # T1-T2-FLAIR-DWIC
-    filename_val = "results_LeftHemis_val_FULL_Modality_Only_Part_2_test.xlsx" # T1-T2-FLAIR-DWI-DWIC
+    filename_val = "results_RightHemis_val_T1_T2_FLAIR_DWIC_NO_Dist.xlsx" # T1-T2-FLAIR-DWI-DWIC
+    # filename_val = "results_RightHemis_val_T1_T2_FLAIR_DWIC.xlsx" # T1-T2-FLAIR
     save_filepath_val = os.path.join(save_path, filename_val)
 
     df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
 
     print("\nDone!")
+    

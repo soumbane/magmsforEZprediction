@@ -140,17 +140,25 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
 
     manager.target_dict = target_dict
 
-
     print(f'The best balanced accuracy on validation set occurs at {manager.current_epoch + 1} epoch number')
 
     # test checkpoint with validation cohort dataset (Last 10 patients)
     summary: dict[str, Any] = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, empty_cache=False)
 
     preds: list[torch.Tensor] = manager.predict(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
-    print("Predictions: ", torch.cat([pred.argmax(-1) for pred in preds], -1).detach().cpu().numpy())
+
+    probs = torch.cat([pred.softmax(-1) for pred in preds], 0).detach().cpu().numpy()
+    # print("Predictions: ", torch.cat([pred.argmax(-1) for pred in preds], -1).detach().cpu().numpy())
+    # print(f"Probabilities: {probs}")
 
     gt_vals: list[torch.Tensor] = [gt for _, gt in testing_dataset]
-    print("Ground-Truth: ", torch.cat([gt_val for gt_val in gt_vals], -1).detach().cpu().numpy())
+    gts = torch.cat([gt_val for gt_val in gt_vals], -1).detach().cpu().numpy()
+    # print("Ground-Truth: ", gts)
+
+    probs_final = [probs[i][int(gt)] for i, gt in enumerate(gts)]
+    # Round each value in the vector to 4 decimal places
+    probs_final_rounded = [round(prob, 4) for prob in probs_final]
+    # print("Final Probabilities: ", probs_final_rounded)
 
     # raise ValueError("Stop here to see predictions and ground-truth values")
 
@@ -158,7 +166,7 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
         summary.update({"conf_met": conf_met_fn.results})
     view.logger.info(summary)
     
-    return summary['bal_accuracy'], manager.target_dict
+    return summary['bal_accuracy'], manager.target_dict, gts, probs_final_rounded
 
 
 if __name__ == "__main__":
@@ -232,8 +240,13 @@ if __name__ == "__main__":
 
     num_trials = 5
 
+    all_results = []  # List to store results for all nodes
+
     # Create empty lists to store results for each type (bal_accuracy)
     val_bal_acc_list = [[] for _ in range(num_trials)]
+
+    probs_list = [] # List of probability values predicted by the model
+    gts = None  # List of Ground-Truth values (to be saved only once)
 
     # train
     for i in range(num_trials):
@@ -243,35 +256,66 @@ if __name__ == "__main__":
 
         # configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/NO_Distillation" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model" # for NO Distillation
 
-        bal_acc, _ = test(configs, target_dict=dict_mod)
+        bal_acc, _, gts_current, probs = test(configs, target_dict=dict_mod)
 
         val_bal_acc_list[i].append(bal_acc) 
+        probs_list.append(probs)  # Collect probability values for each trial
 
+        if gts is None:  # Save gts only once
+            gts = gts_current
 
-    # Combine data
-    row_data_val = [configs.node_num] + [val_bal_acc_list[j][0] for j in range(num_trials)]
+    
+    # Create a DataFrame for ground-truth and probability values
+    data = {
+        'Node #': [configs.node_num] * len(gts),
+        'Ground-Truth SOZ Labels': gts
+    }
 
-    # Create a DataFrame
-    headers_val = ['Node #', 'Val_Bal_Acc_1', 'Val_Bal_Acc_2', 'Val_Bal_Acc_3', 'Val_Bal_Acc_4', 'Val_Bal_Acc_5']
+    # Add columns for each trial's probabilities
+    for i in range(num_trials):
+        data[f'Prob_Trial_{i+1}'] = probs_list[i]
 
-    df_val = pd.DataFrame([row_data_val], columns=headers_val)
+    df_gts_probs = pd.DataFrame(data)
 
-    # Saving to Excel
-    # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Temporal_Lobe/"  
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Temporal_Lobe/"
-    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/"
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/NO_Distillation/" # for original validation dataset - NO Distillation
-
-    save_path = os.path.join(path, "Node_"+str(configs.node_num)+"_Results", "Eval_Results")
+    # Define the path for saving
+    base_path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/"
+    save_path = os.path.join(base_path, "Node_"+str(configs.node_num) + "_Results", "Eval_Results")
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    # filename_val = "results_LeftHemis_val_T1_T2_FLAIR_DWIC_NO_Dist.xlsx" # T1-T2-FLAIR-DWI-DWIC
-    # filename_val = "results_LeftHemis_val_T1_T2_FLAIR_DWIC.xlsx" # T1-T2-FLAIR-DWIC
-    filename_val = "results_LeftHemis_val_FULL_Modality_Only_Part_2_test.xlsx" # T1-T2-FLAIR-DWI-DWIC
-    save_filepath_val = os.path.join(save_path, filename_val)
+    # Save the ground-truth and probabilities to a combined Excel file
+    filename_gts_probs = "results_LeftHemis_val_FULL_Modality_Part_2_Probs.xlsx"
+    save_filepath_gts_probs = os.path.join(save_path, filename_gts_probs)
+    df_gts_probs.to_excel(save_filepath_gts_probs, index=False, sheet_name='GTs_and_Probs')
 
-    df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
+        
+
+###############################################################################################
+    # # Combine data
+    # row_data_val = [configs.node_num] + [val_bal_acc_list[j][0] for j in range(num_trials)]
+
+    # # Create a DataFrame
+    # headers_val = ['Node #', 'Val_Bal_Acc_1', 'Val_Bal_Acc_2', 'Val_Bal_Acc_3', 'Val_Bal_Acc_4', 'Val_Bal_Acc_5']
+
+    # df_val = pd.DataFrame([row_data_val], columns=headers_val)
+
+    # # Saving to Excel
+    # # path = "/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Left_Temporal_Lobe/"  
+    # # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Temporal_Lobe/"
+    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/"
+    # # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/NO_Distillation/" # for original validation dataset - NO Distillation
+
+    # save_path = os.path.join(path, "Node_"+str(configs.node_num)+"_Results", "Eval_Results")
+
+    # if not os.path.exists(save_path):
+    #     os.makedirs(save_path)
+
+    # # filename_val = "results_LeftHemis_val_T1_T2_FLAIR_DWIC_NO_Dist.xlsx" # T1-T2-FLAIR-DWI-DWIC
+    # # filename_val = "results_LeftHemis_val_T1_T2_FLAIR_DWIC.xlsx" # T1-T2-FLAIR-DWIC
+    # filename_val = "results_LeftHemis_val_FULL_Modality_Only_Part_2_test.xlsx" # T1-T2-FLAIR-DWI-DWIC
+    # save_filepath_val = os.path.join(save_path, filename_val)
+
+    # df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
 
     print("\nDone!")

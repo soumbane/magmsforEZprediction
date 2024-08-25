@@ -6,7 +6,8 @@ from .nn import MSFE, SHFE, SCH
 from .nn.fusion import Fusion, FusionType
 
 
-def build(num_classes: int = 2, /, out_main_ch: int = 64, main_downsample: bool = True, *, out_filters: int = 128, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,128], fusion: FusionType = FusionType.MID_MEAN, train_modality: str = "ALL") -> MAGNET2[MSFE, Fusion, torch.nn.Sequential]:
+# def build(num_classes: int = 2, /, out_main_ch: int = 64, main_downsample: bool = True, *, out_filters: int = 128, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,128], fusion: FusionType = FusionType.MID_MEAN, train_modality: str = "ALL") -> MAGNET2[MSFE, Fusion, torch.nn.Sequential]:
+def build(num_classes: int = 2, /, out_main_ch: int = 64, main_downsample: bool = True, *, out_filters: int = 128, filters_t1: list[int] = [32,64,128], filters_t2: list[int] = [32,64,128], filters_flair: list[int] = [32,64,128], filters_dwi: list[int] = [32,64,128], filters_dwic: list[int] = [32,64,128], filters_shfe: list[int] = [128,128], fusion: FusionType = FusionType.MID_MEAN, train_modality: str = "ALL"):
     r"""
     Build `magnet.MAGNET2` for EzPred
     Args:
