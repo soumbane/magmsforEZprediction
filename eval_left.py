@@ -233,10 +233,10 @@ if __name__ == "__main__":
        
     base_exp_model = configs.model
 
-    dict_mod, list_mod = get_target_dict(31)  # FULL modalities (T1-T2-FLAIR-DWI-DWIC)
+    # dict_mod, list_mod = get_target_dict(31)  # FULL modalities (T1-T2-FLAIR-DWI-DWIC)
     # dict_mod, list_mod = get_target_dict(30)  # FULL modalities (T1-T2-FLAIR-DWI)
     # dict_mod, list_mod = get_target_dict(28)  # FULL modalities (T1-T2-FLAIR)
-    # dict_mod, list_mod = get_target_dict(29)  # FULL modalities (T1-T2-FLAIR-DWIC)
+    dict_mod, list_mod = get_target_dict(29)  # FULL modalities (T1-T2-FLAIR-DWIC)
 
     num_trials = 5
 
@@ -285,7 +285,7 @@ if __name__ == "__main__":
         os.makedirs(save_path)
 
     # Save the ground-truth and probabilities to a combined Excel file
-    filename_gts_probs = "results_LeftHemis_val_FULL_Modality_Part_2_Probs.xlsx"
+    filename_gts_probs = "results_LeftHemis_val_T1_T2_FLAIR_DWIC_Part_2_Probs.xlsx"
     save_filepath_gts_probs = os.path.join(save_path, filename_gts_probs)
     df_gts_probs.to_excel(save_filepath_gts_probs, index=False, sheet_name='GTs_and_Probs')
 
