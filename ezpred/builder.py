@@ -105,6 +105,19 @@ def build(num_classes: int = 2, /, out_main_ch: int = 64, main_downsample: bool 
             3: "DWI",
             4: "DWIC"
         }
+    elif train_modality == "T1-T2-FLAIR-DWI": # Training with T1, T2, FLAIR and DWI Only - Top 3 modalities    
+        target_dict = {
+            0: "T1",
+            1: "T2",
+            2: "FLAIR",
+            3: "DWI"
+        }
+    elif train_modality == "T1-T2-FLAIR": # Training with T1, T2 and FLAIR Only - Top 3 modalities    
+        target_dict = {
+            0: "T1",
+            1: "T2",
+            2: "FLAIR"
+        }
     else:
         raise NotImplementedError("Modality combination training is not needed.")
 

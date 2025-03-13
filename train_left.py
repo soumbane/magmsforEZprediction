@@ -37,14 +37,13 @@ def train(cfg: TrainingConfigs, /) -> Union[magnet.MAGNET2, Tuple[float, float, 
     # kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean') for _ in range(cfg.num_mod)]
     # mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE() for _ in range(cfg.num_mod)]
 
-
     # The MAG-MS losses without any self-distillation
     main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)]
     main_losses[1] = magnet.losses.CrossEntropy(weight=0) 
     main_losses[2] = magnet.losses.CrossEntropy(weight=0)
     main_losses[3] = magnet.losses.CrossEntropy(weight=0)
     main_losses[4] = magnet.losses.CrossEntropy(weight=0)
-    main_losses[5] = magnet.losses.CrossEntropy(weight=0)
+    # main_losses[5] = magnet.losses.CrossEntropy(weight=0)
 
     kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean', weight=0) for _ in range(cfg.num_mod)]
     mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE(weight=0) for _ in range(cfg.num_mod)]
@@ -149,25 +148,26 @@ if __name__ == "__main__":
     df_train = pd.DataFrame([row_data_train], columns=headers_train)
 
     # Saving to Excel
-    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/"
+    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/"
     save_path = os.path.join(path, "Node_"+str(configs.node_num), "Results")
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
     # filename_val = "results_val.xlsx"
-    filename_val = "results_val_NO_Distillation.xlsx"
+    filename_val = f"results_val_NO_Distillation_{configs.train_mod}.xlsx"
     save_filepath_val = os.path.join(save_path, filename_val)
 
     df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
 
     # filename_train = "results_train.xlsx"
-    filename_train = "results_train_NO_Distillation.xlsx"
+    filename_train = f"results_train_NO_Distillation_{configs.train_mod}.xlsx"
     save_filepath_train = os.path.join(save_path, filename_train)
 
     df_train.to_excel(save_filepath_train, index=False, sheet_name='Sheet1')
 
     print("\nDone!")
+
 
     ###############################################################################
     # # get configs - perform only 1 or 2 trials to modify the experiments for trial 
@@ -201,7 +201,7 @@ if __name__ == "__main__":
     #     raise ValueError('The trial number is not valid!')
     
     # # Load the excel files - both for validation and training
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/"
+    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/"
     # load_path = os.path.join(path, "Node_"+str(configs.node_num), "Results")
 
     # # Load validation file

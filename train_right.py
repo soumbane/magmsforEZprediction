@@ -44,7 +44,7 @@ def train(cfg: TrainingConfigs, /) -> Union[magnet.MAGNET2, Tuple[float, float, 
     main_losses[2] = magnet.losses.CrossEntropy(weight=0)
     main_losses[3] = magnet.losses.CrossEntropy(weight=0)
     main_losses[4] = magnet.losses.CrossEntropy(weight=0)
-    main_losses[5] = magnet.losses.CrossEntropy(weight=0)
+    # main_losses[5] = magnet.losses.CrossEntropy(weight=0)
 
     kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean', weight=0) for _ in range(cfg.num_mod)]
     mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE(weight=0) for _ in range(cfg.num_mod)]
@@ -156,13 +156,13 @@ if __name__ == "__main__":
         os.makedirs(save_path)
 
     # filename_val = "results_val.xlsx"
-    filename_val = "results_val_NO_Distillation.xlsx"
+    filename_val = f"results_val_NO_Distillation_{configs.train_mod}.xlsx"
     save_filepath_val = os.path.join(save_path, filename_val)
 
     df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
 
     # filename_train = "results_train.xlsx"
-    filename_train = "results_train_NO_Distillation.xlsx"
+    filename_train = f"results_train_NO_Distillation_{configs.train_mod}.xlsx"
     save_filepath_train = os.path.join(save_path, filename_train)
 
     df_train.to_excel(save_filepath_train, index=False, sheet_name='Sheet1')
