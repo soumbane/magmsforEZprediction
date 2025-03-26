@@ -1,1 +1,0 @@
-python train.py /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/trained_models/magms_node_888_tr_1.model -b 4 -lr 1e-2 --num_mod 5 --node_num 888 --train_mod ALL -e 3 -exp exp_node888/trial1/magms_node_888_tr_1.exp --replace_experiment --show_verbose --device cuda:1

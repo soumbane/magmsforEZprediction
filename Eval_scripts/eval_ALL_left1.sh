@@ -6,7 +6,7 @@ node_nums=(205 211 213 214 216 217 220 221 222 224 225 226 227 228 229 230 231 2
 # Loop through each node_num
 for node_num in "${node_nums[@]}"
 do    
-    # Run the evaluation script with specified arguments
+    # Run the evaluation script with specified arguments (both for with and NO distillation)
     python eval_left.py /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/ /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/experiments/ -b 4 --node_num ${node_num} --replace_experiment --show_verbose --device cuda:0
 
     # python eval_left.py /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/SubGroups/ /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/experiments/ -b 4 --node_num ${node_num} --replace_experiment --show_verbose --device cuda:0 # for subgroups
