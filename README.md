@@ -62,5 +62,18 @@ The following steps are required to replicate our work:
 
 5. The testing process can be customized by modifying the parameters in the shell scripts or directly in the `eval_left.py` and `eval_right.py` files.
 
+## Final Results
+1. After evaluating the results, combine the results for all nodes of the left hemisphere with:
+```
+python combine_node_excel_sheet_results_eval_left.py
+```
+
+2. After evaluating the results, combine the results for all nodes of the right hemisphere with:
+```
+python combine_node_excel_sheet_results_eval_right.py
+```
+
+The above will provide excel files with the results for all nodes.
+
 ## Citation
 
