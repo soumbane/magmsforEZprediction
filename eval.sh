@@ -1,3 +1,0 @@
-# python eval.py /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Lobe_Data_exp10/ /home/user1/Desktop/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/experiments/magms_exp10.exp/checkpoints/best_bal_accuracy.model -b 32 --replace_experiment --show_verbose --device cuda:2
-
-python eval.py /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/ /home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/magmsforEZprediction/experiments/exp_node948/magms_trial5.exp/checkpoints/best_bal_accuracy.model -b 4 --node_num 948 --replace_experiment --show_verbose --device cuda:1
