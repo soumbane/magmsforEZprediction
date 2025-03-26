@@ -42,7 +42,7 @@ def train(cfg: TrainingConfigs, /) -> Union[magnet.MAGNET2, Tuple[float, float, 
     main_losses[1] = magnet.losses.CrossEntropy(weight=0) 
     main_losses[2] = magnet.losses.CrossEntropy(weight=0)
     main_losses[3] = magnet.losses.CrossEntropy(weight=0)
-    main_losses[4] = magnet.losses.CrossEntropy(weight=0)
+    # main_losses[4] = magnet.losses.CrossEntropy(weight=0)
     # main_losses[5] = magnet.losses.CrossEntropy(weight=0)
 
     kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean', weight=0) for _ in range(cfg.num_mod)]
@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
     base_exp_name = configs.experiment
 
-    num_trials = 5
+    num_trials = 3
     
     # Create empty lists to store results for each type (bal_accuracy, sensitivity, specificity)
     val_bal_acc_list = [[] for _ in range(num_trials)]
@@ -139,29 +139,34 @@ if __name__ == "__main__":
     row_data_train = [configs.node_num] + [train_bal_acc_list[j][0] for j in range(num_trials)] + [train_sen_list[j][0] for j in range(num_trials)] + [train_spec_list[j][0] for j in range(num_trials)]
 
     # Create a DataFrame
-    headers_val = ['Node #', 'Val_Balanced_Accuracy_1', 'Val_Balanced_Accuracy_2', 'Val_Balanced_Accuracy_3', 'Val_Balanced_Accuracy_4', 'Val_Balanced_Accuracy_5', 'Val_sensitivity_1', 'Val_sensitivity_2', 'Val_sensitivity_3', 'Val_sensitivity_4', 'Val_sensitivity_5', 'Val_specificity_1', 'Val_specificity_2', 'Val_specificity_3', 'Val_specificity_4', 'Val_specificity_5']
+    # headers_val = ['Node #', 'Val_Balanced_Accuracy_1', 'Val_Balanced_Accuracy_2', 'Val_Balanced_Accuracy_3', 'Val_Balanced_Accuracy_4', 'Val_Balanced_Accuracy_5', 'Val_sensitivity_1', 'Val_sensitivity_2', 'Val_sensitivity_3', 'Val_sensitivity_4', 'Val_sensitivity_5', 'Val_specificity_1', 'Val_specificity_2', 'Val_specificity_3', 'Val_specificity_4', 'Val_specificity_5']
     
-    headers_train = ['Node #', 'Train_Balanced_Accuracy_1', 'Train_Balanced_Accuracy_2', 'Train_Balanced_Accuracy_3', 'Train_Balanced_Accuracy_4', 'Train_Balanced_Accuracy_5', 'Train_sensitivity_1', 'Train_sensitivity_2', 'Train_sensitivity_3', 'Train_sensitivity_4', 'Train_sensitivity_5', 'Train_specificity_1', 'Train_specificity_2', 'Train_specificity_3', 'Train_specificity_4', 'Train_specificity_5']
+    # headers_train = ['Node #', 'Train_Balanced_Accuracy_1', 'Train_Balanced_Accuracy_2', 'Train_Balanced_Accuracy_3', 'Train_Balanced_Accuracy_4', 'Train_Balanced_Accuracy_5', 'Train_sensitivity_1', 'Train_sensitivity_2', 'Train_sensitivity_3', 'Train_sensitivity_4', 'Train_sensitivity_5', 'Train_specificity_1', 'Train_specificity_2', 'Train_specificity_3', 'Train_specificity_4', 'Train_specificity_5']
+
+    headers_val = ['Node #', 'Val_Balanced_Accuracy_1', 'Val_Balanced_Accuracy_2', 'Val_Balanced_Accuracy_3', 'Val_sensitivity_1', 'Val_sensitivity_2', 'Val_sensitivity_3', 'Val_specificity_1', 'Val_specificity_2', 'Val_specificity_3']
+    
+    headers_train = ['Node #', 'Train_Balanced_Accuracy_1', 'Train_Balanced_Accuracy_2', 'Train_Balanced_Accuracy_3', 'Train_sensitivity_1', 'Train_sensitivity_2', 'Train_sensitivity_3', 'Train_specificity_1', 'Train_specificity_2', 'Train_specificity_3']
 
     df_val = pd.DataFrame([row_data_val], columns=headers_val)
 
     df_train = pd.DataFrame([row_data_train], columns=headers_train)
 
     # Saving to Excel
-    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/"
+    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/"
+    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/NO_Distillation/"
     save_path = os.path.join(path, "Node_"+str(configs.node_num), "Results")
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
     # filename_val = "results_val.xlsx"
-    filename_val = f"results_val_NO_Distillation_{configs.train_mod}.xlsx"
+    filename_val = f"{configs.train_mod}_results_val_NO_Distillation.xlsx"
     save_filepath_val = os.path.join(save_path, filename_val)
 
     df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
 
     # filename_train = "results_train.xlsx"
-    filename_train = f"results_train_NO_Distillation_{configs.train_mod}.xlsx"
+    filename_train = f"{configs.train_mod}_results_train_NO_Distillation.xlsx"
     save_filepath_train = os.path.join(save_path, filename_train)
 
     df_train.to_excel(save_filepath_train, index=False, sheet_name='Sheet1')
