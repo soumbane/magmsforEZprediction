@@ -8,6 +8,7 @@ This is the official PyTorch implementation of the paper **Non-invasive Localiza
 * [torchmanager](https://github.com/kisonho/torchmanager) >= 1.1.0
 * [Monai](https://monai.io) >= 1.1
 * [Multimodality](https://github.com/kisonho/multimodality/tree/feature-0201)
+* Download the script from the above Multimodality branch in your code directory - since it will be used.
 
 ## Get Started
 The following steps are required to replicate our work:
