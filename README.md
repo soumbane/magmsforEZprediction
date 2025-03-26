@@ -1,6 +1,6 @@
-# Non-invasive Localization of Seizure Onset Zone using Clinically Acquired MRI in Children with Drug-Resistant Epilepsy: a Sequence-Agnostic Model with Cross-Sequence Distillation
+# Sequence-Agnostic Model with Cross-Sequence Distillation for Localization of Seizure Onset Zone
 
-This is the official PyTorch implementation of the paper **Non-invasive Localization of Seizure Onset Zone using Clinically Acquired MRI in Children with Drug-Resistant Epilepsy: a Sequence-Agnostic Model with Cross-Sequence Distillation** that was submitted to Computers in Biology and Medicine Journal and is currently under review.
+This is the official PyTorch implementation of the paper **Non-invasive Localization of Seizure Onset Zone using Clinically Acquired MRI in Children with Drug-Resistant Epilepsy: a Sequence-Agnostic Model with Cross-Sequence Distillation** that was submitted to **Computers in Biology and Medicine Journal** and is currently under review.
 
 ## Requirements
 * Python >= 3.9
