@@ -46,8 +46,9 @@ def train(cfg: TrainingConfigs, /) -> Union[magnet.MAGNET2, Tuple[float, float, 
     # main_losses[4] = magnet.losses.CrossEntropy(weight=0)
     # main_losses[5] = magnet.losses.CrossEntropy(weight=0)
 
-    kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean', weight=0) for _ in range(cfg.num_mod)]
-    mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE(weight=0) for _ in range(cfg.num_mod)]
+    # for NO Distillation exp (weight = 0) - uncomment for NO Distillation exp
+    # kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean', weight=0) for _ in range(cfg.num_mod)]
+    # mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE(weight=0) for _ in range(cfg.num_mod)]
 
     magms_loss = magnet.losses.MAGMSLoss(main_losses, distillation_loss=kldiv_losses, feature_losses=mse_losses)
 
