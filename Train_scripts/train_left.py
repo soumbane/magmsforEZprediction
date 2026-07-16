@@ -3,6 +3,7 @@ from torchmanager_core import view
 from torchmanager.metrics import BinaryConfusionMetric, metric
 from torch.backends import cudnn
 import os
+import numpy as np
 
 import data, ezpred
 from ezpred.nn.fusion import FusionType
