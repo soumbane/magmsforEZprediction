@@ -2,8 +2,8 @@ import pandas as pd
 import os
 
 # Define the paths of your Excel files
-# base_path = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/'
-base_path = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/NO_Distillation/'
+base_path = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/'
+# base_path = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/NO_Distillation/'
 # base_path = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/SubGroups/'
 
 # node_nums = ["6","18"]
@@ -22,7 +22,7 @@ for node_num in node_nums:
 
     # file_path_val = os.path.join(base_path, "Node_"+node_num+"_Results", "New_Eval_Results", "results_LeftHemis_val_T1_T2_FLAIR_DWI_NO_Dist.xlsx") # For ALL modality combinations - NO Distillation
 
-    file_path_val = os.path.join(base_path, "Node_"+node_num+"_Results", "New_Eval_Results", "results_LeftHemis_val_T1_T2_FLAIR_NO_Dist.xlsx")
+    file_path_val = os.path.join(base_path, "Node_"+node_num+"_Results", "Eval_Results", "results_val_ALL_modalities_Part_2.xlsx")  # ALL 31 modality combinations - Part_2 (WITH distillation)
 
     # file_path_val = os.path.join(base_path, "Node_"+node_num+"_Results", "Eval_Results", "results_LeftHemis_val_T1_T2_FLAIR_DWIC_NO_Dist.xlsx") # For FULL modality Only
 
@@ -39,8 +39,8 @@ for path in file_paths_val:
     df = pd.read_excel(path)  
 
     # Stack the rows
-    # combined_df_val = pd.concat([combined_df_val, df], axis=1) # For ALL modality combinations
-    combined_df_val = pd.concat([combined_df_val, df], axis=0) # For FULL or partial modality Only
+    combined_df_val = pd.concat([combined_df_val, df], axis=1) # For ALL modality combinations
+    # combined_df_val = pd.concat([combined_df_val, df], axis=0) # For FULL or partial modality Only
 
 # Reset the index to avoid duplicate row indices
 combined_df_val = combined_df_val.reset_index(drop=True)
@@ -51,9 +51,9 @@ combined_df_val = combined_df_val.reset_index(drop=True)
 # combined_df_val.to_excel('LeftHemis_val_T1_T2_FLAIR_DWIC_No_Dist.xlsx', index=False)
 # combined_df_val.to_excel('LeftHemis_val_T1_T2_FLAIR_DWI_No_Dist.xlsx', index=False)
 
-combined_df_val.to_excel('LeftHemis_val_T1_T2_FLAIR_No_Dist.xlsx', index=False)
+# combined_df_val.to_excel('LeftHemis_val_T1_T2_FLAIR_No_Dist.xlsx', index=False)
 
-# combined_df_val.to_excel('LeftHemis_val_ALL_modality_Comb_Part_2_corr.xlsx', index=False)
+combined_df_val.to_excel('LeftHemis_val_ALL_modality_Comb_Part_2_corr.xlsx', index=False)
 
 # combined_df_val.to_excel('LeftHemis_val_ALL_modality_Comb_MR1_corr.xlsx', index=False)
 
