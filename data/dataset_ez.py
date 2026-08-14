@@ -12,6 +12,8 @@ from torchmanager.data import Dataset
 class EZMode(Enum):
     TRAIN = "train"
     TEST = "test"
+    ADD_17 = "add_17" # additional cohort, the 17 subjects with all five sequences
+    ADD_13 = "add_13" # additional cohort, the 13 subjects without DWIC
 
 
 class DatasetEZ_Node(Dataset):
@@ -51,8 +53,18 @@ class DatasetEZ_Node(Dataset):
             self.x_mat_name = "X_orig_valid_patient"
             self.y_mat_name = "Y_orig_valid_patient"
 
+        elif self.mode == EZMode.ADD_17 or self.mode == EZMode.ADD_13:
+            # additional validation cohort, staged by data/prepare_add_cohort.py
+            sub_dir = 'Add_Val_Data_17_withDWIC' if self.mode == EZMode.ADD_17 else 'Add_Val_Data_13_noDWIC'
+            self.path = os.path.join(self.root, 'Node_'+node_num, sub_dir)
+
+            self.x_file = f"X_valid_orig_patient"
+            self.y_file = f"Y_valid_orig_patient"
+            self.x_mat_name = "X_orig_valid_patient"
+            self.y_mat_name = "Y_orig_valid_patient"
+
         else:
-            raise NotImplementedError("Select either train or test mode.")
+            raise NotImplementedError("Select either train, test, add_17 or add_13 mode.")
 
     @property
     def unbatched_len(self) -> int:
