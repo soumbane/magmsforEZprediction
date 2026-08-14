@@ -78,16 +78,15 @@ The following steps are required to replicate our work:
 ## Additional validation cohort
 The model is trained on the same SMOTE-augmented training data (58 patients) with all five sequences and cross-sequence distillation, and the best checkpoint of each trial is selected on the 17 subjects of the additional cohort that have all five sequences. That checkpoint is then evaluated on both subject groups.
 
-1. Train all nodes, writing the checkpoints under `experiments/exp_node{N}/AddCohort/`:
+1. Train all nodes, writing the checkpoints under `experiments/exp_node{N}/AddCohort/`. The nodes are split into 10 shards spread over the 4 GPUs:
 ```
-# All nodes sequentially
-./train_ALL_add_left.sh
-./train_ALL_add_right.sh
+# Launch every shard detached, so the run survives closing the SSH session
+./run_all_add_training.sh
 
-# Or in parallel shards across GPUs
-./train_sh_scripts/nh_train_add_left0.sh
-./train_sh_scripts/nh_train_add_right0.sh
+# Progress
+grep -c "saved at" logs_add_root/*.log
 ```
+The individual shards (`train_ALL_add_left.sh`, `train_ALL_add_left_1.sh`, ... `train_ALL_add_right_5.sh`) can also be run one at a time, but they run in the foreground and are killed when the terminal closes. `train_sh_scripts/nh_train_add_*.sh` are equivalent detached versions with their own progress logs.
 
 2. Evaluate all nodes on both subject groups. Each of the 3 training trials is written as its own column, so the maximum or the mean over trials can be chosen afterwards:
 ```
