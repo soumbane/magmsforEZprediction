@@ -1,6 +1,5 @@
 import torch
 from magnet import MAGNET2
-from .networks import Basic
 
 from .nn import MSFE, SHFE, SCH
 from .nn.fusion import Fusion, FusionType
