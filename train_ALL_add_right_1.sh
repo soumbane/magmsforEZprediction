@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Shard right0 of the right hemisphere (78 nodes) on cuda:0
+# Shard right1 of the right hemisphere (78 nodes) on cuda:0
 # Trains on the original SMOTE-augmented training data (58 patients) with all 5 sequences and
 # cross-sequence distillation, selecting the best checkpoint on the 17 subjects of the additional
 # cohort that have all five sequences. Runs sequentially in the foreground; for a detached run use
-# train_sh_scripts/nh_train_add_right0.sh
+# train_sh_scripts/nh_train_add_right1.sh
 
-node_nums=(504 506 508 509 510 511 512 513 514 515 516 517 518 519 520 521 522 524 525 526 529 530 534 535 536 537 538 539 540 541 542 543 546 547 548 549 551 552 553 554 555 556 557 558 559 560 561 562 563 564 565 566 567 568 569 570 571 572 573 574 575 576 581 582 584 585 586 587 588 589 590 591 592 593 594 595 596 598)
+node_nums=(669 670 671 672 673 674 675 676 677 678 681 683 685 686 690 691 692 693 694 695 696 697 698 699 700 701 702 703 704 705 706 707 708 709 710 711 712 713 714 715 716 717 718 719 720 721 722 723 724 725 726 727 728 730 731 732 733 735 736 737 738 739 740 741 742 743 744 745 746 747 748 749 750 751 756 757 758 759)
 
 # Loop through each node_num
 for node_num in "${node_nums[@]}"; do

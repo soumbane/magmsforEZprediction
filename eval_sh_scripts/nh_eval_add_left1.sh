@@ -25,7 +25,7 @@ do
     echo "[$(date)] Starting evaluation for node_num ${node_num}" >> $LOG_FILE
     
     # Run the evaluation script with specified arguments
-    python eval_left.py /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/ /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/experiments/ -b 4 --node_num ${node_num} --replace_experiment --show_verbose --device cuda:0 >> $LOG_FILE 2>&1
+    python eval_left.py /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/ /media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Models/magmsforEZprediction/experiments/ -b 4 --node_num ${node_num} --replace_experiment --show_verbose --device cuda:2 >> $LOG_FILE 2>&1
     
     # Record the experiment completion
     echo "[$(date)] Done Evaluating ALL modalities for node_num ${node_num}" >> $LOG_FILE
