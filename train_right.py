@@ -22,7 +22,12 @@ def train(cfg: TrainingConfigs, /) -> Union[magnet.MAGNET2, Tuple[float, float, 
 
     # initialize dataset for whole brain
     training_dataset = data.DatasetEZ_Node(cfg.batch_size, cfg.data_dir, drop_last=False, mode=data.EZMode.TRAIN, shuffle=True, node_num=str(cfg.node_num))
-    validation_dataset = data.DatasetEZ_Node(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, node_num=str(cfg.node_num))
+
+    # validate on the 17 subjects of the additional cohort that have all five sequences, so that the
+    # best checkpoint is selected against the cohort the model is reported on
+    validation_dataset = data.DatasetEZ_Node(cfg.batch_size, cfg.data_dir, mode=data.EZMode.ADD_17, node_num=str(cfg.node_num))
+
+    # validation_dataset = data.DatasetEZ_Node(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, node_num=str(cfg.node_num)) # the original 10 held-out patients
     
     model = ezpred.build(2, out_main_ch=64, out_filters=64, filters_t1=[8,16,32], filters_t2=[8,16,32], filters_flair=[8,16,32], filters_dwi=[16,32,64], filters_dwic=[8,16,32], main_downsample=True, filters_shfe = [64,128], fusion=FusionType.MID_MEAN, train_modality=cfg.train_mod) 
 
@@ -32,24 +37,19 @@ def train(cfg: TrainingConfigs, /) -> Union[magnet.MAGNET2, Tuple[float, float, 
     # load optimizer, loss, and metrics
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.learning_rate, weight_decay=5e-4)  
     
-    # The actual MAG-MS losses (With Self-Distillation) - comment out for NO Distillation exps
+    # The actual MAG-MS losses (With Self-Distillation)
+    # main_losses[0] supervises the fused branch, main_losses[1:] the per-modality branches.
     main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)]
     kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean') for _ in range(cfg.num_mod)]
     mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE() for _ in range(cfg.num_mod)]
 
-
-    # The MAG-MS losses without any self-distillation
-    main_losses: list[magnet.losses.Loss] = [magnet.losses.CrossEntropy() for _ in range(cfg.num_mod+1)]
-    # main_losses[1] = magnet.losses.CrossEntropy(weight=0) # Uncomment for NO Distillation exp
-    # main_losses[2] = magnet.losses.CrossEntropy(weight=0) # Uncomment for NO Distillation exp
-    # main_losses[3] = magnet.losses.CrossEntropy(weight=0) # Uncomment for NO Distillation exp
-    
-    # main_losses[4] = magnet.losses.CrossEntropy(weight=0)
-    # main_losses[5] = magnet.losses.CrossEntropy(weight=0)
-
-    # for NO Distillation exp (weight = 0) - uncomment for NO Distillation exp
-    # kldiv_losses: list[magnet.losses.Loss] = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean', weight=0) for _ in range(cfg.num_mod)]
-    # mse_losses: list[magnet.losses.Loss] = [magnet.losses.MSE(weight=0) for _ in range(cfg.num_mod)]
+    # For the NO Distillation ablation, uncomment the block below: it drops both the distillation
+    # terms (KL + MSE) and the per-modality supervision from the ground-truth labels, leaving only
+    # the cross-entropy on the fused branch.
+    # for m in range(1, cfg.num_mod+1):
+    #     main_losses[m] = magnet.losses.CrossEntropy(weight=0)
+    # kldiv_losses = [magnet.losses.KLDiv(softmax_temperature=3, reduction='batchmean', weight=0) for _ in range(cfg.num_mod)]
+    # mse_losses = [magnet.losses.MSE(weight=0) for _ in range(cfg.num_mod)]
 
     magms_loss = magnet.losses.MAGMSLoss(main_losses, distillation_loss=kldiv_losses, feature_losses=mse_losses)
 
@@ -76,7 +76,7 @@ def train(cfg: TrainingConfigs, /) -> Union[magnet.MAGNET2, Tuple[float, float, 
     callbacks_list: list[tm.callbacks.Callback] = [experiment_callback]
 
     # train and test on validation data
-    model, train_summary = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=validation_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=callbacks_list, show_verbose=configs.show_verbose, return_summary=True) # type:ignore
+    model, train_summary = manager.fit(training_dataset, epochs=cfg.epochs, val_dataset=validation_dataset, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, callbacks_list=callbacks_list, show_verbose=cfg.show_verbose, return_summary=True) # type:ignore
 
     # # test with last model
     # val_summary: dict[str, float] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
@@ -92,7 +92,7 @@ def train(cfg: TrainingConfigs, /) -> Union[magnet.MAGNET2, Tuple[float, float, 
     else: model = manager.model
 
     manager.model = model
-    print(f'The best Dice score on validation set occurs at {manager.current_epoch + 1} epoch number') # type:ignore
+    print(f'The best balanced accuracy on validation set occurs at {manager.current_epoch + 1} epoch number') # type:ignore
 
     # test with best model on validation dataset
     val_summary: dict[str, float] = manager.test(validation_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus) # type:ignore
@@ -154,8 +154,9 @@ if __name__ == "__main__":
 
     df_train = pd.DataFrame([row_data_train], columns=headers_train)
 
-    # Saving to Excel
-    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/"
+    # Saving to Excel (AddCohort = validated on the 17 complete subjects of the additional cohort)
+    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/AddCohort/Right_Hemis/"
+    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/"
     # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/NO_Distillation/"
     save_path = os.path.join(path, "Node_"+str(configs.node_num), "Results")
 
