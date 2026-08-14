@@ -6,7 +6,6 @@ from sklearn.metrics import balanced_accuracy_score, confusion_matrix
 from torchmanager.metrics import BinaryConfusionMetric, metric
 from torchmanager_core import view
 from typing import Any
-import numpy as np
 import pandas as pd
 import os
 
@@ -112,20 +111,41 @@ def get_target_dict(num: int) -> Any:
         raise ValueError(f"num should be betwen 1 and 31, got {num}")
 
     return dict_mod, list_mod
-    
 
-def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
-    
-    # load testing dataset
-    testing_dataset = data.DatasetEZ_Node(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, node_num=str(cfg.node_num))
-    
-    # load checkpoint
-    if cfg.model.endswith(".model"):
-        manager = Manager.from_checkpoint(cfg.model, map_location=cfg.device)
-        assert isinstance(manager, Manager), "Checkpoint is not a valid `ezpred.Manager`."
-    else:
+
+def get_modality_name(target_dict: dict[int, str]) -> str:
+    r"""A readable key for a modality combination, e.g. `T1-FLAIR-DWIC`."""
+    return "-".join(target_dict[k] for k in sorted(target_dict))
+
+
+def get_dwic_free_combinations() -> list[int]:
+    r"""
+    The combination numbers of `get_target_dict` that do not contain DWIC.
+
+    `get_target_dict` encodes `num - 1` as a 5-bit mask whose least significant bit is DWIC, so the
+    DWIC-free combinations are exactly the even numbers.
+
+    Returns: A `list` of the 15 non-empty subsets of {T1, T2, FLAIR, DWI}.
+    """
+    combinations = [j for j in range(1, 32) if j % 2 == 0]
+    assert len(combinations) == 15, f"Expected 15 DWIC-free combinations, got {len(combinations)}."
+    for j in combinations:
+        dict_mod, _ = get_target_dict(j)
+        assert 4 not in dict_mod, f"Combination {j} ({dict_mod}) unexpectedly contains DWIC."
+    return combinations
+
+
+def load_manager(cfg: TestingConfigs, /) -> Manager:
+    r"""
+    Load a trained checkpoint once, so it can be reused across every modality combination instead of
+    being reloaded for each of them.
+    """
+    if not cfg.model.endswith(".model"):
         raise NotImplementedError(f"Checkpoint {cfg.model} is currently not supported.")
-    
+
+    manager = Manager.from_checkpoint(cfg.model, map_location=cfg.device)
+    assert isinstance(manager, Manager), "Checkpoint is not a valid `ezpred.Manager`."
+
     # set up confusion metrics
     bal_acc_fn = metrics.BalancedAccuracyScore()
     conf_met_fn = metrics.ConfusionMetrics(2)
@@ -133,39 +153,52 @@ def test(cfg: TestingConfigs, /, target_dict: dict[int, str] = {0:'T1'}) -> Any:
         "bal_accuracy": bal_acc_fn,
         "conf_met": conf_met_fn
         })
-    
+
     for m in manager.metric_fns.values():
         if isinstance(m, BinaryConfusionMetric):
             m._class_index = 0 # since we consider non-EZ (class 0) as positive class
 
+    print(f'The best balanced accuracy on validation set occurs at {manager.current_epoch + 1} epoch number')
+    return manager
+
+
+def test(cfg: TestingConfigs, manager: Manager, /, target_dict: dict[int, str] = {0:'T1'}, mode: data.EZMode = data.EZMode.ADD_17, return_probs: bool = False) -> Any:
+
+    # load testing dataset
+    testing_dataset = data.DatasetEZ_Node(cfg.batch_size, cfg.data_dir, mode=mode, node_num=str(cfg.node_num))
+
+    conf_met_fn = manager.metric_fns["conf_met"]
+
     manager.target_dict = target_dict
 
-    print(f'The best balanced accuracy on validation set occurs at {manager.current_epoch + 1} epoch number')
-
-    # test checkpoint with validation cohort dataset (Last 10 patients)
+    # test checkpoint with the requested validation cohort
     summary: dict[str, Any] = manager.test(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus, empty_cache=False)
 
-    preds: list[torch.Tensor] = manager.predict(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
+    gts = None
+    probs_final_rounded = None
 
-    probs = torch.cat([pred.softmax(-1) for pred in preds], 0).detach().cpu().numpy()
-    # print("Predictions: ", torch.cat([pred.argmax(-1) for pred in preds], -1).detach().cpu().numpy())
-    # print(f"Probabilities: {probs}")
+    # the per-patient probabilities need a second pass over the dataset, so only collect them when
+    # they are actually going to be used
+    if return_probs:
+        preds: list[torch.Tensor] = manager.predict(testing_dataset, show_verbose=cfg.show_verbose, device=cfg.device, use_multi_gpus=cfg.use_multi_gpus)
 
-    gt_vals: list[torch.Tensor] = [gt for _, gt in testing_dataset]
-    gts = torch.cat([gt_val for gt_val in gt_vals], -1).detach().cpu().numpy()
-    # print("Ground-Truth: ", gts)
+        probs = torch.cat([pred.softmax(-1) for pred in preds], 0).detach().cpu().numpy()
+        # print("Predictions: ", torch.cat([pred.argmax(-1) for pred in preds], -1).detach().cpu().numpy())
+        # print(f"Probabilities: {probs}")
 
-    probs_final = [probs[i][int(gt)] for i, gt in enumerate(gts)]
-    # Round each value in the vector to 4 decimal places
-    probs_final_rounded = [round(prob, 4) for prob in probs_final]
-    # print("Final Probabilities: ", probs_final_rounded)
+        gt_vals: list[torch.Tensor] = [gt for _, gt in testing_dataset]
+        gts = torch.cat([gt_val for gt_val in gt_vals], -1).detach().cpu().numpy()
+        # print("Ground-Truth: ", gts)
 
-    # raise ValueError("Stop here to see predictions and ground-truth values")
+        probs_final = [probs[i][int(gt)] for i, gt in enumerate(gts)]
+        # Round each value in the vector to 4 decimal places
+        probs_final_rounded = [round(prob, 4) for prob in probs_final]
+        # print("Final Probabilities: ", probs_final_rounded)
 
     if conf_met_fn.results is not None:
         summary.update({"conf_met": conf_met_fn.results})
     view.logger.info(summary)
-    
+
     return summary['bal_accuracy'], manager.target_dict, gts, probs_final_rounded
 
 
@@ -173,60 +206,61 @@ if __name__ == "__main__":
     configs = TestingConfigs.from_arguments()
 
     ############################################################################################################
-    ## Evaluate each node on ALL 31 modality combinations, using the Part_2 (WITH distillation) checkpoints,
-    ## averaged over the 3 training trials.
+    ## Evaluate each node on the additional validation cohort, using the AddCohort (WITH distillation)
+    ## checkpoints, keeping every training trial as its own column so the max/mean can be taken later.
     ##
-    ## Produces one column of 31 balanced-accuracy values per node: row (j-1) corresponds to the modality
-    ## combination returned by get_target_dict(j). This matches combine_node_excel_sheet_results_eval_left.py
-    ## (reads results_val_ALL_modalities_Part_2.xlsx and concatenates the per-node columns with axis=1).
+    ## Two groups are scored with the same trained model:
+    ##   - the 17 subjects with all five sequences, on ALL 31 modality combinations
+    ##   - the 13 subjects without DWIC, on the 15 DWIC-free combinations. DWIC is dropped from
+    ##     target_dict rather than being fed as an all-zero branch, which is what makes the model
+    ##     sequence-agnostic in the first place.
 
     base_exp_model = configs.model  # e.g. ".../magmsforEZprediction/experiments"
 
     num_trials = 3
 
-    # 31 entries: mean balanced accuracy over trials for each modality combination
-    val_bal_acc_per_modality_list = []
+    # (mode, combination numbers, output filename) for each of the two subject groups
+    GROUPS = [
+        (data.EZMode.ADD_17, list(range(1, 32)), "results_add17_ALL31_trials.xlsx"),
+        (data.EZMode.ADD_13, get_dwic_free_combinations(), "results_add13_DWICfree15_trials.xlsx"),
+    ]
 
-    # Loop over ALL 31 non-empty modality combinations
-    for j in range(1, 32):
-        dict_mod, list_mod = get_target_dict(j)
-
-        val_bal_acc_list = []
-
-        # Average over the training trials
-        for i in range(num_trials):
-            print(f'\n\nStarting Trial {i+1} of Node number {configs.node_num} with Testing modality combination: {dict_mod}\n')
-
-            # Part_2 = WITH cross-sequence distillation
-            configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/Part_2" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model"
-
-            # configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/NO_Distillation" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model"  # NO Distillation
-
-            bal_acc, _, _, _ = test(configs, target_dict=dict_mod)
-
-            val_bal_acc_list.append(bal_acc)
-
-        val_bal_acc_per_modality_list.append(np.mean(val_bal_acc_list))
-
-    # One column of 31 rows (one per combination), named after the node
-    headers_val = ['Node_' + str(configs.node_num)]
-    df_val = pd.DataFrame(val_bal_acc_per_modality_list, columns=headers_val)
-
-    # Saving to Excel (Part_2 = WITH distillation)
-    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/"
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/NO_Distillation/"  # NO Distillation
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/SubGroups/"  # subgroup analysis
+    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/AddCohort/Left_Hemis/"
 
     save_path = os.path.join(path, "Node_" + str(configs.node_num) + "_Results", "Eval_Results")
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    filename_val = "results_val_ALL_modalities_Part_2.xlsx"
-    # filename_val = "results_val_ALL_modalities_NO_Distillation.xlsx"
-    # filename_val = "results_val_ALL_modalities_MR1.xlsx"  # subgroup analysis
-    save_filepath_val = os.path.join(save_path, filename_val)
+    for mode, combinations, filename_val in GROUPS:
+        # one row per modality combination, one column per trial
+        bal_acc_per_trial: dict[str, list[float]] = {f"Trial_{i+1}": [] for i in range(num_trials)}
 
-    df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
+        for i in range(num_trials):
+            # AddCohort = WITH cross-sequence distillation, selected on the 17 complete subjects
+            configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/AddCohort" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model"
+
+            # load the checkpoint once and reuse it for every modality combination
+            manager = load_manager(configs)
+
+            for j in combinations:
+                dict_mod, list_mod = get_target_dict(j)
+
+                print(f'\n\nStarting Trial {i+1} of Node number {configs.node_num} on {mode.value} with Testing modality combination: {dict_mod}\n')
+
+                bal_acc, _, _, _ = test(configs, manager, target_dict=dict_mod, mode=mode)
+
+                bal_acc_per_trial[f"Trial_{i+1}"].append(bal_acc)
+
+        # rows are self-describing, so the per-node files stay readable once concatenated
+        combination_names = [get_modality_name(get_target_dict(j)[0]) for j in combinations]
+
+        df_val = pd.DataFrame({'Combination': combination_names, **bal_acc_per_trial})
+
+        save_filepath_val = os.path.join(save_path, filename_val)
+
+        df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
+
+        print(f"\nSaved {len(combination_names)} combinations x {num_trials} trials to {save_filepath_val}")
 
     print("\nDone!")
