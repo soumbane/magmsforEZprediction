@@ -23,6 +23,16 @@ The following steps are required to replicate our work:
    * The data loading steps are provided in the `data/dataset_ez.py` file. This file uses the SMOTE augmented data.
    * It performs all the necessary preprocessing steps to prepare the MRI data for training and validation.
 
+3. Additional validation cohort
+   * An independent cohort of 30 subjects covering the same 711 nodes is staged by `data/prepare_add_cohort.py`.
+   * 13 of the 30 subjects were scanned without DWIC (connectome) data, so the cohort is split into two groups, written to `Node_{N}/Add_Val_Data_17_withDWIC/` and `Node_{N}/Add_Val_Data_13_noDWIC/`:
+     * the 17 subjects with all five sequences, evaluated on all 31 modality combinations;
+     * the 13 subjects without DWIC, evaluated on the 15 DWIC-free combinations, with DWIC dropped from the model's `target_dict` rather than supplied as an all-zero input.
+   * Unlike the original cohort, the labels of this cohort are already binary, so no IZ patients are removed and no label remapping is applied.
+   ```
+   python data/prepare_add_cohort.py
+   ```
+
 ## Training
 1. Refer to the training configuration in `train_right.py` for the default hyper-parameters to train the models for the right hemisphere nodes:
 ```
@@ -64,6 +74,36 @@ The following steps are required to replicate our work:
 4. Please note that depending on the node numbers, we may need to change the shell script name. This is because the evaluation on all the nodes is sequential and we used multiple shell scripts to obtain faster results.
 
 5. The testing process can be customized by modifying the parameters in the shell scripts or directly in the `eval_left.py` and `eval_right.py` files.
+
+## Additional validation cohort
+The model is trained on the same SMOTE-augmented training data (58 patients) with all five sequences and cross-sequence distillation, and the best checkpoint of each trial is selected on the 17 subjects of the additional cohort that have all five sequences. That checkpoint is then evaluated on both subject groups.
+
+1. Train all nodes, writing the checkpoints under `experiments/exp_node{N}/AddCohort/`:
+```
+# All nodes sequentially
+./train_ALL_add_left.sh
+./train_ALL_add_right.sh
+
+# Or in parallel shards across GPUs
+./train_sh_scripts/nh_train_add_left0.sh
+./train_sh_scripts/nh_train_add_right0.sh
+```
+
+2. Evaluate all nodes on both subject groups. Each of the 3 training trials is written as its own column, so the maximum or the mean over trials can be chosen afterwards:
+```
+./eval_ALL_add_left.sh
+./eval_ALL_add_right.sh
+```
+This writes `results_add17_ALL31_trials.xlsx` (31 combinations) and `results_add13_DWICfree15_trials.xlsx` (15 combinations) per node.
+
+3. Combine the per-node results:
+```
+python combine_add_cohort_results.py --hemisphere left --group 17
+python combine_add_cohort_results.py --hemisphere left --group 13
+python combine_add_cohort_results.py --hemisphere right --group 17
+python combine_add_cohort_results.py --hemisphere right --group 13
+```
+Each combined file has a `per_trial` sheet along with `max_over_trials` and `mean_over_trials`.
 
 ## Final Results
 1. After evaluating the results, combine the results for all nodes of the left hemisphere with:
