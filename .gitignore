@@ -209,5 +209,7 @@ Icon*
 logs_add_root/
 logs_add_eval/
 logs_add_*/
+logs_bonn_eval/
+logs_bonn_eval_*/
 temp_training_script*.sh
 temp_eval_script*.sh
