@@ -1,0 +1,127 @@
+# Combine the per-node evaluation results of the Bonn cohort into a single Excel file
+#
+# eval_bonn_left.py / eval_bonn_right.py write one file per node, with one row per modality
+# combination and one column per training trial. This script concatenates those columns across nodes
+# and adds the aggregations over trials.
+#
+# There is only one subject group here: every Bonn subject is missing the same three sequences, so
+# unlike the additional cohort there is no DWIC-availability split to combine separately.
+#
+# Examples:
+#   python combine_bonn_cohort_results.py --hemisphere left
+#   python combine_bonn_cohort_results.py --hemisphere right
+import argparse
+import os
+import pandas as pd
+
+from data.prepare_add_cohort import MAX_LEFT_NODE
+from data.prepare_bonn_cohort import get_list_of_node_nums, BONN_EXPORT
+
+
+BASE_PATH = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/BonnCohort/'
+
+# per-node filename written by eval_bonn_left.py / eval_bonn_right.py
+RESULT_FILE = "results_bonn_T1FLAIR3_trials.xlsx"
+
+
+def get_node_nums(hemisphere: str, bonn_root: str = BONN_EXPORT) -> list[str]:
+    r"""
+    The node numbers of one hemisphere, taken from the Bonn cohort itself rather than from a
+    hand-maintained list.
+    """
+    node_nums = get_list_of_node_nums(bonn_root)
+
+    if hemisphere == "left":
+        return [n for n in node_nums if int(n) <= MAX_LEFT_NODE]
+    else:
+        return [n for n in node_nums if int(n) > MAX_LEFT_NODE]
+
+
+def combine(hemisphere: str, base_path: str = BASE_PATH, skip_missing: bool = False, bonn_root: str = BONN_EXPORT) -> str:
+    r"""
+    Combine the per-node result files of one hemisphere.
+
+    Args:
+        hemisphere (str): Either `left` or `right`.
+        base_path (str): The root of the BonnCohort results tree.
+        skip_missing (bool): Whether to skip nodes whose result file has not been written yet.
+        bonn_root (str): The flat directory of the Bonn cohort, used to list the nodes.
+
+    Returns: The path in `str` of the combined Excel file.
+    """
+    node_nums = get_node_nums(hemisphere, bonn_root)
+    hemis_dir = "Left_Hemis" if hemisphere == "left" else "Right_Hemis"
+
+    combinations = None
+    per_trial_columns = {}
+    missing = []
+
+    for node_num in node_nums:
+        file_path = os.path.join(base_path, hemis_dir, "Node_" + node_num + "_Results", "Eval_Results", RESULT_FILE)
+
+        if not os.path.exists(file_path):
+            missing.append(node_num)
+            if skip_missing:
+                continue
+            raise FileNotFoundError(f"Missing results for node {node_num}: {file_path}. Pass --skip_missing to ignore.")
+
+        df = pd.read_excel(file_path)
+
+        # the modality combination of each row must line up across every node
+        if combinations is None:
+            combinations = df['Combination'].tolist()
+        else:
+            assert df['Combination'].tolist() == combinations, f"Node {node_num} has a different set of modality combinations."
+
+        for column in df.columns:
+            if column == 'Combination':
+                continue
+            per_trial_columns[f"Node_{node_num}_{column}"] = df[column].tolist()
+
+    assert combinations is not None, "No result files were found."
+
+    if missing:
+        print(f"WARNING: skipped {len(missing)} node(s) with no results: {missing}")
+
+    # one column per (node, trial)
+    df_per_trial = pd.DataFrame({'Combination': combinations, **per_trial_columns})
+
+    # aggregate the trials of each node into a single column
+    trial_columns = [c for c in df_per_trial.columns if c != 'Combination']
+    nodes_present = sorted({c.rsplit('_Trial_', 1)[0] for c in trial_columns}, key=lambda n: int(n.split('_')[1]))
+
+    max_columns = {}
+    mean_columns = {}
+
+    for node in nodes_present:
+        columns = [c for c in trial_columns if c.rsplit('_Trial_', 1)[0] == node]
+        max_columns[node] = df_per_trial[columns].max(axis=1)
+        mean_columns[node] = df_per_trial[columns].mean(axis=1)
+
+    df_max = pd.DataFrame({'Combination': combinations, **max_columns})
+    df_mean = pd.DataFrame({'Combination': combinations, **mean_columns})
+
+    save_filepath = os.path.join(base_path, f"BonnCohort_{hemisphere}_combined.xlsx")
+
+    with pd.ExcelWriter(save_filepath) as writer:
+        df_per_trial.to_excel(writer, index=False, sheet_name='per_trial')
+        df_max.to_excel(writer, index=False, sheet_name='max_over_trials')
+        df_mean.to_excel(writer, index=False, sheet_name='mean_over_trials')
+
+    print(f"{hemisphere} hemisphere: {len(combinations)} combinations x {len(nodes_present)} nodes ({len(trial_columns)} trial columns)")
+    print(f"Saved to {save_filepath}")
+
+    return save_filepath
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Combine the Bonn-cohort evaluation results across nodes.")
+    parser.add_argument("--hemisphere", type=str, default="left", choices=["left", "right"], help="The hemisphere to combine, default is `left`.")
+    parser.add_argument("--base_path", type=str, default=BASE_PATH, help="The root of the BonnCohort results tree.")
+    parser.add_argument("--bonn_root", type=str, default=BONN_EXPORT, help="The flat directory of the Bonn cohort, used to list the nodes.")
+    parser.add_argument("--skip_missing", action="store_true", default=False, help="The flag to skip nodes that have no results yet.")
+    args = parser.parse_args()
+
+    combine(args.hemisphere, base_path=args.base_path, skip_missing=args.skip_missing, bonn_root=args.bonn_root)
+
+    print("\nDone!")
