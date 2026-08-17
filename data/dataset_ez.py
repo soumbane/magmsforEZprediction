@@ -27,10 +27,16 @@ class DatasetEZ_Node(Dataset):
     root: str
     mode: EZMode
 
-    def __init__(self, batch_size: int, root: str, drop_last: bool = False, mode: EZMode = EZMode.TRAIN, shuffle: bool = False, node_num: str = "1", device=torch.device("cuda:0")) -> None:
+    def __init__(self, batch_size: int, root: str, drop_last: bool = False, mode: EZMode = EZMode.TRAIN, shuffle: bool = False, node_num: str = "1", device=torch.device("cuda:0"), num_workers: int = 0) -> None:
         super().__init__(batch_size, drop_last=drop_last, shuffle=shuffle, device=device)
         self.mode = mode
         self.root = root
+
+        # A new DataLoader is built on every iteration of the dataset, and torchmanager defaults
+        # num_workers to os.cpu_count(). Each node holds at most 120 vectors of 1899 floats, so
+        # spawning 40 workers to read them costs far more than the reads themselves (~960ms vs ~8ms
+        # per iteration here). Load in the main process instead.
+        self.num_workers = num_workers
 
         # initialize path
         if self.mode == EZMode.TRAIN:
