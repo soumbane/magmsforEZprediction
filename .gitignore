@@ -201,3 +201,13 @@ pretrained_models_orig_val_data/*
 
 Icon*
 *.DS_Store
+
+# Live run artifacts of the AddCohort shards. The raw logs are huge because --show_verbose keeps
+# every tqdm redraw (~750MB for a full train + eval). Archive them with
+#   python archive_run_logs.py logs_add_root run_logs/addcohort_training
+# which collapses the redraws and gzips the result into run_logs/, which is committed.
+logs_add_root/
+logs_add_eval/
+logs_add_*/
+temp_training_script*.sh
+temp_eval_script*.sh
