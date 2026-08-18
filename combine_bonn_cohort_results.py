@@ -9,7 +9,7 @@
 #
 # Examples:
 #   python combine_bonn_cohort_results.py --hemisphere left
-#   python combine_bonn_cohort_results.py --hemisphere right
+#   python combine_bonn_cohort_results.py --hemisphere right --labels asexported
 import argparse
 import os
 import pandas as pd
@@ -20,8 +20,17 @@ from data.prepare_bonn_cohort import get_list_of_node_nums, BONN_EXPORT
 
 BASE_PATH = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/BonnCohort/'
 
-# per-node filename written by eval_bonn_left.py / eval_bonn_right.py
-RESULT_FILE = "results_bonn_T1FLAIR3_trials.xlsx"
+# per-node filenames written by eval_bonn_left.py / eval_bonn_right.py, one per label variant.
+#   recovered  - labels recovered from the BIDS source (861 EZ over 455 nodes); the paper number
+#   asexported - labels exactly as /BonnData/ ships them, i.e. all zero, so balanced accuracy
+#                collapses to the non-EZ accuracy (true-negative rate for EZ detection)
+RESULT_FILES = {
+    "recovered": "results_bonn_T1FLAIR3_trials.xlsx",
+    "asexported": "results_bonn_asexported_T1FLAIR3_trials.xlsx",
+}
+
+# suffix on the combined workbook, so the two variants never overwrite each other
+OUTPUT_SUFFIX = {"recovered": "", "asexported": "_asexported"}
 
 
 def get_node_nums(hemisphere: str, bonn_root: str = BONN_EXPORT) -> list[str]:
@@ -37,12 +46,13 @@ def get_node_nums(hemisphere: str, bonn_root: str = BONN_EXPORT) -> list[str]:
         return [n for n in node_nums if int(n) > MAX_LEFT_NODE]
 
 
-def combine(hemisphere: str, base_path: str = BASE_PATH, skip_missing: bool = False, bonn_root: str = BONN_EXPORT) -> str:
+def combine(hemisphere: str, labels: str = "recovered", base_path: str = BASE_PATH, skip_missing: bool = False, bonn_root: str = BONN_EXPORT) -> str:
     r"""
     Combine the per-node result files of one hemisphere.
 
     Args:
         hemisphere (str): Either `left` or `right`.
+        labels (str): Either `recovered` or `asexported`.
         base_path (str): The root of the BonnCohort results tree.
         skip_missing (bool): Whether to skip nodes whose result file has not been written yet.
         bonn_root (str): The flat directory of the Bonn cohort, used to list the nodes.
@@ -51,13 +61,14 @@ def combine(hemisphere: str, base_path: str = BASE_PATH, skip_missing: bool = Fa
     """
     node_nums = get_node_nums(hemisphere, bonn_root)
     hemis_dir = "Left_Hemis" if hemisphere == "left" else "Right_Hemis"
+    result_file = RESULT_FILES[labels]
 
     combinations = None
     per_trial_columns = {}
     missing = []
 
     for node_num in node_nums:
-        file_path = os.path.join(base_path, hemis_dir, "Node_" + node_num + "_Results", "Eval_Results", RESULT_FILE)
+        file_path = os.path.join(base_path, hemis_dir, "Node_" + node_num + "_Results", "Eval_Results", result_file)
 
         if not os.path.exists(file_path):
             missing.append(node_num)
@@ -101,14 +112,14 @@ def combine(hemisphere: str, base_path: str = BASE_PATH, skip_missing: bool = Fa
     df_max = pd.DataFrame({'Combination': combinations, **max_columns})
     df_mean = pd.DataFrame({'Combination': combinations, **mean_columns})
 
-    save_filepath = os.path.join(base_path, f"BonnCohort_{hemisphere}_combined.xlsx")
+    save_filepath = os.path.join(base_path, f"BonnCohort_{hemisphere}{OUTPUT_SUFFIX[labels]}_combined.xlsx")
 
     with pd.ExcelWriter(save_filepath) as writer:
         df_per_trial.to_excel(writer, index=False, sheet_name='per_trial')
         df_max.to_excel(writer, index=False, sheet_name='max_over_trials')
         df_mean.to_excel(writer, index=False, sheet_name='mean_over_trials')
 
-    print(f"{hemisphere} hemisphere: {len(combinations)} combinations x {len(nodes_present)} nodes ({len(trial_columns)} trial columns)")
+    print(f"{hemisphere} hemisphere, {labels} labels: {len(combinations)} combinations x {len(nodes_present)} nodes ({len(trial_columns)} trial columns)")
     print(f"Saved to {save_filepath}")
 
     return save_filepath
@@ -117,11 +128,12 @@ def combine(hemisphere: str, base_path: str = BASE_PATH, skip_missing: bool = Fa
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Combine the Bonn-cohort evaluation results across nodes.")
     parser.add_argument("--hemisphere", type=str, default="left", choices=["left", "right"], help="The hemisphere to combine, default is `left`.")
+    parser.add_argument("--labels", type=str, default="recovered", choices=["recovered", "asexported"], help="Which label variant to combine, default is `recovered`.")
     parser.add_argument("--base_path", type=str, default=BASE_PATH, help="The root of the BonnCohort results tree.")
     parser.add_argument("--bonn_root", type=str, default=BONN_EXPORT, help="The flat directory of the Bonn cohort, used to list the nodes.")
     parser.add_argument("--skip_missing", action="store_true", default=False, help="The flag to skip nodes that have no results yet.")
     args = parser.parse_args()
 
-    combine(args.hemisphere, base_path=args.base_path, skip_missing=args.skip_missing, bonn_root=args.bonn_root)
+    combine(args.hemisphere, labels=args.labels, base_path=args.base_path, skip_missing=args.skip_missing, bonn_root=args.bonn_root)
 
     print("\nDone!")

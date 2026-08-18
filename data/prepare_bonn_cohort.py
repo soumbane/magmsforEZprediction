@@ -52,6 +52,13 @@ NUM_ROIS = 998
 # cohort there is no per-subject split, since every subject is missing the same three sequences.
 DIR_BONN = "Bonn_Val_Data_85"
 
+# The same 85 subjects with the labels exactly as the export ships them, i.e. all zeros. Every
+# node-subject pair is therefore treated as non-EZ, and balanced accuracy collapses to the non-EZ
+# accuracy (the true-negative rate for EZ detection) because BalancedAccuracyScore falls back to
+# specificity = sensitivity when one class is absent. Staged so that evaluation can be run against
+# the export as-is, alongside the recovered-label evaluation.
+DIR_BONN_ASEXPORTED = "Bonn_Val_Data_85_asexported"
+
 # Segments of the 1899-feature vector that must be empty for this cohort, per unpack_data.
 ABSENT_SEGMENTS = {"T2": (300, 500), "DWI": (700, 1400), "DWIC": (1400, 1899)}
 
@@ -148,6 +155,31 @@ def node_rows(node_num: str) -> np.ndarray:
     return np.arange(NUM_SUBJECTS) * NUM_ROIS + (int(node_num) - 1)
 
 
+def exported_labels(node_num: str, export: str = BONN_EXPORT) -> np.ndarray:
+    r"""
+    The labels of one node exactly as the export ships them.
+
+    These are all zero for every node in the cohort; the assertion is what makes that explicit
+    rather than assumed, so if the export is ever regenerated with real labels this staging picks
+    them up instead of silently writing zeros.
+
+    Args:
+        node_num (str): The node number.
+        export (str): The per-node export directory.
+
+    Returns: The (85,) label vector in `np.ndarray`.
+    """
+    Y = loadmat(os.path.join(export, f"BonnCohort_NonEZvsEZ_label_node{node_num}.mat"))["BonnCohort_NonEZvsEZ_label"]
+    Y = Y.reshape(-1).astype(int)
+
+    assert Y.shape == (NUM_SUBJECTS,), f"Node {node_num}: expected {NUM_SUBJECTS} exported labels, got {Y.shape}."
+
+    unexpected = set(np.unique(Y).tolist()) - {0, 1}
+    assert not unexpected, f"Node {node_num}: exported labels must be binary, found {sorted(unexpected)}."
+
+    return Y
+
+
 def load_node(RI: np.ndarray, Conn: np.ndarray, Label: np.ndarray, node_num: str) -> tuple[np.ndarray, np.ndarray]:
     r"""
     Assemble one node from the pre-loaded source arrays.
@@ -226,6 +258,7 @@ def main(source: str, export: str, save_path_left: str, save_path_right: str, sa
 
     num_nonEZs = []
     num_EZs = []
+    num_exported_EZs = []
 
     for i in node_nums:
         print(f"Loading BonnCohort for Node num: {i}")
@@ -243,6 +276,17 @@ def main(source: str, export: str, save_path_left: str, save_path_right: str, sa
             os.makedirs(save_dir)
         save_as_separate_patients(save_dir, X_node, Y_node)
 
+        # the same features with the export's own labels, so the cohort can also be scored exactly
+        # as it ships. Identical X, only Y differs.
+        Y_exported = exported_labels(i, export)
+
+        save_dir_exported = os.path.join(save_path, 'Node_' + i, DIR_BONN_ASEXPORTED)
+        if not os.path.exists(save_dir_exported):
+            os.makedirs(save_dir_exported)
+        save_as_separate_patients(save_dir_exported, X_node, Y_exported)
+
+        num_exported_EZs.append(np.sum(Y_exported))
+
         # record the class balance for this node
         node_numbers.append(i)
         hemispheres.append("left" if is_left else "right")
@@ -251,7 +295,8 @@ def main(source: str, export: str, save_path_left: str, save_path_right: str, sa
         num_EZs.append(np.sum(Y_node))
 
     # dictionary of lists
-    info_dict = {'Node #': node_numbers, 'Hemisphere': hemispheres, 'NonEZ': num_nonEZs, 'EZ': num_EZs}
+    info_dict = {'Node #': node_numbers, 'Hemisphere': hemispheres, 'NonEZ': num_nonEZs, 'EZ': num_EZs,
+                 'EZ_as_exported': num_exported_EZs}
 
     df = pd.DataFrame(info_dict)
 
@@ -271,6 +316,8 @@ def main(source: str, export: str, save_path_left: str, save_path_right: str, sa
     print(f"EZ labels recovered: {int(ez.sum())}")
     print(f"Nodes with at least one EZ subject: {int((ez > 0).sum())} "
           f"(left {int((ez[left] > 0).sum())}, right {int((ez[~left] > 0).sum())})")
+    print(f"EZ labels in the export itself: {int(np.sum(num_exported_EZs))} "
+          f"(staged separately under {DIR_BONN_ASEXPORTED})")
     print(f"Information file saved at: {save_filepath}")
 
     ################################################################################################################

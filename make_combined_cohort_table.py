@@ -133,6 +133,53 @@ def build_table(keep_ez_only: bool = False) -> tuple[pd.DataFrame, dict[str, dic
     return table, counts
 
 
+def build_as_exported_table() -> tuple[pd.DataFrame, dict[str, int]]:
+    r"""
+    The Bonn cohort scored against the labels exactly as `/BonnData/` ships them.
+
+    Those labels are all zero, so every node-subject pair counts as non-EZ and
+    `BalancedAccuracyScore` falls back to `specificity = sensitivity`. The number is therefore the
+    **non-EZ accuracy** - the fraction of the 85 subjects the model correctly declines to call EZ,
+    i.e. the true-negative rate for EZ detection. It is not a balanced accuracy and must not be put
+    in the same column as one.
+
+    There is no `nodes_with_EZ` counterpart: under these labels no node contains an EZ subject.
+
+    Returns: A `tuple` of the 31-row table and the node count of each hemisphere.
+    """
+    means = {}
+    counts = {}
+
+    for hemisphere in ["left", "right"]:
+        path = os.path.join(bonncohort.BASE_PATH, f"BonnCohort_{hemisphere}_asexported_combined.xlsx")
+        df = pd.read_excel(path, sheet_name="max_over_trials").set_index("Combination")
+
+        means[hemisphere] = df.mean(axis=1)
+        counts[hemisphere] = len(df.columns)
+
+    available = set(get_t1_flair_combinations())
+
+    rows = []
+
+    for num in range(1, 32):
+        dict_mod, list_mod = get_target_dict(num)
+        name = get_modality_name(dict_mod)
+
+        row = {'#': num}
+        row.update(dict(zip(SEQUENCE_COLUMNS, list_mod)))
+
+        if num in available:
+            row['BonnCohort_NonEZ_Acc_Left'] = means['left'][name]
+            row['BonnCohort_NonEZ_Acc_Right'] = means['right'][name]
+        else:
+            row['BonnCohort_NonEZ_Acc_Left'] = NOT_AVAILABLE
+            row['BonnCohort_NonEZ_Acc_Right'] = NOT_AVAILABLE
+
+        rows.append(row)
+
+    return pd.DataFrame(rows), counts
+
+
 def main(save_path: str = SAVE_PATH) -> str:
     sheets = {}
 
@@ -144,6 +191,19 @@ def main(save_path: str = SAVE_PATH) -> str:
         print(f"  AddCohort  nodes: left {counts['AddCohort']['left']}, right {counts['AddCohort']['right']}")
         print(f"  BonnCohort nodes: left {counts['BonnCohort']['left']}, right {counts['BonnCohort']['right']}")
         print(table.to_string(index=False, float_format=lambda v: f"{v:.4f}"))
+
+    # the Bonn cohort scored against the export's own all-zero labels, if that run exists
+    as_exported = os.path.join(bonncohort.BASE_PATH, "BonnCohort_left_asexported_combined.xlsx")
+
+    if os.path.exists(as_exported):
+        table, counts = build_as_exported_table()
+        sheets['bonn_as_exported'] = table
+
+        print(f"\n=== bonn_as_exported: NON-EZ ACCURACY, not balanced accuracy ===")
+        print(f"  BonnCohort nodes: left {counts['left']}, right {counts['right']} (all 711, no EZ split possible)")
+        print(table.to_string(index=False, float_format=lambda v: f"{v:.4f}"))
+    else:
+        print(f"\nSkipping the as-exported sheet: {as_exported} not found.")
 
     save_filepath = os.path.join(save_path, "Combined_AddCohort_BonnCohort_table.xlsx")
 

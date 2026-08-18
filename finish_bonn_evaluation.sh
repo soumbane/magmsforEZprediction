@@ -56,21 +56,23 @@ fi
 skip_flag=""
 [ "$complete" -eq 0 ] && skip_flag="--skip_missing"
 
-echo "=== Combining left hemisphere ==="
-python combine_bonn_cohort_results.py --hemisphere left $skip_flag || exit 1
-
-echo
-echo "=== Combining right hemisphere ==="
-python combine_bonn_cohort_results.py --hemisphere right $skip_flag || exit 1
+for labels in recovered asexported; do
+    for hemi in left right; do
+        echo "=== Combining $hemi hemisphere, $labels labels ==="
+        python combine_bonn_cohort_results.py --hemisphere $hemi --labels $labels $skip_flag || exit 1
+        echo
+    done
+done
 
 if [ "$complete" -eq 1 ]; then
     echo
-    echo "=== Building the combination table ==="
+    echo "=== Building the combination tables ==="
     python make_bonncohort_combination_table.py || exit 1
+    python make_combined_cohort_table.py || exit 1
 else
     echo
     echo "Publication table skipped because the run is incomplete. Re-run the missing shards, then:"
-    echo "  python make_bonncohort_combination_table.py"
+    echo "  python make_bonncohort_combination_table.py && python make_combined_cohort_table.py"
 fi
 
 echo

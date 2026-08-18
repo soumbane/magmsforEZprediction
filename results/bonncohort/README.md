@@ -115,6 +115,31 @@ receives an all-zero tensor. That number would be an artefact, not a measurement
 So a value in row 31 for this cohort would mean *T1 + FLAIR + three constant biases*, not "all five
 sequences". `NA` is the honest entry.
 
+## Scoring against the export's own labels (non-EZ only)
+
+The same 85 subjects and the *same* features are also scored against the labels exactly as
+`/BonnData/` ships them, i.e. all zero. Files: `BonnCohort_{left,right}_asexported_combined.xlsx`,
+and sheet `bonn_as_exported` of the joint table.
+
+Because every node-subject pair then counts as non-EZ, there are no negatives and
+`BalancedAccuracyScore` falls back to `specificity = sensitivity`. **The number is non-EZ accuracy —
+the fraction of the 85 subjects the model correctly declines to call EZ, i.e. the true-negative rate
+for EZ detection. It is not a balanced accuracy** and must not be placed in the same column as one.
+Every value is an exact multiple of 1/85, which confirms it is a plain count.
+
+| # | Sequences | Left (n=286) | Right (n=425) |
+|---|---|---|---|
+| 4 | FLAIR | 0.9053 | 0.9154 |
+| 16 | T1 | 0.9548 | 0.9132 |
+| 20 | T1-FLAIR | 0.9399 | 0.9262 |
+
+There is no `nodes_with_EZ` counterpart: under these labels no node contains an EZ subject.
+
+Two caveats. The metric is **contaminated by 1.42%** — 861 of the 60,435 node-subject pairs really
+are EZ, and here they are counted as non-EZ, so the true specificity is very slightly lower. And a
+high value here is easy to obtain by predicting non-EZ everywhere; read it alongside the
+balanced accuracy above, never on its own.
+
 ## Reproducing
 
 ```bash

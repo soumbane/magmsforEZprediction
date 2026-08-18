@@ -15,6 +15,7 @@ class EZMode(Enum):
     ADD_17 = "add_17" # additional cohort, the 17 subjects with all five sequences
     ADD_13 = "add_13" # additional cohort, the 13 subjects without DWIC
     BONN = "bonn" # Bonn cohort (OpenNeuro ds004199), 85 subjects with T1 and FLAIR only
+    BONN_ASEXPORTED = "bonn_asexported" # the same subjects with the export's own all-zero labels
 
 
 class DatasetEZ_Node(Dataset):
@@ -60,13 +61,14 @@ class DatasetEZ_Node(Dataset):
             self.x_mat_name = "X_orig_valid_patient"
             self.y_mat_name = "Y_orig_valid_patient"
 
-        elif self.mode in (EZMode.ADD_17, EZMode.ADD_13, EZMode.BONN):
+        elif self.mode in (EZMode.ADD_17, EZMode.ADD_13, EZMode.BONN, EZMode.BONN_ASEXPORTED):
             # external validation cohorts, staged by data/prepare_add_cohort.py and
             # data/prepare_bonn_cohort.py into the same per-patient file naming as Orig_Val_Data
             sub_dir = {
                 EZMode.ADD_17: 'Add_Val_Data_17_withDWIC',
                 EZMode.ADD_13: 'Add_Val_Data_13_noDWIC',
                 EZMode.BONN: 'Bonn_Val_Data_85',
+                EZMode.BONN_ASEXPORTED: 'Bonn_Val_Data_85_asexported',
             }[self.mode]
             self.path = os.path.join(self.root, 'Node_'+node_num, sub_dir)
 

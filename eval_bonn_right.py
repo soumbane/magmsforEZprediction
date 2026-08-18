@@ -57,10 +57,20 @@ if __name__ == "__main__":
 
     num_trials = 3
 
-    # (mode, combination numbers, output filename). One group here: unlike the additional cohort,
-    # every Bonn subject is missing the same three sequences, so there is no subgroup to split out.
+    # (mode, combination numbers, output filename). The same 85 subjects and the same features are
+    # scored twice, differing only in which labels are used:
+    #
+    #   BONN            - the labels recovered from the BIDS source, 861 EZ over 455 nodes. This is
+    #                     the balanced accuracy reported in the paper.
+    #   BONN_ASEXPORTED - the labels exactly as /BonnData/ ships them, which are all zero. Every
+    #                     node-subject pair counts as non-EZ, so BalancedAccuracyScore falls back to
+    #                     specificity = sensitivity and the number is the non-EZ accuracy, i.e. the
+    #                     true-negative rate for EZ detection.
+    #
+    # Running both in one pass shares the three checkpoint loads per node, which dominate the cost.
     GROUPS = [
         (data.EZMode.BONN, get_t1_flair_combinations(), "results_bonn_T1FLAIR3_trials.xlsx"),
+        (data.EZMode.BONN_ASEXPORTED, get_t1_flair_combinations(), "results_bonn_asexported_T1FLAIR3_trials.xlsx"),
     ]
 
     path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/BonnCohort/Right_Hemis/"
@@ -70,17 +80,19 @@ if __name__ == "__main__":
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    for mode, combinations, filename_val in GROUPS:
-        # one row per modality combination, one column per trial
-        bal_acc_per_trial: dict[str, list[float]] = {f"Trial_{i+1}": [] for i in range(num_trials)}
+    # one row per modality combination, one column per trial, for each group
+    bal_acc_per_trial: dict[str, dict[str, list[float]]] = {
+        filename: {f"Trial_{i+1}": [] for i in range(num_trials)} for _, _, filename in GROUPS
+    }
 
-        for i in range(num_trials):
-            # the AddCohort checkpoints = WITH cross-sequence distillation, trained on all 5 sequences
-            configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/AddCohort" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model"
+    # trials outermost so each checkpoint is loaded once and reused for every group and combination
+    for i in range(num_trials):
+        # the AddCohort checkpoints = WITH cross-sequence distillation, trained on all 5 sequences
+        configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/AddCohort" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model"
 
-            # load the checkpoint once and reuse it for every modality combination
-            manager = load_manager(configs)
+        manager = load_manager(configs)
 
+        for mode, combinations, filename_val in GROUPS:
             for j in combinations:
                 dict_mod, list_mod = get_target_dict(j)
 
@@ -88,12 +100,13 @@ if __name__ == "__main__":
 
                 bal_acc, _, _, _ = test(configs, manager, target_dict=dict_mod, mode=mode)
 
-                bal_acc_per_trial[f"Trial_{i+1}"].append(bal_acc)
+                bal_acc_per_trial[filename_val][f"Trial_{i+1}"].append(bal_acc)
 
+    for mode, combinations, filename_val in GROUPS:
         # rows are self-describing, so the per-node files stay readable once concatenated
         combination_names = [get_modality_name(get_target_dict(j)[0]) for j in combinations]
 
-        df_val = pd.DataFrame({'Combination': combination_names, **bal_acc_per_trial})
+        df_val = pd.DataFrame({'Combination': combination_names, **bal_acc_per_trial[filename_val]})
 
         save_filepath_val = os.path.join(save_path, filename_val)
 
