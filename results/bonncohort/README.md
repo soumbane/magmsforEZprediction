@@ -84,6 +84,37 @@ Two further caveats worth stating in the manuscript:
 - FLAIR sits roughly one standard deviation above the training distribution (train 0.472 /
   AddCohort 0.519 / **Bonn 0.605**), while T1 aligns well (0.531 / 0.508 / 0.528).
 
+## The joint table, and why 28 rows are NA
+
+`../Combined_AddCohort_BonnCohort_table.xlsx` puts both external cohorts side by side in the 1-31
+layout used for the AddCohort table:
+
+```
+ #  T1w  T2w  FLAIR  DWI  DWIC  AddCohort_Left  AddCohort_Right  BonnCohort_Left  BonnCohort_Right
+ 1    0    0      0    0     1          0.6797           0.6889               NA                NA
+ 4    0    0      1    0     0          0.6769           0.6698           0.7280            0.6483
+16    1    0      0    0     0          0.6978           0.6657           0.7514            0.6375
+20    1    0      1    0     0          0.7068           0.6898           0.7403            0.6421
+31    1    1      1    1     1          0.8702           0.8624               NA                NA
+```
+
+The AddCohort subjects have all five sequences, so all 31 rows are populated. The Bonn subjects have
+**T1 and FLAIR only**, so only rows 4, 16 and 20 exist for them; the rest are `NA`.
+
+Those 28 cells could have been *computed* — `target_dict` selects which encoders run and does not
+check whether data exists, so asking for "T2" on this cohort is accepted and the T2 encoder simply
+receives an all-zero tensor. That number would be an artefact, not a measurement:
+
+- a zero input does **not** give a zero output. Every encoder emits a non-zero constant (abs-mean
+  0.0175 for FLAIR up to 0.0929 for T2) because of conv bias and normalisation;
+- at inference the branch outputs are summed (`MAGNET2.forward`: `if not self.training: y = y.sum(1)`),
+  so each empty branch injects a constant into the logits;
+- measured at node 58, trial 3: T1-FLAIR predicted 68/85 subjects as EZ, while "all five sequences"
+  predicted 83/85 — **15 of 85 predictions flipped** purely from adding three empty branches.
+
+So a value in row 31 for this cohort would mean *T1 + FLAIR + three constant biases*, not "all five
+sequences". `NA` is the honest entry.
+
 ## Reproducing
 
 ```bash

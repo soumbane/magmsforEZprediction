@@ -122,8 +122,9 @@ def get_dwic_free_combinations() -> list[int]:
     r"""
     The combination numbers of `get_target_dict` that do not contain DWIC.
 
-    `get_target_dict` encodes `num - 1` as a 5-bit mask whose least significant bit is DWIC, so the
-    DWIC-free combinations are exactly the even numbers.
+    `get_target_dict` encodes `num` itself as a 5-bit mask whose least significant bit is DWIC
+    (num 1 = 00001 = DWIC, num 16 = 10000 = T1), so the DWIC-free combinations are exactly the even
+    numbers.
 
     Returns: A `list` of the 15 non-empty subsets of {T1, T2, FLAIR, DWI}.
     """
