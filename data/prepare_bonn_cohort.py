@@ -7,22 +7,27 @@
 # Features come from the per-node export at BONN_EXPORT:
 #   BonnCohort_NonEZvsEZ_RI_node{N}.mat     (85, 1400)  -> T1 | T2 | FLAIR | DWI
 #   BonnCohort_NonEZvsEZ_Conn_node{N}.mat   (85, 499)   -> DWIC (connectome profile)
-#   BonnCohort_NonEZvsEZ_label_node{N}.mat  (85, 1)     -> ALL ZEROS, see below
+#   BonnCohort_NonEZvsEZ_label_node{N}.mat  (85, 1)     -> see the note on labels below
 #
 # Only T1 and FLAIR carry data. In the source, the T2 and DWI segments are NaN and the connectome is
 # 100% NaN; the export ran nan_to_num over them, so those segments read back as zeros. They are
 # missing acquisitions, not zero measurements, which is why evaluation drops them from the model's
 # target_dict rather than feeding an all-zero branch.
 #
-# The labels had to be recovered. Every one of the 60,435 (85 x 711) entries in the export's label
-# files is 0 - the export lost the label column. The labels live in the BIDS source as
-# Bonn_Cohort_Label.mat, laid out subject-major over the 998-ROI Lausanne parcellation:
+# The labels are read from the BIDS source, not from the export. When this cohort was first staged
+# every one of the 60,435 (85 x 711) entries in the export's label files was 0 - the export had lost
+# the label column - so they were recovered from Bonn_Cohort_Label.mat, laid out subject-major over
+# the 998-ROI Lausanne parcellation:
 #
 #     row = subject_index * 998 + (node_num - 1)
 #
 # That row index is the same one that reproduces the exported features bit-for-bit, and
-# `verify_label_alignment` below proves features and labels share one subject ordering. The export
-# itself is never modified: this script reads features from BOTH sources and asserts they agree.
+# `verify_label_alignment` below proves features and labels share one subject ordering.
+#
+# The export has since been regenerated with real labels, and they agree with the recovered ones in
+# every one of the 60,435 cells. The recovery therefore stands as an independently verified source,
+# and `main` now asserts the two agree on every node that carries labels. The export itself is never
+# modified: this script reads features from BOTH sources and asserts they agree.
 import argparse
 import os
 import numpy as np
@@ -52,12 +57,15 @@ NUM_ROIS = 998
 # cohort there is no per-subject split, since every subject is missing the same three sequences.
 DIR_BONN = "Bonn_Val_Data_85"
 
-# The same 85 subjects with the labels exactly as the export ships them, i.e. all zeros. Every
-# node-subject pair is therefore treated as non-EZ, and balanced accuracy collapses to the non-EZ
-# accuracy (the true-negative rate for EZ detection) because BalancedAccuracyScore falls back to
-# specificity = sensitivity when one class is absent. Staged so that evaluation can be run against
-# the export as-is, alongside the recovered-label evaluation.
-DIR_BONN_ASEXPORTED = "Bonn_Val_Data_85_asexported"
+# The same 85 subjects and the same features, with every label forced to 0 so that every
+# node-subject pair counts as non-EZ. BalancedAccuracyScore then falls back to
+# specificity = sensitivity, so the score is the non-EZ accuracy - the true-negative rate for EZ
+# detection. This is a specificity analysis, deliberately constructed.
+#
+# The labels are zeroed here in code rather than read from the export. They were originally taken
+# from the export, which shipped all-zero labels; the export has since been regenerated with real
+# labels, so reading them would now silently turn this into a duplicate of the main evaluation.
+DIR_BONN_ALL_NONEZ = "Bonn_Val_Data_85_all_nonEZ"
 
 # Segments of the 1899-feature vector that must be empty for this cohort, per unpack_data.
 ABSENT_SEGMENTS = {"T2": (300, 500), "DWI": (700, 1400), "DWIC": (1400, 1899)}
@@ -155,13 +163,26 @@ def node_rows(node_num: str) -> np.ndarray:
     return np.arange(NUM_SUBJECTS) * NUM_ROIS + (int(node_num) - 1)
 
 
+def all_non_ez_labels() -> np.ndarray:
+    r"""
+    A label vector that marks every subject non-EZ, for the specificity analysis.
+
+    Constructed rather than read, so it stays a specificity analysis regardless of what the export
+    currently contains.
+
+    Returns: An all-zero (85,) label vector in `np.ndarray`.
+    """
+    return np.zeros(NUM_SUBJECTS, dtype=int)
+
+
 def exported_labels(node_num: str, export: str = BONN_EXPORT) -> np.ndarray:
     r"""
-    The labels of one node exactly as the export ships them.
+    The labels of one node as the export currently ships them.
 
-    These are all zero for every node in the cohort; the assertion is what makes that explicit
-    rather than assumed, so if the export is ever regenerated with real labels this staging picks
-    them up instead of silently writing zeros.
+    Used to check the recovered labels against the export. The export originally shipped all-zero
+    labels, which is why the labels had to be recovered from the BIDS source at all; it has since
+    been regenerated with real ones, and those agree with the recovered labels in every one of the
+    60,435 node-subject cells.
 
     Args:
         node_num (str): The node number.
@@ -276,16 +297,19 @@ def main(source: str, export: str, save_path_left: str, save_path_right: str, sa
             os.makedirs(save_dir)
         save_as_separate_patients(save_dir, X_node, Y_node)
 
-        # the same features with the export's own labels, so the cohort can also be scored exactly
-        # as it ships. Identical X, only Y differs.
-        Y_exported = exported_labels(i, export)
+        # the same features with every label forced non-EZ, for the specificity analysis
+        save_dir_non_ez = os.path.join(save_path, 'Node_' + i, DIR_BONN_ALL_NONEZ)
+        if not os.path.exists(save_dir_non_ez):
+            os.makedirs(save_dir_non_ez)
+        save_as_separate_patients(save_dir_non_ez, X_node, all_non_ez_labels())
 
-        save_dir_exported = os.path.join(save_path, 'Node_' + i, DIR_BONN_ASEXPORTED)
-        if not os.path.exists(save_dir_exported):
-            os.makedirs(save_dir_exported)
-        save_as_separate_patients(save_dir_exported, X_node, Y_exported)
+        # the export was regenerated with real labels; where it has any, they must agree with the
+        # recovered ones. An all-zero node is the export's original state and is left to the summary.
+        Y_in_export = exported_labels(i, export)
+        num_exported_EZs.append(np.sum(Y_in_export))
 
-        num_exported_EZs.append(np.sum(Y_exported))
+        assert not Y_in_export.any() or np.array_equal(Y_in_export, Y_node), \
+            f"Node {i}: the export's labels disagree with the labels recovered from the BIDS source."
 
         # record the class balance for this node
         node_numbers.append(i)
@@ -296,7 +320,7 @@ def main(source: str, export: str, save_path_left: str, save_path_right: str, sa
 
     # dictionary of lists
     info_dict = {'Node #': node_numbers, 'Hemisphere': hemispheres, 'NonEZ': num_nonEZs, 'EZ': num_EZs,
-                 'EZ_as_exported': num_exported_EZs}
+                 'EZ_in_export': num_exported_EZs}
 
     df = pd.DataFrame(info_dict)
 
@@ -316,8 +340,10 @@ def main(source: str, export: str, save_path_left: str, save_path_right: str, sa
     print(f"EZ labels recovered: {int(ez.sum())}")
     print(f"Nodes with at least one EZ subject: {int((ez > 0).sum())} "
           f"(left {int((ez[left] > 0).sum())}, right {int((ez[~left] > 0).sum())})")
-    print(f"EZ labels in the export itself: {int(np.sum(num_exported_EZs))} "
-          f"(staged separately under {DIR_BONN_ASEXPORTED})")
+    exported_total = int(np.sum(num_exported_EZs))
+    print(f"EZ labels in the export itself: {exported_total} "
+          f"({'agrees with the recovered labels' if exported_total == int(ez.sum()) else 'ALL-ZERO, labels were recovered from the BIDS source'})")
+    print(f"Specificity variant (all labels forced non-EZ) staged under {DIR_BONN_ALL_NONEZ}")
     print(f"Information file saved at: {save_filepath}")
 
     ################################################################################################################

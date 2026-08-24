@@ -62,15 +62,14 @@ if __name__ == "__main__":
     #
     #   BONN            - the labels recovered from the BIDS source, 861 EZ over 455 nodes. This is
     #                     the balanced accuracy reported in the paper.
-    #   BONN_ASEXPORTED - the labels exactly as /BonnData/ ships them, which are all zero. Every
-    #                     node-subject pair counts as non-EZ, so BalancedAccuracyScore falls back to
-    #                     specificity = sensitivity and the number is the non-EZ accuracy, i.e. the
-    #                     true-negative rate for EZ detection.
+    #   BONN_ALL_NONEZ  - every label forced non-EZ. BalancedAccuracyScore then falls back to
+    #                     specificity = sensitivity, so the number is the non-EZ accuracy, i.e. the
+    #                     true-negative rate for EZ detection. A specificity analysis.
     #
     # Running both in one pass shares the three checkpoint loads per node, which dominate the cost.
     GROUPS = [
         (data.EZMode.BONN, get_t1_flair_combinations(), "results_bonn_T1FLAIR3_trials.xlsx"),
-        (data.EZMode.BONN_ASEXPORTED, get_t1_flair_combinations(), "results_bonn_asexported_T1FLAIR3_trials.xlsx"),
+        (data.EZMode.BONN_ALL_NONEZ, get_t1_flair_combinations(), "results_bonn_all_nonEZ_T1FLAIR3_trials.xlsx"),
     ]
 
     path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/BonnCohort/Left_Hemis/"

@@ -56,7 +56,7 @@ fi
 skip_flag=""
 [ "$complete" -eq 0 ] && skip_flag="--skip_missing"
 
-for labels in recovered asexported; do
+for labels in recovered all_nonEZ; do
     for hemi in left right; do
         echo "=== Combining $hemi hemisphere, $labels labels ==="
         python combine_bonn_cohort_results.py --hemisphere $hemi --labels $labels $skip_flag || exit 1

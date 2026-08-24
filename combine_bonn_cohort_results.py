@@ -9,7 +9,7 @@
 #
 # Examples:
 #   python combine_bonn_cohort_results.py --hemisphere left
-#   python combine_bonn_cohort_results.py --hemisphere right --labels asexported
+#   python combine_bonn_cohort_results.py --hemisphere right --labels all_nonEZ
 import argparse
 import os
 import pandas as pd
@@ -21,16 +21,16 @@ from data.prepare_bonn_cohort import get_list_of_node_nums, BONN_EXPORT
 BASE_PATH = '/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/BonnCohort/'
 
 # per-node filenames written by eval_bonn_left.py / eval_bonn_right.py, one per label variant.
-#   recovered  - labels recovered from the BIDS source (861 EZ over 455 nodes); the paper number
-#   asexported - labels exactly as /BonnData/ ships them, i.e. all zero, so balanced accuracy
-#                collapses to the non-EZ accuracy (true-negative rate for EZ detection)
+#   recovered  - the real labels (861 EZ over 455 nodes); the balanced accuracy reported in the paper
+#   all_nonEZ  - every label forced non-EZ, so balanced accuracy collapses to the non-EZ accuracy
+#                (true-negative rate for EZ detection). A specificity analysis.
 RESULT_FILES = {
     "recovered": "results_bonn_T1FLAIR3_trials.xlsx",
-    "asexported": "results_bonn_asexported_T1FLAIR3_trials.xlsx",
+    "all_nonEZ": "results_bonn_all_nonEZ_T1FLAIR3_trials.xlsx",
 }
 
 # suffix on the combined workbook, so the two variants never overwrite each other
-OUTPUT_SUFFIX = {"recovered": "", "asexported": "_asexported"}
+OUTPUT_SUFFIX = {"recovered": "", "all_nonEZ": "_all_nonEZ"}
 
 
 def get_node_nums(hemisphere: str, bonn_root: str = BONN_EXPORT) -> list[str]:
@@ -52,7 +52,7 @@ def combine(hemisphere: str, labels: str = "recovered", base_path: str = BASE_PA
 
     Args:
         hemisphere (str): Either `left` or `right`.
-        labels (str): Either `recovered` or `asexported`.
+        labels (str): Either `recovered` or `all_nonEZ`.
         base_path (str): The root of the BonnCohort results tree.
         skip_missing (bool): Whether to skip nodes whose result file has not been written yet.
         bonn_root (str): The flat directory of the Bonn cohort, used to list the nodes.
@@ -128,7 +128,7 @@ def combine(hemisphere: str, labels: str = "recovered", base_path: str = BASE_PA
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Combine the Bonn-cohort evaluation results across nodes.")
     parser.add_argument("--hemisphere", type=str, default="left", choices=["left", "right"], help="The hemisphere to combine, default is `left`.")
-    parser.add_argument("--labels", type=str, default="recovered", choices=["recovered", "asexported"], help="Which label variant to combine, default is `recovered`.")
+    parser.add_argument("--labels", type=str, default="recovered", choices=["recovered", "all_nonEZ"], help="Which label variant to combine, default is `recovered`.")
     parser.add_argument("--base_path", type=str, default=BASE_PATH, help="The root of the BonnCohort results tree.")
     parser.add_argument("--bonn_root", type=str, default=BONN_EXPORT, help="The flat directory of the Bonn cohort, used to list the nodes.")
     parser.add_argument("--skip_missing", action="store_true", default=False, help="The flag to skip nodes that have no results yet.")

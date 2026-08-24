@@ -133,17 +133,20 @@ def build_table(keep_ez_only: bool = False) -> tuple[pd.DataFrame, dict[str, dic
     return table, counts
 
 
-def build_as_exported_table() -> tuple[pd.DataFrame, dict[str, int]]:
+def build_specificity_table() -> tuple[pd.DataFrame, dict[str, int]]:
     r"""
-    The Bonn cohort scored against the labels exactly as `/BonnData/` ships them.
+    The Bonn cohort with every label forced non-EZ: a specificity analysis.
 
-    Those labels are all zero, so every node-subject pair counts as non-EZ and
-    `BalancedAccuracyScore` falls back to `specificity = sensitivity`. The number is therefore the
-    **non-EZ accuracy** - the fraction of the 85 subjects the model correctly declines to call EZ,
-    i.e. the true-negative rate for EZ detection. It is not a balanced accuracy and must not be put
-    in the same column as one.
+    With no positives of class 1, `BalancedAccuracyScore` falls back to
+    `specificity = sensitivity`, so the number is the **non-EZ accuracy** - the fraction of the 85
+    subjects the model correctly declines to call EZ, i.e. the true-negative rate for EZ detection.
+    It is not a balanced accuracy and must not be put in the same column as one.
 
-    There is no `nodes_with_EZ` counterpart: under these labels no node contains an EZ subject.
+    There is no `nodes_with_EZ` counterpart: by construction no node contains an EZ subject here.
+
+    Note this is a deliberately constructed label set, not the contents of any file. It was first
+    run when the `/BonnData/` export shipped all-zero labels, so the two coincided at the time; the
+    export has since been regenerated with real labels and no longer does.
 
     Returns: A `tuple` of the 31-row table and the node count of each hemisphere.
     """
@@ -151,7 +154,7 @@ def build_as_exported_table() -> tuple[pd.DataFrame, dict[str, int]]:
     counts = {}
 
     for hemisphere in ["left", "right"]:
-        path = os.path.join(bonncohort.BASE_PATH, f"BonnCohort_{hemisphere}_asexported_combined.xlsx")
+        path = os.path.join(bonncohort.BASE_PATH, f"BonnCohort_{hemisphere}_all_nonEZ_combined.xlsx")
         df = pd.read_excel(path, sheet_name="max_over_trials").set_index("Combination")
 
         means[hemisphere] = df.mean(axis=1)
@@ -192,18 +195,18 @@ def main(save_path: str = SAVE_PATH) -> str:
         print(f"  BonnCohort nodes: left {counts['BonnCohort']['left']}, right {counts['BonnCohort']['right']}")
         print(table.to_string(index=False, float_format=lambda v: f"{v:.4f}"))
 
-    # the Bonn cohort scored against the export's own all-zero labels, if that run exists
-    as_exported = os.path.join(bonncohort.BASE_PATH, "BonnCohort_left_asexported_combined.xlsx")
+    # the Bonn specificity analysis, if that run exists
+    specificity = os.path.join(bonncohort.BASE_PATH, "BonnCohort_left_all_nonEZ_combined.xlsx")
 
-    if os.path.exists(as_exported):
-        table, counts = build_as_exported_table()
-        sheets['bonn_as_exported'] = table
+    if os.path.exists(specificity):
+        table, counts = build_specificity_table()
+        sheets['bonn_specificity'] = table
 
-        print(f"\n=== bonn_as_exported: NON-EZ ACCURACY, not balanced accuracy ===")
+        print(f"\n=== bonn_specificity: NON-EZ ACCURACY, not balanced accuracy ===")
         print(f"  BonnCohort nodes: left {counts['left']}, right {counts['right']} (all 711, no EZ split possible)")
         print(table.to_string(index=False, float_format=lambda v: f"{v:.4f}"))
     else:
-        print(f"\nSkipping the as-exported sheet: {as_exported} not found.")
+        print(f"\nSkipping the specificity sheet: {specificity} not found.")
 
     save_filepath = os.path.join(save_path, "Combined_AddCohort_BonnCohort_table.xlsx")
 

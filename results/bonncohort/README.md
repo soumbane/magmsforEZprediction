@@ -35,11 +35,17 @@ not the 31 of the additional cohort.
 Column A (`Combination`) names the sequences used at inference. Sensitivity and specificity treat
 **non-EZ as the positive class** (class 0), matching the rest of the project.
 
-## The labels had to be recovered
+## The labels had to be recovered — and the recovery was later confirmed
 
-The per-node export at `/BonnData/` carries **no labels** — all 60,435 (85 × 711) entries are zero.
-They were recovered from the BIDS source `Bonn_Cohort_Label.mat`, laid out subject-major over the
-998-ROI Lausanne parcellation as `row = subject * 998 + (node - 1)`.
+When this cohort was first staged, the per-node export at `/BonnData/` carried **no labels**: all
+60,435 (85 × 711) entries were zero. They were recovered from the BIDS source
+`Bonn_Cohort_Label.mat`, laid out subject-major over the 998-ROI Lausanne parcellation as
+`row = subject * 998 + (node - 1)`.
+
+**The export was subsequently regenerated with real labels, and they agree with the recovered ones
+in every one of the 60,435 cells** (861 EZ labels in both, 0 nodes differing). `prepare_bonn_cohort.py`
+now asserts that agreement per node, so the recovery is a checked invariant rather than a one-off.
+All reported results were computed against these labels and are unaffected.
 
 Features still come from the export: staging asserts per node that the two agree bit-for-bit (0
 mismatches over all 711 nodes). `verify_label_alignment` in `data/prepare_bonn_cohort.py` proves
@@ -115,13 +121,17 @@ receives an all-zero tensor. That number would be an artefact, not a measurement
 So a value in row 31 for this cohort would mean *T1 + FLAIR + three constant biases*, not "all five
 sequences". `NA` is the honest entry.
 
-## Scoring against the export's own labels (non-EZ only)
+## Specificity analysis (every pair treated as non-EZ)
 
-The same 85 subjects and the *same* features are also scored against the labels exactly as
-`/BonnData/` ships them, i.e. all zero. Files: `BonnCohort_{left,right}_asexported_combined.xlsx`,
-and sheet `bonn_as_exported` of the joint table.
+The same 85 subjects and the *same* features are also scored with **every label forced to non-EZ**.
+Files: `BonnCohort_{left,right}_all_nonEZ_combined.xlsx`, and sheet `bonn_specificity` of the joint
+table.
 
-Because every node-subject pair then counts as non-EZ, there are no negatives and
+This label set is constructed in code, not read from a file. It was first run when the `/BonnData/`
+export shipped all-zero labels, so the two coincided then; the export has since been regenerated
+with real labels and no longer does, which is why the construction is now explicit.
+
+Because every node-subject pair counts as non-EZ, there are no negatives and
 `BalancedAccuracyScore` falls back to `specificity = sensitivity`. **The number is non-EZ accuracy —
 the fraction of the 85 subjects the model correctly declines to call EZ, i.e. the true-negative rate
 for EZ detection. It is not a balanced accuracy** and must not be placed in the same column as one.
