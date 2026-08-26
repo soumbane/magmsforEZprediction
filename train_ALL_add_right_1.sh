@@ -3,8 +3,8 @@
 # Shard right1 of the right hemisphere (78 nodes) on cuda:2
 # Trains on the original SMOTE-augmented training data (58 patients) with all 5 sequences and
 # cross-sequence distillation, selecting the best checkpoint on the 17 subjects of the additional
-# cohort that have all five sequences. Runs sequentially in the foreground; for a detached run use
-# train_sh_scripts/nh_train_add_right1.sh
+# cohort that have all five sequences. Runs sequentially in the foreground; use
+# ./run_all_add_training.sh to launch every shard detached so the run survives closing SSH.
 
 node_nums=(669 670 671 672 673 674 675 676 677 678 681 683 685 686 690 691 692 693 694 695 696 697 698 699 700 701 702 703 704 705 706 707 708 709 710 711 712 713 714 715 716 717 718 719 720 721 722 723 724 725 726 727 728 730 731 732 733 735 736 737 738 739 740 741 742 743 744 745 746 747 748 749 750 751 756 757 758 759)
 
