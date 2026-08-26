@@ -23,12 +23,14 @@ class Configs(argparse.Namespace, abc.ABC):
 
     - Properties:
         - experiment: The name in `str` of the experiment
+        - cohort: Which validation cohort to use, either `add` or `orig`
 
     - Method to implement:
         - show_settings: Printout current configurations, `torchmanager_core.view.logger` is recommended.
     """
     experiment: str
     replace_experiment: bool
+    cohort: str
 
     def __init__(self, experiment: str = "test.exp", **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -79,6 +81,7 @@ class Configs(argparse.Namespace, abc.ABC):
     def get_arguments(parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup] = argparse.ArgumentParser()) -> Union[argparse.ArgumentParser, argparse._ArgumentGroup]:
         parser.add_argument("-exp", "--experiment", type=str, default="test.exp", help="The name of experiment")
         parser.add_argument("--replace_experiment", action="store_true", default=False, help="The flag to replace given experiment if exists.")
+        parser.add_argument("--cohort", type=str, default="add", choices=["add", "orig"], help="Which validation cohort to use: `add` for the additional cohort (default), `orig` for the original held-out patients.")
         return parser
 
     def show_environments(self, description: str = DESCRIPTION) -> None:

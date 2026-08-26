@@ -207,26 +207,39 @@ if __name__ == "__main__":
     configs = TestingConfigs.from_arguments()
 
     ############################################################################################################
-    ## Evaluate each node on the additional validation cohort, using the AddCohort (WITH distillation)
-    ## checkpoints, keeping every training trial as its own column so the max/mean can be taken later.
+    ## Evaluate one node of the right hemisphere on the cohort selected by --cohort.
     ##
-    ## Two groups are scored with the same trained model:
-    ##   - the 17 subjects with all five sequences, on ALL 31 modality combinations
-    ##   - the 13 subjects without DWIC, on the 15 DWIC-free combinations. DWIC is dropped from
-    ##     target_dict rather than being fed as an all-zero branch, which is what makes the model
-    ##     sequence-agnostic in the first place.
+    ##   --cohort add   (default) the additional validation cohort, scored with the AddCohort
+    ##                  checkpoints. Two subject groups share the same 3 trial checkpoints:
+    ##                    - the 17 subjects with all five sequences, on ALL 31 combinations
+    ##                    - the 13 subjects without DWIC, on the 15 DWIC-free combinations
+    ##                  DWIC is dropped from target_dict rather than supplied as an all-zero branch,
+    ##                  which is what makes the model sequence-agnostic in the first place.
+    ##                  Every trial is kept as its own column so the max or mean can be taken later.
+    ##
+    ##   --cohort orig  the original 10 held-out patients, scored with the Part_2 checkpoints on all
+    ##                  31 combinations and averaged over the 3 trials. Written as one column of 31
+    ##                  values named after the node, which is the layout
+    ##                  combine_node_excel_sheet_results_eval_right.py concatenates.
 
     base_exp_model = configs.model  # e.g. ".../magmsforEZprediction/experiments"
 
     num_trials = 3
 
-    # (mode, combination numbers, output filename) for each of the two subject groups
-    GROUPS = [
-        (data.EZMode.ADD_17, list(range(1, 32)), "results_add17_ALL31_trials.xlsx"),
-        (data.EZMode.ADD_13, get_dwic_free_combinations(), "results_add13_DWICfree15_trials.xlsx"),
-    ]
-
-    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/AddCohort/Right_Hemis/"
+    # (checkpoint sub-directory, results root, [(mode, combination numbers, output filename), ...])
+    if configs.cohort == "orig":
+        experiment_dir = "Part_2"
+        path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/"
+        GROUPS = [
+            (data.EZMode.TEST, list(range(1, 32)), "results_val_ALL_modalities_Part_2.xlsx"),
+        ]
+    else:
+        experiment_dir = "AddCohort"
+        path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/AddCohort/Right_Hemis/"
+        GROUPS = [
+            (data.EZMode.ADD_17, list(range(1, 32)), "results_add17_ALL31_trials.xlsx"),
+            (data.EZMode.ADD_13, get_dwic_free_combinations(), "results_add13_DWICfree15_trials.xlsx"),
+        ]
 
     save_path = os.path.join(path, "Node_" + str(configs.node_num) + "_Results", "Eval_Results")
 
@@ -238,8 +251,7 @@ if __name__ == "__main__":
         bal_acc_per_trial: dict[str, list[float]] = {f"Trial_{i+1}": [] for i in range(num_trials)}
 
         for i in range(num_trials):
-            # AddCohort = WITH cross-sequence distillation, selected on the 17 complete subjects
-            configs.model = base_exp_model + "/exp_node" + str(configs.node_num) + "/AddCohort" + "/magms_trial" + str(i+1) + ".exp/checkpoints/best_bal_accuracy.model"
+            configs.model = os.path.join(base_exp_model, f"exp_node{configs.node_num}", experiment_dir, f"magms_trial{i+1}.exp", "checkpoints", "best_bal_accuracy.model")
 
             # load the checkpoint once and reuse it for every modality combination
             manager = load_manager(configs)
@@ -253,15 +265,22 @@ if __name__ == "__main__":
 
                 bal_acc_per_trial[f"Trial_{i+1}"].append(bal_acc)
 
-        # rows are self-describing, so the per-node files stay readable once concatenated
-        combination_names = [get_modality_name(get_target_dict(j)[0]) for j in combinations]
+        if configs.cohort == "orig":
+            # historical layout: one column of 31 trial-averaged values, named after the node, so
+            # that combine_node_excel_sheet_results_eval_right.py can concatenate the nodes
+            mean_over_trials = [sum(trial[k] for trial in bal_acc_per_trial.values()) / num_trials for k in range(len(combinations))]
 
-        df_val = pd.DataFrame({'Combination': combination_names, **bal_acc_per_trial})
+            df_val = pd.DataFrame(mean_over_trials, columns=["Node_" + str(configs.node_num)])
+        else:
+            # rows are self-describing, so the per-node files stay readable once concatenated
+            combination_names = [get_modality_name(get_target_dict(j)[0]) for j in combinations]
+
+            df_val = pd.DataFrame({'Combination': combination_names, **bal_acc_per_trial})
 
         save_filepath_val = os.path.join(save_path, filename_val)
 
         df_val.to_excel(save_filepath_val, index=False, sheet_name='Sheet1')
 
-        print(f"\nSaved {len(combination_names)} combinations x {num_trials} trials to {save_filepath_val}")
+        print(f"\nSaved {len(combinations)} combinations x {num_trials} trials to {save_filepath_val}")
 
     print("\nDone!")

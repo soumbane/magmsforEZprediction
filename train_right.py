@@ -23,11 +23,11 @@ def train(cfg: TrainingConfigs, /) -> Union[magnet.MAGNET2, Tuple[float, float, 
     # initialize dataset for whole brain
     training_dataset = data.DatasetEZ_Node(cfg.batch_size, cfg.data_dir, drop_last=False, mode=data.EZMode.TRAIN, shuffle=True, node_num=str(cfg.node_num))
 
-    # validate on the 17 subjects of the additional cohort that have all five sequences, so that the
-    # best checkpoint is selected against the cohort the model is reported on
-    validation_dataset = data.DatasetEZ_Node(cfg.batch_size, cfg.data_dir, mode=data.EZMode.ADD_17, node_num=str(cfg.node_num))
-
-    # validation_dataset = data.DatasetEZ_Node(cfg.batch_size, cfg.data_dir, mode=data.EZMode.TEST, node_num=str(cfg.node_num)) # the original 10 held-out patients
+    # The validation cohort selects the best checkpoint, so --cohort decides what the run reports:
+    #   add  - the 17 subjects of the additional cohort that have all five sequences (default)
+    #   orig - the original 10 held-out patients
+    validation_mode = data.EZMode.ADD_17 if cfg.cohort == "add" else data.EZMode.TEST
+    validation_dataset = data.DatasetEZ_Node(cfg.batch_size, cfg.data_dir, mode=validation_mode, node_num=str(cfg.node_num))
     
     model = ezpred.build(2, out_main_ch=64, out_filters=64, filters_t1=[8,16,32], filters_t2=[8,16,32], filters_flair=[8,16,32], filters_dwi=[16,32,64], filters_dwic=[8,16,32], main_downsample=True, filters_shfe = [64,128], fusion=FusionType.MID_MEAN, train_modality=cfg.train_mod) 
 
@@ -154,10 +154,11 @@ if __name__ == "__main__":
 
     df_train = pd.DataFrame([row_data_train], columns=headers_train)
 
-    # Saving to Excel (AddCohort = validated on the 17 complete subjects of the additional cohort)
-    path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/AddCohort/Right_Hemis/"
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/"
-    # path = "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/NO_Distillation/"
+    # Results land beside the cohort they were validated on
+    path = {
+        "add": "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/AddCohort/Right_Hemis/",
+        "orig": "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Right_Hemis/Part_2/",
+    }[configs.cohort]
     save_path = os.path.join(path, "Node_"+str(configs.node_num), "Results")
 
     if not os.path.exists(save_path):
