@@ -131,15 +131,17 @@ class DatasetEZ_Node(Dataset):
         return [x_t1, x_t2, x_flair, x_dwi, x_dwic], y
 
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
+    # Smoke test: point `root` at a hemisphere root holding Node_<n>/ directories.
+    import sys
 
-    print("Node-level EZ Dataset ...")
-    ez_dataset = DatasetEZ_Node(batch_size=1, root='/home/neil/Lab_work/Jeong_Lab_Multi_Modal_MRI/Right_Temporal_Lobe/', drop_last=False, mode=EZMode.TEST, shuffle=False, node_num="888")
+    root = sys.argv[1] if len(sys.argv) > 1 else "/media/user1/MyHDataStor41/Soumyanil_EZ_Pred_project/Data/All_Hemispheres/Left_Hemis/Part_2/"
+    node_num = sys.argv[2] if len(sys.argv) > 2 else "6"
 
-    print(ez_dataset.unbatched_len)
-    # print((ez_dataset.__getitem__(0))[0][4].shape)
-    # print((ez_dataset.__getitem__(0))[1])
+    print(f"Node-level EZ dataset, node {node_num} of {root}")
+    ez_dataset = DatasetEZ_Node(batch_size=1, root=root, drop_last=False, mode=EZMode.TEST, shuffle=False, node_num=node_num)
+
+    print(f"Patients: {ez_dataset.unbatched_len}")
 
     X_combined, Y_label = ez_dataset[0]
-    print(X_combined.shape)
-    print(Y_label)
+    print(f"Feature vector: {tuple(X_combined.shape)}, label: {Y_label}")

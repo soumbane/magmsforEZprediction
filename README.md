@@ -1,121 +1,201 @@
 # Sequence-Agnostic Model with Cross-Sequence Distillation for Localization of Seizure Onset Zone
 
-This is the official PyTorch implementation of the paper **Non-invasive Localization of Seizure Onset Zone using Clinically Acquired MRI in Children with Drug-Resistant Epilepsy: a Sequence-Agnostic Model with Cross-Sequence Distillation** that was submitted to **Medical Image Analysis** journal and is currently under review.
+Official PyTorch implementation of **"Non-invasive Localization of Seizure Onset Zone using
+Clinically Acquired MRI in Children with Drug-Resistant Epilepsy: a Sequence-Agnostic Model with
+Cross-Sequence Distillation"**, submitted to *Medical Image Analysis* (under review).
+
+The model is a MAG-MS network that localizes the seizure onset zone from features derived from up to
+five MRI sequences — T1w, T2w, FLAIR, DWI and DWIC (connectome). It is **sequence-agnostic**: one
+model, trained once with all five sequences and cross-sequence distillation, can be evaluated on any
+non-empty subset of them, because the absent encoders are dropped from the network's `target_dict`
+rather than fed all-zero inputs. One binary classifier is trained per brain node, over 711 nodes of
+the Lausanne parcellation.
 
 ## Requirements
+
 * Python >= 3.9
-* [PyTorch](https://pytorch.org) >= 1.12.0
-* [torchmanager](https://github.com/kisonho/torchmanager) >= 1.1.0
-* [Monai](https://monai.io) >= 1.1
-* [Multimodality](https://github.com/kisonho/multimodality/tree/feature-0201)
-* Download the script from the above Multimodality branch in your code directory - since it will be used in the main code.
+* [PyTorch](https://pytorch.org) >= 2.0.1
+* [torchmanager](https://github.com/kisonho/torchmanager) >= 1.2.0rc8
+* [Monai](https://monai.io) >= 1.2
+* [Multimodality / magnet](https://github.com/kisonho/multimodality/tree/feature-0201) >= 2.1a8 —
+  not on PyPI; check out that branch and place it on your `PYTHONPATH`.
+* numpy, scipy, pandas, openpyxl, scikit-learn, imbalanced-learn, tqdm
 
-## Get Started
-The following steps are required to replicate our work:
+Exact versions used for the reported results are pinned in `pyproject.toml`.
 
-1. Dataset
-   * This project uses a private clinical dataset of MRI scans from children with drug-resistant epilepsy.
-   * The dataset basically consists of features derived from various MRI sequences such as T1w, T2w, FLAIR, DWI and DWIC, for every node of the brain of children with Drug-Resistant Epilepsy.
-   * For access to similar datasets for research purposes, please contact the authors.
+## Repository layout
 
-2. Data preprocessing
-   * The SMOTE augmentation is performed by `augment_single_node_left_hemis_part2.py` and `augment_single_node_right_hemis_part2.py` for the nodes of the left and right hemispheres respectively.
-   * The data loading steps are provided in the `data/dataset_ez.py` file. This file uses the SMOTE augmented data.
-   * It performs all the necessary preprocessing steps to prepare the MRI data for training and validation.
+| Path | Contents |
+|---|---|
+| `ezpred/` | the model: multi-scale encoders, fusion, classifier head, metrics, configs |
+| `data/` | dataset loader, SMOTE augmentation, and the two external-cohort staging scripts |
+| `train_left.py`, `train_right.py` | per-node training entry points |
+| `eval_left.py`, `eval_right.py` | evaluation on the additional cohort, all 31 sequence combinations |
+| `eval_bonn_left.py`, `eval_bonn_right.py` | evaluation on the Bonn cohort, T1/FLAIR only |
+| `train_ALL_add_*.sh`, `eval_ALL_add_*.sh`, `eval_ALL_bonn_*.sh` | per-GPU node shards |
+| `run_all_*.sh`, `finish_bonn_evaluation.sh` | detached launchers that survive closing SSH |
+| `combine_*.py`, `make_*_table.py` | aggregate per-node results into the publication tables |
+| `results/` | **the reported numbers**, with a README per cohort |
+| `sota_node_level/` | baseline and state-of-the-art comparisons |
 
-3. Additional validation cohort
-   * An independent cohort of 30 subjects covering the same 711 nodes is staged by `data/prepare_add_cohort.py`.
-   * 13 of the 30 subjects were scanned without DWIC (connectome) data, so the cohort is split into two groups, written to `Node_{N}/Add_Val_Data_17_withDWIC/` and `Node_{N}/Add_Val_Data_13_noDWIC/`:
-     * the 17 subjects with all five sequences, evaluated on all 31 modality combinations;
-     * the 13 subjects without DWIC, evaluated on the 15 DWIC-free combinations, with DWIC dropped from the model's `target_dict` rather than supplied as an all-zero input.
-   * Unlike the original cohort, the labels of this cohort are already binary, so no IZ patients are removed and no label remapping is applied.
-   ```
-   python data/prepare_add_cohort.py
-   ```
+Paths to the data and experiment roots are absolute constants at the top of the scripts that use
+them; change them to match your own layout.
+
+## Data
+
+This project uses a private clinical dataset of MRI-derived features from children with
+drug-resistant epilepsy: for every node, a 1899-dimensional vector laid out as
+
+```
+T1 [0:300]   T2 [300:500]   FLAIR [500:700]   DWI [700:1400]   DWIC [1400:1899]
+```
+
+For access to similar data for research purposes, please contact the authors. The second external
+cohort is public — see below.
+
+### Preprocessing
+
+SMOTE augmentation balances the two classes and enlarges the training set:
+
+```bash
+python data/augment_single_node_left_hemis_part2.py
+python data/augment_single_node_right_hemis_part2.py
+```
+
+`data/dataset_ez.py` then loads the augmented data. `data/left_hemis_part2_subgroups.py` and its
+right-hemisphere counterpart build the MR-/MR+/SF/SR subgroup splits used in the subgroup analysis.
+
+## Cohorts
+
+Three cohorts are reported. Composition, EZ counts and the informative-vs-degenerate node
+distinction are documented in **[`results/COHORTS.md`](results/COHORTS.md)**.
+
+| Cohort | Subjects | Sequences | Selected in code by |
+|---|---|---|---|
+| Original held-out validation | 10 patients | all five | `data.EZMode.TEST` |
+| Additional cohort | 30 (17 with DWIC, 13 without) | all five / no DWIC | `data.EZMode.ADD_17`, `ADD_13` |
+| Bonn cohort (OpenNeuro [ds004199](https://doi.org/10.18112/openneuro.ds004199.v1.0.5)) | 85 | T1 + FLAIR only | `data.EZMode.BONN` |
+
+Stage the two external cohorts before evaluating them:
+
+```bash
+python data/prepare_add_cohort.py     # writes Node_{N}/Add_Val_Data_{17_withDWIC,13_noDWIC}/
+python data/prepare_bonn_cohort.py    # writes Node_{N}/Bonn_Val_Data_85/, recovers + verifies labels
+```
+
+> **Choosing the validation cohort.** The scripts as committed train and select checkpoints against
+> the additional cohort, which is what the headline results report. To use the original 10-patient
+> held-out cohort instead, switch the validation dataset in `train_left.py` / `train_right.py`
+> (`EZMode.ADD_17` → `EZMode.TEST`, marked by a comment) and the output `path` near the end of the
+> same file; in `eval_*.py`, change the `GROUPS` entry to `EZMode.TEST`.
 
 ## Training
-1. Refer to the training configuration in `train_right.py` for the default hyper-parameters to train the models for the right hemisphere nodes:
-```
-# To train the model on nodes of the right hemisphere
-./train_ALL_right.sh
-```
 
-2. Refer to the training configuration in `train_left.py` for the default hyper-parameters to train the models for the left hemisphere nodes:
-```
-# To train the model on nodes of the left hemisphere
-./train_ALL_left.sh
-```
+Trains 3 trials per node with all five sequences and cross-sequence distillation, writing
+checkpoints to `experiments/exp_node{N}/AddCohort/magms_trial{i}.exp/`.
 
-3. Please note that depending on the node numbers, we may need to change the shell script name. This is because the training on all the nodes is sequential and we used multiple shell scripts to obtain faster results.
-
-4. The training process can be customized by modifying the following parameters in the shell scripts:
-   * Batch size
-   * Learning rate
-   * Number of epochs
-   * Number of Modality or sequence selection
-   * Device selection
-
-## Testing
-1. The pre-trained models are stored in the `experiments/` folder. 
-   * The pre-trained models are not included in this GitHub repository due to space limitations.
-
-2. Refer to the `eval_right.py` for the default settings to test the models for the right hemisphere nodes:
-```
-# To evaluate all nodes of the right hemisphere
-./eval_ALL_right.sh
-```
-
-3. Refer to the `eval_left.py` for the default settings to test the models for the left hemisphere nodes:
-```
-# To evaluate all nodes of the left hemisphere
-./eval_ALL_left.sh
-```
-
-4. Please note that depending on the node numbers, we may need to change the shell script name. This is because the evaluation on all the nodes is sequential and we used multiple shell scripts to obtain faster results.
-
-5. The testing process can be customized by modifying the parameters in the shell scripts or directly in the `eval_left.py` and `eval_right.py` files.
-
-## Additional validation cohort
-The model is trained on the same SMOTE-augmented training data (58 patients) with all five sequences and cross-sequence distillation, and the best checkpoint of each trial is selected on the 17 subjects of the additional cohort that have all five sequences. That checkpoint is then evaluated on both subject groups.
-
-1. Train all nodes, writing the checkpoints under `experiments/exp_node{N}/AddCohort/`. The nodes are split into 10 shards spread over the 4 GPUs:
-```
-# Launch every shard detached, so the run survives closing the SSH session
+```bash
+# every shard, detached across the 4 GPUs, survives closing the SSH connection
 ./run_all_add_training.sh
 
-# Progress
+# progress
 grep -c "saved at" logs_add_root/*.log
 ```
-The individual shards (`train_ALL_add_left.sh`, `train_ALL_add_left_1.sh`, ... `train_ALL_add_right_5.sh`) can also be run one at a time, but they run in the foreground and are killed when the terminal closes. `train_sh_scripts/nh_train_add_*.sh` are equivalent detached versions with their own progress logs.
 
-2. Evaluate all nodes on both subject groups. Each of the 3 training trials is written as its own column, so the maximum or the mean over trials can be chosen afterwards:
-```
-./eval_ALL_add_left.sh
-./eval_ALL_add_right.sh
-```
-This writes `results_add17_ALL31_trials.xlsx` (31 combinations) and `results_add13_DWICfree15_trials.xlsx` (15 combinations) per node.
+Individual shards (`train_ALL_add_left.sh` … `train_ALL_add_right_5.sh`) can be run one at a time,
+but they run in the foreground. Batch size, learning rate, epochs, sequence selection and device are
+set as flags inside each shard; see `train_left.py` for the defaults.
 
-3. Combine the per-node results:
-```
-python combine_add_cohort_results.py --hemisphere left --group 17
-python combine_add_cohort_results.py --hemisphere left --group 13
+To ablate cross-sequence distillation, uncomment the `NO Distillation` loss block in
+`train_left.py` / `train_right.py`, which zeroes the KL and MSE terms and the per-modality
+supervision, leaving only cross-entropy on the fused branch.
+
+## Evaluation
+
+### Additional cohort — all 31 sequence combinations
+
+```bash
+./run_all_add_evaluation.sh          # 8 shards across 4 GPUs
+
+python combine_add_cohort_results.py --hemisphere left  --group 17
+python combine_add_cohort_results.py --hemisphere left  --group 13
 python combine_add_cohort_results.py --hemisphere right --group 17
 python combine_add_cohort_results.py --hemisphere right --group 13
+python combine_add_cohort_training_results.py
+python make_addcohort_combination_table.py
 ```
-Each combined file has a `per_trial` sheet along with `max_over_trials` and `mean_over_trials`.
 
-## Final Results
-1. After evaluating the results, combine the results for all nodes of the left hemisphere with:
+Each node is scored on both subject groups with the same 3 checkpoints: the 17 subjects with all
+five sequences on all 31 combinations, and the 13 without DWIC on the 15 DWIC-free combinations.
+Every trial is kept as its own column, so `max` or `mean` over trials can be chosen afterwards.
+
+### Bonn cohort — T1, FLAIR, T1+FLAIR
+
+No training happens here: the additional cohort's checkpoints are reused unchanged, which makes this
+a fully external test.
+
+```bash
+./run_all_bonn_evaluation.sh                                          # 8 shards, ~30 min
+setsid nohup ./finish_bonn_evaluation.sh > logs_bonn_eval/finish.log 2>&1 &
 ```
+
+`finish_bonn_evaluation.sh` waits for the shards, then combines both label variants and both
+hemispheres and rebuilds the tables. It deliberately skips the publication table if any node is
+missing, so no average over an unknown subset of nodes is ever reported.
+
+### Original held-out cohort
+
+After switching the cohort as described above, combine the per-node sheets with:
+
+```bash
 python combine_node_excel_sheet_results_eval_left.py
-```
-
-2. After evaluating the results, combine the results for all nodes of the right hemisphere with:
-```
 python combine_node_excel_sheet_results_eval_right.py
 ```
 
-The above will provide excel files with the results for all nodes.
+## Results
+
+All reported numbers are committed under [`results/`](results/).
+
+| File | Contents |
+|---|---|
+| **[`results/Combined_AddCohort_BonnCohort_table.xlsx`](results/Combined_AddCohort_BonnCohort_table.xlsx)** | the main table — both external cohorts side by side, rows 1-31 |
+| [`results/COHORTS.md`](results/COHORTS.md) | cohort composition and how the means are computed |
+| [`results/addcohort/`](results/addcohort/) | per-node additional-cohort results, with a README |
+| [`results/bonncohort/`](results/bonncohort/) | per-node Bonn results, with a README |
+
+The main workbook has three sheets:
+
+* `all_nodes` — every node of the hemisphere;
+* `nodes_with_EZ` — only the **informative** nodes, whose validation split contains at least one EZ
+  subject. At a degenerate node balanced accuracy collapses to non-EZ accuracy, so this is the sheet
+  to read for model quality;
+* `bonn_specificity` — the Bonn subjects scored with every label forced non-EZ. This is a
+  true-negative rate, **not** a balanced accuracy.
+
+The Bonn columns are populated only at rows 4, 16 and 20 (FLAIR, T1, T1+FLAIR) and are `NA`
+elsewhere: those subjects have no T2/DWI/DWIC acquisition, and zero-filling a missing encoder shifts
+the logits rather than removing the branch, so any number in those cells would be an artefact.
+`results/bonncohort/README.md` quantifies this.
+
+## Baselines
+
+`sota_node_level/` holds the comparison methods: random forest, MLP, deep-FCD and a relational
+reasoning network, each swept over the same node set and sequence combinations.
 
 ## Citation
 
+```bibtex
+@article{banerjee2025sequence,
+  title   = {Non-invasive Localization of Seizure Onset Zone using Clinically Acquired MRI in
+             Children with Drug-Resistant Epilepsy: a Sequence-Agnostic Model with
+             Cross-Sequence Distillation},
+  author  = {Banerjee, Soumyanil and He, Qisheng and others},
+  journal = {Medical Image Analysis},
+  year    = {2025},
+  note    = {Under review}
+}
+```
+
+## License
+
+Apache License 2.0 — see [LICENSE](LICENSE).

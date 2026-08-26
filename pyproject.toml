@@ -1,15 +1,36 @@
 [tool.poetry]
 name = "magms-ezpred"
-version = "0.1a4"
-description = "MAG-MS for EZ Prediction (Alpha 4)"
-authors = ["Qisheng He <Qisheng.He@wayne.edu>","Soumyanil Banerjee <s.banerjee@wayne.edu>"]
+version = "1.0.0"
+description = "Sequence-agnostic MAG-MS model with cross-sequence distillation for seizure onset zone localization"
+authors = ["Qisheng He <Qisheng.He@wayne.edu>", "Soumyanil Banerjee <s.banerjee@wayne.edu>"]
+license = "Apache-2.0"
+readme = "README.md"
 packages = [
     { include = "ezpred" }
 ]
 
+# The versions below are the ones the reported results were produced with.
+# `magnet` is not on PyPI: install it from the multimodality repository, see README.
 [tool.poetry.dependencies]
-magnet = "^2.1"
-python = "^3.8"
+python = "^3.9"
+torch = "^2.0.1"
+torchmanager = "^1.2.0rc8"
+magnet = "^2.1a8"
+monai = "^1.2.0"
+numpy = "^1.25.2"
+scipy = "^1.11.1"
+pandas = "^2.0.3"
+openpyxl = "^3.1.2"
+scikit-learn = "^1.3.0"
+imbalanced-learn = "^0.11.0"
+tqdm = "^4.65.0"
+
+# Only needed to re-run the baseline/SOTA comparisons under sota_node_level/
+[tool.poetry.group.baselines]
+optional = true
+
+[tool.poetry.group.baselines.dependencies]
+matplotlib = "^3.9.4"
 
 [build-system]
 requires = ["poetry-core"]

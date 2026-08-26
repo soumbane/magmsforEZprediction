@@ -43,7 +43,7 @@ When this cohort was first staged, the per-node export at `/BonnData/` carried *
 `row = subject * 998 + (node - 1)`.
 
 **The export was subsequently regenerated with real labels, and they agree with the recovered ones
-in every one of the 60,435 cells** (861 EZ labels in both, 0 nodes differing). `prepare_bonn_cohort.py`
+in every one of the 60,435 cells** (861 EZ labels in both, 0 nodes differing). `data/prepare_bonn_cohort.py`
 now asserts that agreement per node, so the recovery is a checked invariant rather than a one-off.
 All reported results were computed against these labels and are unaffected.
 
